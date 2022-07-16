@@ -1,0 +1,5 @@
+condition	sample_name	unit_name	fq1	fq2	sra	adapters	strandedness
+WT	WT_1	lane1	ttchemseqreads/SRR8112935_1.fastq.gz	ttchemseqreads/SRR8112935_2.fastq.gz		-a AGATCGGAAGAG -g CTCTTCCGATCT -a AGATCGGAAGAG -g CTCTTCCGATCT	reverse
+WT	WT_2	lane1	ttchemseqreads/SRR8112941_1.fastq.gz	ttchemseqreads/SRR8112941_2.fastq.gz		-a AGATCGGAAGAG -g CTCTTCCGATCT -a AGATCGGAAGAG -g CTCTTCCGATCT	reverse
+SCAF4KO	SCAF4KO_1	lane1	ttchemseqreads/SRR8112934_1.fastq.gz	ttchemseqreads/SRR8112934_2.fastq.gz		-a AGATCGGAAGAG -g CTCTTCCGATCT -a AGATCGGAAGAG -g CTCTTCCGATCT	reverse
+SCAF4KO	SCAF4KO_2	lane1	ttchemseqreads/SRR8112943_1.fastq.gz	ttchemseqreads/SRR8112943_2.fastq.gz		-a AGATCGGAAGAG -g CTCTTCCGATCT -a AGATCGGAAGAG -g CTCTTCCGATCT	reverse

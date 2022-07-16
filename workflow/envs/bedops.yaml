@@ -1,0 +1,6 @@
+annels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bedops = 2.4.39
+

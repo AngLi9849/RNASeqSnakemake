@@ -1,0 +1,19 @@
+Order of Features.bed:
+1.Chr 
+2.Start 
+3.End 
+4.GeneID 
+5.Score 
+6.Strand
+7.Biotype
+8.main_feature_type 
+9.main_feature_id 
+10.main_feature_name 
+11.subfeature_type 
+12.subfeature_id 
+13.subfeature_name
+14.subfeature_sense_index
+15.subfeature_antisense_index
+16.subfeature_variant_index
+17.subfeature_length
+

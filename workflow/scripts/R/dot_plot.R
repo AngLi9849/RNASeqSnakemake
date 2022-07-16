@@ -1,0 +1,63 @@
+dot_data$top10 <- ifelse(dot_data$rpkm>=quantile(dot_data$rpkm,0.9),dot_data$value,NA)
+dot_data$top50 <- ifelse(dot_data$rpkm>=quantile(dot_data$rpkm,0.5),dot_data$value,NA)
+
+
+dot_ymax <- max(dot_data$value) + 0.2*abs(max(dot_data$value)-min(dot_data$value))
+dot_ymin <- min(dot_data$value)
+dot_p_y <- max(dot_data$value) + 0.1*abs(max(dot_data$value)-min(dot_data$value))
+
+dot_bin <- abs(max(dot_data$value) - min(dot_data$value))/(nrow(dot_data)/70)
+dot <- ggplot(data = dot_data, aes(x=condition,y=value,fill=condition,colour=condition)) +
+  geom_dotplot(
+    aes(
+      x=dot_data$condition,
+      y=dot_data$value
+    ),
+    binwidth=dot_bin,
+    binaxis="y",
+    stackdir="center",
+    method="histodot",
+    alpha=0.05
+  ) +
+  geom_dotplot(
+    aes(
+      x=dot_data$condition,
+      y=dot_data$top50
+    ),
+    binwidth=dot_bin,
+    binaxis="y",
+    stackdir="center",
+    method="histodot",
+    alpha=0.1
+  ) +
+  geom_dotplot(
+    aes(
+      x=dot_data$condition,
+      y=dot_data$top10
+    ),
+    binwidth=dot_bin,
+    binaxis="y",
+    stackdir="center",
+    method="histodot",
+    alpha=1
+  ) +
+  scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,exp)], labels = bar_cond) +
+  scale_colour_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,exp)], labels = bar_cond) +
+  ylab("Splicing Index") +
+  stat_compare_means(comparisons = contrast, label = "p.signif", label.y=dot_p_y, method="t.test") +
+  scale_y_continuous(limits = c(dot_ymin, dot_ymax)) +
+  theme(
+    panel.background=element_rect(fill="White",colour="white"),
+    strip.text=element_text(face="bold"),
+    strip.background=element_rect(colour="white",fill="white",size=0.1),
+    legend.background=element_rect(fill="White"),
+    legend.key=element_rect(colour="white",fill="White"),
+    legend.position="none",
+    axis.text = element_text(colour="black"),
+    axis.line=element_line(colour="black",size=0.5),
+    axis.title.x=element_blank(),
+    axis.title.y = element_text(size=9)
+  )
+
+ggsave("dot.png",dot,width=w/2,height=h/4,units="cm",dpi=300)
+

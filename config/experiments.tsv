@@ -1,0 +1,8 @@
+experiment                    	sample_species                 	sample_lineage 	splice	int_ret	spikein	spikein_species                	control_condition	paired_analysis	norm_feat	norm_gene 
+HCT_U-AID_Chromatin_RNA-Seq   	homo_sapiens                  	HCT116         	TRUE	TRUE	FALSE	                        	HCT116_Chromatin	FALSE         	GeneBody	
+HCT_U-AID_Nucleoplasm_RNA-Seq 	homo_sapiens                  	HCT116         	TRUE	TRUE	FALSE	                         	HCT116_Nucleoplasm	FALSE         	GeneBody	
+HCT_U-AID_Cytoplasm_RNA-Seq   	homo_sapiens                  	HCT116         	TRUE	TRUE	FALSE	                         	HCT116_Cytoplasm	FALSE          	mRNA     	
+HCT_U_UL1-AID_TT-Seq         	homo_sapiens                  	HCT116         	TRUE	FALSE	TRUE	saccharomyces_cerevisiae      	HCT116          	TRUE           	GeneBody  	
+FUS-mAID_6hr_TT-Seq            	homo_sapiens                   	HCT116         	TRUE	FALSE	TRUE	saccharomyces_cerevisiae      	+DMSO_6hr              	TRUE           	GeneBody	
+FUS-mAID_6hr_Total_RNA-Seq 	homo_sapiens                   	HCT116         	TRUE	TRUE	FALSE	                              	+DMSO_6hr           	FALSE          	mRNA         	
+FUS-mAID_48hr_Total_RNA-Seq	homo_sapiens                   	HCT116         	TRUE	TRUE	FALSE	                              	+DMSO_48hr            	FALSE          	mRNA      	

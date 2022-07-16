@@ -1,0 +1,178 @@
+# path or URL to sample sheet (TSV format, columns: sample, unit, condition, fq1, fq2)
+# Units are biological or technical replicates of experiment or sequencing lanes.
+# Conditions are compared in differential expression analysis.
+samples: config/samples.tsv
+experiments: config/experiments.tsv
+feature_parameters: config/features.tsv
+references_info: config/references.tsv
+
+# Alignment Processing options (TRUE, FALSE or BOTH)
+remove_multimappers: FALSE
+remove_duplicate_reads: FALSE
+
+# Bigwig track options
+bigwig_bin_size: 1
+strand_specific_bigwigs: TRUE # Generate strand-specific bigwigs for strand-specific data
+seperate_spliced_reads: TRUE
+unspliced_min_length: 20
+unspliced_max_length: 2000
+
+# Adapter Trimming
+trimming:
+  activate: True
+  minimum_read_length: 18
+  minimum_read_quality: 20
+
+counting:
+  count_every_overlap: TRUE # If a read is counted to every feature it overlaps  
+
+#Specific Settings for Splicing Analysis
+splicing: 
+  detect_splice_sites: TRUE # Use lineage-specifc splice sites detected in provided samples only, otherwise uses all splice sites implied in genome annotation
+  splice_site_overhang: 3 # Bases on each side of splice site to count reads from
+
+features:
+  minimum_intron_length: 6
+  minimum_retained_intron_coverage: 0.1 #minimum fraction of a retained intron annotated as part of a bridging exon
+  validate_features: FALSE
+
+feature_validation:
+  genes:
+    minimum_reads: 5
+    rpkm_percentile: 99.99 # Only analyse genes with normalised rpkm in this top percentile, 100 will include all
+  exons:
+    minimum_splice_reads: 3  
+  introns:
+    minimum_overhang: 6
+    minimum_unique_splice_reads: 1
+  retained_intron:
+    minimum_expression_enrichment: 2 #minimum fold enrichment of a intron over median value amongst introns of a gene to classify a retained intron
+    minimum_unsplice_enrichment: 2 #minimum fold reduction in splicing index of a intron over median value amongst introns of a gene to classify a retained intron
+
+
+# Differential analysis statistical setting
+differential_analysis:
+  # P-Value thresholds
+  significant_p: 0.1 # Changes with p-value lower than this is considered significant
+  undetect_p: 0.95 # Changes with p-value higher than this is considered undetected
+
+differential_plots:
+  scripts:
+    initialise: "workflow/scripts/R/initialise_plots.R"
+    ma_plot: "workflow/scripts/R/ma_plot.R"
+    volcano_plot: "workflow/scripts/R/volcano_plot.R"
+    metagene: "workflow/scripts/R/metagene_plot.R"
+    heatmap: "workflow/scripts/R/heatmap.R"
+    bar_plot: "workflow/scripts/R/bar_plot.R"
+    violin_plot: "workflow/scripts/R/violin_plot.R"
+    gradient_dot_plot: "workflow/scripts/R/dot_plot.R"
+    pie_chart: "workflow/scripts/R/pie_chart.R"
+    bias: "workflow/scripts/R/bias_plot.R"   
+  # Resolution of output files. Typically publications require at least 300 dpi.
+  dpi: 400
+  # Number of most significantly changed and most changed gene names to show in ma and volcano plots
+  ma_gene_name_numbers: 10
+  volcano_gene_name_numbers: 10
+  # Colour Scheme
+  up_colour: orange
+  down_colour: blue
+  insignificant_colour: grey30
+  font_sizes:
+    axis_title: 12
+    axis_ticks: 9
+    labels: 10
+    title: 12
+    legend: 12
+  powerpoint: # Dimensions for powerpoint output in centimetres. Standard powerpoint is 25.4 x 19.05cm (w x h), A4 paper is 21 x 29.7cm.
+    width: 21
+    height: 29.7
+    margins: # Blank space to leave on each edge of a slide
+      top: 2
+      bottom: 2
+      left: 1.5
+      right: 1.5
+  word_docx: # Settings for word document output
+      font_name: Arial
+      font_colour: black
+
+metagene:
+  plot_per_gene: TRUE
+  plot_sum: TRUE
+  bin_number: 1000
+  anamoly_trim: 0.05
+
+# Ensembl Tags of interest, hashtag out those that are not
+# Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line
+ensembl_tags:
+  - basic
+#  - CCDS
+#  - cds_end_NF
+#  - cds_start_NF
+#  - mRNA_end_NF
+#  - mRNA_start_NF
+#  - seleno
+
+
+# Biotypes of Interest, hashtag out those that are not
+biotypes:
+#  - G_C_gene
+#  - GIG_C_pseudogene
+#  - IG_D_gene
+#  - IG_J_gene
+#  - IG_J_pseudogene
+#  - IG_pseudogene
+#  - IG_V_gene
+#  - IG_V_pseudogene
+  - lncRNA
+  - miRNA
+#  - misc_RNA
+#  - Mt_rRNA
+#  - Mt_tRNA
+#  - polymorphic_pseudogene
+#  - processed_pseudogene
+  - protein_coding
+#  - pseudogene
+#  - ribozyme
+#  - rRNA
+#  - rRNA_pseudogene
+  - scaRNA
+#  - scRNA
+  - snoRNA
+  - snRNA
+#  - sRNA
+#  - TEC
+#  - transcribed_processed_pseudogene
+#  - transcribed_unitary_pseudogene
+#  - transcribed_unprocessed_pseudogene
+#  - translated_processed_pseudogene
+#  - translated_unprocessed_pseudogene
+#  - TR_C_gene
+#  - TR_D_gene
+#  - TR_J_gene
+#  - TR_J_pseudogene
+#  - TR_V_gene
+#  - TR_V_pseudogene
+#  - unitary_pseudogene
+#  - unprocessed_pseudogene
+#  - vault_RNA
+
+# Genes of Interest, use gene names present in provided(or ensembl) annotation
+GOI:
+  - ACTB
+  - FUS
+
+# Gene Oncology Terms of Interest, requires ensembl annotation
+GO_terms:
+
+mergeReads:
+  activate: False
+
+pca:
+  activate: True
+  labels:
+    # columns of sample sheet to use for PCA
+    #     - condition
+    #
+
+params:
+  star: ""

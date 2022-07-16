@@ -1,0 +1,13 @@
+feature_name        	dif_exp	dif_use	dif_enr	dif_spl	no_1st	no_last	feature	subfeat	region	strand	len_bef	len_aft	5_unscl	3_unscl	annotation_bed6
+GeneBody            	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	gene	body	body	+	1000	1000	0	0	
+PROPMT-TSS          	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	gene	body	start	+-	1500	3000	0	0	
+PROPMT              	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	gene	body	start	-	1500	0	0	0	
+TSS                 	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	gene	body	start	+	0	3000	0	0	
+TTS-Postgene        	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	gene	body	end	+	500	2000	0	0	
+Exon                	FALSE	TRUE	FALSE	TRUE	TRUE	TRUE	gene	exon	body	+	500	500	0	0	
+Exon_5prime         	FALSE	TRUE	FALSE	FALSE	TRUE	TRUE	gene	exon	start	+	500	500	0	0	
+Exon_3prime         	FALSE	TRUE	FALSE	FALSE	TRUE	TRUE	gene	exon	end	+	500	500	0	0	
+Intron              	FALSE	TRUE	FALSE	TRUE	TRUE	TRUE	gene	intron	body	+	500	500	0	0	
+Intron_5prime       	FALSE	TRUE	FALSE	FALSE	TRUE	TRUE	gene	intron	start	+	500	500	0	0	
+Intron_3prime       	FALSE	TRUE	FALSE	FALSE	TRUE	TRUE	gene	intron	end	+	500	500	0	0	
+Enhancer            	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	enh	enh	body	+-	500	500	0	0	config/additionals/HCT116_Enhancers.bed

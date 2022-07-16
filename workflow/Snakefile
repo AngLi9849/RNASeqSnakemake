@@ -1,0 +1,63 @@
+from snakemake.utils import min_version
+
+##### set minimum snakemake version #####
+min_version("6.4.1")
+
+
+##### setup report #####
+configfile: "config/config.yaml"
+
+
+report: "report/workflow.rst"
+
+
+##### setup singularity #####
+
+
+# this container defines the underlying OS for each job when using the workflow
+# with --use-conda --use-singularity
+container: "docker://continuumio/miniconda3"
+
+
+##### load rules #####
+
+
+include: "rules/common.smk"
+include: "rules/utilities.smk"
+#include: "rules/qc.smk"
+include: "rules/trim.smk"
+include: "rules/reference.smk"
+include: "rules/features.smk"
+include: "rules/star_align.smk"
+include: "rules/process_alignment.smk"
+include: "rules/scale_factors.smk"
+include: "rules/differential_express.smk"
+#include: "rules/differential_splice.smk"
+#include: "rules/differential_usage.smk"
+include: "rules/bam2bedgraph2bigwig.smk"
+#include: "rules/metagene.smk"
+#include: "rules/temp.smk"
+
+
+##### target rules #####
+
+
+rule all:
+    input:
+        #get_bams(),
+        #get_feature_counts()
+        #"results/qc/multiqc_report.html",
+        #get_bigwigs(),
+        #get_differential_plots(),
+        #get_differential_splicing(),
+        #get_meta_profiles(),
+        #"resources/annotations/ensembl_homo_sapiens_genome.gtf.basic_features.bed"
+        "resources/annotations/ensembl_homo_sapiens_genome.custom.annotated_basic.GeneBody.bed.nuc.tab"
+        #"HCT_U_UL1-AID_TT-Seq/feature_counts/AllAligned.annotated_basic.GeneBody.lengths.tsv"
+        #"resources/annotations/HCT116.star.splice_junctions.bed"
+        #"resources/annotations/ensembl_homo_sapiens.HCT116.custom.annotated_basic.GeneBody.star_splice_sites.saf"
+        #"HCT_U-AID_Chromatin_RNA-Seq/deseq2/AllAligned.GeneBodyReads.spikein_scale_factors.tsv"
+        #"results/HCT_U_UL1-AID_TT-Seq/differential_expression/HNRNPU-AID_vs_HCT116/spikein_GeneBodyReadCount_normalised.All_Aligned.annotated_basic.PROMPT-TSS.docx"
+        #"resources/templates/Arial.docx"
+        #"test.tsv"
+        #"HCT_U_UL1-AID_TT-Seq/feature_counts/SplicedAligned.HCT116_annotated.basic.GeneBody.star.SpliceSite.lengths.tsv"
