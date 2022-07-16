@@ -21,7 +21,6 @@ if (snakemake@threads > 1) {
 dir <- as.character(snakemake@params[["dir"]])
 dir.create(dir)
 
-exp <- as.character(snakemake@wildcards[["experiment"]])
 analysis <- "Differential Expression Analysis"
 
 exp <-  as.character(snakemake@wildcards[["exp"]])
@@ -56,6 +55,8 @@ rownames(sample_table) <- sample_table$sample_name
 coldata <- sample_table[,c("condition","replicate")]
 coldata <- coldata[order(row.names(coldata)), , drop=F]
 
+condition_col <- as.character(sample_table$colour[match(unique(coldata$condition),sample_table$condition)])
+names(condition_col) <-unique(coldata$condition)
 # Import size factors
 size_table <- read.csv(snakemake@input[["size_table"]],header=T,sep="\t",check.names=F)
 size_table <- size_table[match(size_table$sample_name,sample_table$sample_name),]
@@ -77,6 +78,13 @@ rpkm <- data.frame(lapply(names(cts), function(x) {
 names(rpkm) <- names(cts)
 rownames(rpkm) <- rownames(cts)
 rpkm <- rpkm/length$Length[match(rownames(rpkm),length$gene)]*(10^9)
+
+mean_rpkm <- data.frame(
+  lapply(sample_table$condition, function(x) {
+    apply(rpkm[,match(sample_table$sample_name[sample_table$condition==x],names(rpkm))],1,FUN=mean)
+  }
+)
+names(mean_rpkm) <- sample_table$condition
 
 cts <- cts[ , order(names(cts))]
 cts_names <- row.names(cts)
@@ -204,14 +212,15 @@ pie
 
 
 # Violin Plot =================================================
+mean_rpkm_i <- mean_rpkm[, match(c(control,exp),names(mean_rpkm))]
 violin_data <- data.frame(
   unlist(
-    lapply(colnames(splice_ratio_mean), function (x) { 
-      splice_ratio_mean[paste(x)] 
+    lapply(colnames(mean_rpkm_i), function (x) { 
+      mean_rpkm_i[paste(x)] 
     })),
   unlist(
-    lapply(colnames(splice_ratio_mean), function (x) { 
-      replicate(nrow(splice_ratio_mean),paste(x)) 
+    lapply(colnames(mean_rpkm_i), function (x) { 
+      replicate(nrow(mean_rpkm_i),paste(x)) 
     }))
 )
 names(violin_data) <- c("value","condition")
