@@ -12,6 +12,18 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$log2FoldCh
     color=ifelse(expr_bias$log2FoldChange>0,up_col,down_col),
     alpha=expr_bias$density
   ) +
+  geom_smooth(
+    method = "lm",
+    size=0.8,
+    fill="black",
+    colour="black",
+    alpha=0.2) + 
+  stat_cor(
+    method="pearson",
+    label.x.npc = 0, 
+    label.y.npc= 1,
+    size=3,
+    colour="black") +
   scale_x_continuous(limits=c(0.25,0.75),breaks=c(0,0.25,0.5,0.75,1),labels=scales::percent) + 
   facet_wrap(
     ~factor(change,levels=c("Significantly Upregulated","Significantly Downregulated")), scales="free"
@@ -39,6 +51,18 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$lo
     color=ifelse(expr_bias$log2FoldChange>0,up_col,down_col),
     alpha=expr_bias$density
   ) +
+  geom_smooth(
+    method = "lm",
+    size=0.8,
+    fill="black",
+    colour="black",
+    alpha=0.2) + 
+  stat_cor(
+    method="pearson",
+    label.x.npc = 0, 
+    label.y.npc= 1,
+    size=3,
+    colour="black") +
   scale_x_log10() + 
   facet_wrap(
     ~factor(change,levels=c("Significantly Upregulated","Significantly Downregulated")), scales="free"
@@ -68,6 +92,18 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$log2Fo
     color=ifelse(expr_bias$log2FoldChange>0,up_col,down_col),
     alpha=expr_bias$density
   ) +
+  geom_smooth(
+    method = "lm",
+    size=0.8,
+    fill="black",
+    colour="black",
+    alpha=0.2) + 
+  stat_cor(
+    method="pearson",
+    label.x.npc = 0, 
+    label.y.npc= 1,
+    size=3,
+    colour="black") +
   scale_x_log10() + 
   facet_wrap(
     ~factor(change,levels=c("Significantly Upregulated","Significantly Downregulated")), scales="free"

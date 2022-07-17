@@ -5,7 +5,7 @@ violin_p_y <- max(violin_data$value) + 0.1*abs(max(violin_data$value)-min(violin
 violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +
   geom_violin(trim=FALSE,aes(fill=condition)) +
   geom_boxplot(width=0.1) +
-  stat_compare_means(comparisons = contrast, label = "p.signif", label.y=violin_p_y, method="wilcox.test", paired = pair) +
+  stat_compare_means(comparisons = contrast, label = "p.signif", label.y=violin_p_y, method="t.test", paired = pair) +
   scale_y_continuous(limits = c(0, violin_ymax)) +
   scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,exp)], labels = bar_cond) +
   ylab(paste(feature,change)) +
