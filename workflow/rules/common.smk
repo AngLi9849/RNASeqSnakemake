@@ -22,37 +22,40 @@ features = (pd.read_csv(config["feature_parameters"], sep="\t", dtype={"feature_
 features.columns = features.columns.str.strip()
 features = features.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 features = features.mask( features == '')
-features = (features.set_index(["feature_name","group","feature"], drop=False).sort_index())
+features = (features.set_index(["feature_name"], drop=False).sort_index())
 
 # Read experimentss config table into pandas dataframe
-experiments = (pd.read_csv(config["experiments"], sep="\t", dtype={"experiment": str, "sample_lineage" : str}, comment="#"))
+experiments = (pd.read_csv(config["experiments"], sep="\t", dtype={"protocol": str, "sample_lineage" : str}, comment="#"))
 experiments.columns=experiments.columns.str.strip()
 experiments = experiments.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 experiments = experiments.mask(experiments == '')
-experiments = (experiments.set_index(["experiment","sample_lineage"], drop=False).sort_index())
+experiments["experiment"] = experiments.apply( lambda row: \
+    ( str( row.treatment ) + "_vs_" + str( row.control ) + "_" + str( row.protocol ) ), axis = 1
+)
+experiments = (experiments.set_index(["experiment"], drop=False).sort_index())
 
 # Read samples config table into pandas dataframe
-samples = (pd.read_csv(config["samples"], sep="\t", dtype={"experiment": str, "replicate": str, "unit_name": str}, comment="#"))
-samples["sample_name"]=samples.apply(lambda row: str(row.condition) + "_Rep_" + str(row.replicate), axis=1)
-samples=samples.set_index(["experiment"], drop=False).sort_index()
-samples=samples.loc[samples["experiment"].isin(experiments["experiment"].tolist())]
-samples["species"]=samples.apply(lambda row: experiments.loc[row.experiment,"sample_species"],axis=1)
-samples["lineage"]=samples.apply(lambda row: experiments.loc[row.experiment,"sample_lineage"],axis=1)
-samples=samples.set_index(["experiment","sample_name","unit_name","species","lineage"], drop=False).sort_index()
+samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol: str, "replicate": str, "unit_name": str}, comment="#"))
+samples["sample_name"]=samples.apply(lambda row: str(row.condition) + "_" + str(row.protocol) + "_Replicate_" + str(row.replicate), axis=1)
+#samples=samples.set_index(["experiment"], drop=False).sort_index()
+#samples=samples.loc[samples["experiment"].isin(experiments["experiment"].tolist())]
+#samples["species"]=samples.apply(lambda row: experiments.loc[row.experiment,"sample_species"],axis=1)
+#samples["lineage"]=samples.apply(lambda row: experiments.loc[row.experiment,"sample_lineage"],axis=1)
+samples=samples.set_index(["sample_name","unit_name"], drop=False).sort_index()
 
-samples["normaliser"]=samples.apply(lambda row: "spikein" if experiments.loc[row.experiment,"spikein"].bool() else "internal", axis=1)
+#samples["normaliser"]=samples.apply(lambda row: "spikein" if experiments.loc[row.experiment,"spikein"].bool() else "internal", axis=1)
 
-samples["contrast"]=samples.apply( lambda row: \ 
-    ( str( row.condition ) + "_vs_" + str( experiments.loc[row.experiment].squeeze(axis=0)["control_condition"] ) ) \
-    if not ( str( row.condition ) == str( experiments.loc[row.experiment].squeeze(axis=0)["control_condition"] ) ) \
-    else "", \
-    axis=1
-)
+#samples["contrast"]=samples.apply( lambda row: \ 
+#    ( str( row.condition ) + "_vs_" + str( experiments.loc[row.experiment].squeeze(axis=0)["control"] ) ) \
+#    if not ( str( row.condition ) == str( experiments.loc[row.experiment].squeeze(axis=0)["control"] ) ) \
+#    else "", \
+#    axis=1
+#)
 
 samples = samples.mask(samples == '')
 
 # Write all possible test-control contrasts in each experiment to a dataframe
-contrasts = samples.iloc[pd.notna(samples.contrast).tolist()][["experiment","contrast","normaliser"]].drop_duplicates(ignore_index=True)
+#contrasts = samples.iloc[pd.notna(samples.contrast).tolist()][["experiment","contrast","normaliser"]].drop_duplicates(ignore_index=True)
 
 #Set variables for result filenames
 DEMULTI=['Demultimapped',''] if config["remove_multimappers"]=='BOTH' else 'Demultimapped' if config["remove_multimappers"] else ''
@@ -147,18 +150,18 @@ def get_root_feature(feature):
             return str(features.loc[feature].squeeze(axis=0)["feature"])
 
 def get_source(wildcards):
-    if experiments.loc[wildcards.experiment,"spikein"].bool():
-        return "combined_{sample_species}_and_{spikein_species}_".format(
+    if experiments.loc[wildcards.experiment,"spikein_species"]:
+        return "combined_{sample_species}_and_{spikein_species}".format(
             sample_species=experiments.loc[wildcards.experiment,"sample_species"].item(),
             spikein_species=experiments.loc[wildcards.experiment,"spikein_species"].item()
         )
     else :
         if not pd.isna(references.loc[experiments.loc[wildcards.experiment,"sample_species"],"genome_dir"].item()):
-            return "local_{sample_species}_".format(
+            return "local_{sample_species}".format(
                 sample_species=experiments.loc[wildcards.experiment,"sample_species"].item()
             )
         else :
-            return "ensembl_{sample_species}_".format(
+            return "ensembl_{sample_species}".format(
                 sample_species=experiments.loc[wildcards.experiment,"sample_species"].item()
             )    
 
@@ -193,6 +196,11 @@ def get_annotation(species):
     else :
         return "resources/annotations/ensembl_{S}_genome.gtf".format(S=species)
 
+def get_experiment_samples(wildcards):
+    exp = experiments.loc[wildcards.experiment].squeeze()
+    cond = [exp.control,exp.treatment]
+    sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)].itertuples()
+    return sample
 
 def feature_descript(wildcards):
     descript = ( str(wildcards.feature) + " is based on " + "{v}"  + " " + str(wildcards.tag) + " {root}s" + "{ref}." ).format(

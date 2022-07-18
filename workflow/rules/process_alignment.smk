@@ -1,8 +1,8 @@
 rule mv_bam:
     input:
-        "{experiment}/star/{sample}-{unit}/Aligned.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/Aligned.sortedByCoord.out.bam",
     output:
-        "{experiment}/star/{sample}-{unit}/AllAligned.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/AllAligned.sortedByCoord.out.bam",
     resources:
         mem="8G",
         rmem="6G",
@@ -13,16 +13,16 @@ rule mv_bam:
 
 rule samtools_read_count:
     input:
-        bam="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.out.bam",
-        bai="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.out.bam.bai",
+        bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
+        bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai",
     output:
-        tab="{experiment}/star/{sample}-{unit}/{prefix}.total_read_count.tab",
+        tab="star/{sample}/{unit}/{reference}/{prefix}.total_read_count.tab",
     threads: 1 
     resources:
         mem="8G",
         rmem="6G",
     log:
-        "logs/{experiment}/samtools/{sample}-{unit}-{prefix}_read_count.log"
+        "logs/samtools/{sample}/{unit}/{reference}/{prefix}_read_count.log"
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -45,10 +45,10 @@ rule samtools_read_count:
 
 rule samtools_seperate_splice:
     input:
-        "{experiment}/star/{sample}-{unit}/AllAligned.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/AllAligned.sortedByCoord.out.bam",
     output:
-        "{experiment}/star/{sample}-{unit}/UnsplicedAligned.sortedByCoord.out.bam",
-        "{experiment}/star/{sample}-{unit}/SplicedAligned.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/UnsplicedAligned.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/SplicedAligned.sortedByCoord.out.bam",
     params:
         max=config["unspliced_max_length"],
         min=config["unspliced_min_length"]
@@ -57,7 +57,7 @@ rule samtools_seperate_splice:
         mem="8G",
         rmem="6G",
     log:
-        "logs/{experiment}/samtools/{sample}-{unit}-separate-splice.log"
+        "logs/samtools/{sample}/{unit}/{reference}/separate-splice.log"
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -72,9 +72,9 @@ rule samtools_seperate_splice:
 
 rule samtools_demultimap:
     input:
-        "{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
     output:
-        "{experiment}/star/{sample}-{unit}/{prefix}Demultimapped.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/{prefix}Demultimapped.sortedByCoord.out.bam",
     params:
         extra="-b -F 256"
     threads: 4
@@ -82,16 +82,16 @@ rule samtools_demultimap:
         mem="8G",
         rmem="6G",
     log:
-        "logs/{experiment}/samtools/{sample}-{unit}-{prefix}-demultimap.log"
+        "logs/samtools/{sample}/{unit}/{reference}/{prefix}-demultimap.log"
     wrapper:
         "0.80.2/bio/samtools/view"
 
 
 rule samtools_deduplicate:
     input:
-        "{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
     output:
-        "{experiment}/star/{sample}-{unit}/{prefix}Deduplicated.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/{prefix}Deduplicated.sortedByCoord.out.bam",
     params:
         extra="-b -F 1024"
     threads: 4 
@@ -99,26 +99,25 @@ rule samtools_deduplicate:
         mem="8G",
         rmem="6G",
     log:
-        "logs/{experiment}/samtools/{sample}-{unit}-{prefix}-deduplicate.log"
+        "logs/samtools/{sample}/{unit}/{reference}/{prefix}-deduplicate.log"
     wrapper:
         "0.80.2/bio/samtools/view"
 
 rule featurecounts:
     input:
-        bam="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.out.bam",
-        bai="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.out.bam.bai",
-        saf=lambda w: "resources/annotations/{source}_{{lineage}}.{type}.{{valid}}_{{tag}}.{{feature}}.bed.saf".format(
-            source= str( get_source(w) ), 
+        bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
+        bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai",
+        saf=lambda w: "resources/annotations/{{reference}}_{{lineage}}.{type}.{{valid}}_{{tag}}.{{feature}}.bed.saf".format(
             type="custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
         ), 
     output:
-        tab = "{experiment}/star/{sample}-{unit}/{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.featurecounts.tab",
+        tab = "star/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.featurecounts.tab",
     threads: 6
     resources:
         mem=lambda wildcards, input: (str((input.size//3000000000)+4) + "G"),
         rmem=lambda wildcards, input: (str((input.size//6000000000)+4) + "G"),
     log:
-        "logs/feature_counts/{experiment}/{sample}-{unit}-{prefix}_{lineage}_{valid}.{tag}_{feature}Reads.log"
+        "logs/featurecounts/{sample}/{unit}/{reference}/{prefix}_{lineage}_{valid}.{tag}_{feature}Reads.log"
     conda:
         "../envs/subread.yaml",
     params:
@@ -133,13 +132,14 @@ rule featurecounts:
 rule count_matrix:
     input:
         featurecounts=lambda wildcards: expand(
-            "{{experiment}}/star/{sample.sample_name}-{sample.unit_name}/{{prefix}}.featurecounts.tab",sample= samples.loc[wildcards.experiment].itertuples(),
+            "star/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.featurecounts.tab",
+            sample= get_experiment_samples(wildcards),
         ),
     output:
-        counts="{experiment}/feature_counts/{prefix}.counts.tsv",
-        length="{experiment}/feature_counts/{prefix}.lengths.tsv",
+        counts="featurecounts/{reference}/{experiment}/{prefix}.counts.tsv",
+        length="featurecounts/{reference}/{experiment}/{prefix}.lengths.tsv",
     log:
-        "logs/{experiment}/feature_counts/{prefix}_count_matrix.log",
+        "logs/{experiment}/{reference}/featurecounts/{prefix}_count_matrix.log",
     params:
         names=lambda wildcards: "\t".join(map(str,samples.loc[wildcards.experiment].sample_name.tolist())),
     resources:

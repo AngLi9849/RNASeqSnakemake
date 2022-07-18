@@ -20,15 +20,15 @@ rule star_index:
 rule star_align:
     input:
         unpack(get_fq),
-        index= ("resources/star/" + str(get_source) + "genome" ),
-        gtf=("resources/annotations/" + str(get_source) + "genome.gtf"),
+        index= ("resources/star/" + {reference} + "_genome" ),
+        gtf=("resources/annotations/" + {reference} + "_genome.gtf"),
     output:
-        "{experiment}/star/{sample}-{unit}/Aligned.sortedByCoord.out.bam",
-        "{experiment}/star/{sample}-{unit}/ReadsPerGene.out.tab",
-        "{experiment}/star/{sample}-{unit}/Aligned.toTranscriptome.out.bam",
-        "{experiment}/star/{sample}-{unit}/SJ.out.tab",
+        "star/{sample}/{unit}/{reference}/Aligned.sortedByCoord.out.bam",
+        "star/{sample}/{unit}/{reference}/ReadsPerGene.out.tab",
+        "star/{sample}/{unit}/{reference}/Aligned.toTranscriptome.out.bam",
+        "star/{sample}/{unit}/{reference}/SJ.out.tab",
     log:
-        "logs/star/{experiment}-{sample}-{unit}.log",
+        "logs/star/{reference}-{sample}-{unit}.log",
     params:
         index=lambda wc, input: input.index,
         extra=lambda wc, input: "--outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --outFilterType BySJout --outSAMattrRGline ID:{} PU:{} SM:{} LB:unknown PL:{} --sjdbGTFfile {} {}".format(

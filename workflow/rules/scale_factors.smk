@@ -4,9 +4,9 @@ rule base_coverage_scale_factors:
             "{{experiment}}/bedgraph/{sample.sample_name}_{sample.unit_name}_{{prefix}}.BaseCoverage.txt",sample=samples.loc[wildcards.experiment].itertuples(),
         ),
     output:
-        summary = "{experiment}/deseq2/{prefix}.BaseCoverage.summary.tsv",
-        internal = "{experiment}/deseq2/{prefix}.BaseCoverage.internal_scale_factors.tsv",
-        spikein = "{experiment}/deseq2/{prefix}.BaseCoverage.spikein_scale_factors.tsv",
+        summary = "deseq2/{experiment}/{prefix}.BaseCoverage.summary.tsv",
+        internal = "deseq2/{experiment}/{prefix}.BaseCoverage.internal_scale_factors.tsv",
+        spikein = "deseq2/{experiment}/{prefix}.BaseCoverage.spikein_scale_factors.tsv",
     resources:
         mem="6G",
         rmem="4G",
@@ -59,9 +59,9 @@ rule read_count_scale_factors:
             "{{experiment}}/star/{sample.sample_name}-{sample.unit_name}/{{prefix}}.total_read_count.tab",sample=samples.loc[wildcards.experiment].itertuples(),
         ),
     output:
-        summary = "{experiment}/deseq2/{prefix}.TotalAlignedReadsCount.summary.tsv",
-        internal = "{experiment}/deseq2/{prefix}.TotalAlignedReadsCount.internal_scale_factors.tsv",
-        spikein = "{experiment}/deseq2/{prefix}.TotalAlignedReadsCount.spikein_scale_factors.tsv",
+        summary = "deseq2/{experiment}/{prefix}.TotalAlignedReadsCount.summary.tsv",
+        internal = "deseq2/{experiment}/{prefix}.TotalAlignedReadsCount.internal_scale_factors.tsv",
+        spikein = "deseq2/{experiment}/{prefix}.TotalAlignedReadsCount.spikein_scale_factors.tsv",
     resources:
         mem="6G",
         rmem="4G",
@@ -110,15 +110,15 @@ rule read_count_scale_factors:
 
 rule feature_count_scale_factors:
     input:
-        counts="{experiment}/feature_counts/{prefix}.annotated_basic.{feature}.counts.tsv",
-        bed=lambda w: "resources/annotations/{source}.{type}.annotated_basic.{{feature}}.bed".format(
+        counts="featurecounts/{experiment}/{reference}/{prefix}.annotated_basic.{feature}.counts.tsv",
+        bed=lambda w: "resources/annotations/{reference}_genome.{type}.annotated_basic.{{feature}}.bed".format(
             source = ( str( get_source(w) ) + "genome" ),
             type = "custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
         ),
     output:
-        "{experiment}/deseq2/{prefix}.{feature}ReadCount.{spikein}_scale_factors.tsv",
+        "deseq2/{experiment}/{reference}/{prefix}.{feature}ReadCount.{spikein}_scale_factors.tsv",
     params:
-        paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["paired_analysis"]),
+        paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
         sample_table="config/samples.tsv",
     resources:
         mem="8G",
@@ -126,7 +126,7 @@ rule feature_count_scale_factors:
     conda:
         "../envs/deseq2.yaml"
     log:
-        "logs/{experiment}/deseq2/{prefix}_{spikein}_{feature}Reads_scale.log",
+        "logs/deseq2/{experiment}/{prefix}_{spikein}_{feature}Reads_scale.log",
     script:
         "../scripts/R/deseq2_feature_scale.R"
 

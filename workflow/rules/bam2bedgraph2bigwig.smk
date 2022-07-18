@@ -38,18 +38,18 @@ rule stranded_bam:
 
 rule unstranded_genomecov:
     input:
-        bam="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.out.bam",
-        bai="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.out.bam.bai", 
+        bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
+        bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai", 
     output:
-        "{experiment}/bedgraph/{sample}_{unit}_{prefix}.unstranded.bedgraph",
-        "{experiment}/bedgraph/{sample}_{unit}_{prefix}.BaseCoverage.txt",
+        "bedgraph/{sample}/{unit}/{reference}/{prefix}.unstranded.bedgraph",
+        "bedgraph/{sample}/{unit}/{reference}/{prefix}.BaseCoverage.txt",
     params:
         bin_size=config["bigwig_bin_size"]
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/{experiment}/deeptools/{sample}_{unit}_{prefix}_unstranded_bamcoverage.log",
+        "logs/{experiment}/deeptools/{sample}/{unit}/{reference}/{prefix}_unstranded_bamcoverage.log",
     conda:
         "../envs/bedtools.yaml",
     threads: 2
@@ -68,20 +68,20 @@ rule unstranded_genomecov:
         
 rule stranded_genomecov:
     input:
-        fwdbam="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.fwd.bam",
-        fwdbai="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.fwd.bam.bai",
-        revbam="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.rev.bam",
-        revbai="{experiment}/star/{sample}-{unit}/{prefix}.sortedByCoord.rev.bam.bai",
+        fwdbam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.fwd.bam",
+        fwdbai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.fwd.bam.bai",
+        revbam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.rev.bam",
+        revbai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.rev.bam.bai",
     output:
-        bg_fwd="{experiment}/bedgraph/{sample}_{unit}_{prefix}.fwd.bedgraph",
-        bg_rev="{experiment}/bedgraph/{sample}_{unit}_{prefix}.rev.bedgraph",
+        bg_fwd="bedgraph/{sample}/{unit}/{reference}/{prefix}.fwd.bedgraph",
+        bg_rev="bedgraph/{sample}/{unit}/{reference}/{prefix}.rev.bedgraph",
     params:
         bin_size=config["bigwig_bin_size"]
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/{experiment}/deeptools/{sample}_{unit}_{prefix}_stranded_bamcoverage.log",
+        "logs/{experiment}/deeptools/{sample}/{unit}/{reference}/{prefix}_stranded_bamcoverage.log",
     conda:
         "../envs/bedtools.yaml",
     threads: 2
@@ -94,11 +94,11 @@ rule stranded_genomecov:
 rule scale_bedgraph2bigwig:
     input:
        "{experiment}/deseq2/All{prefix}_{counts}_{normaliser}_scale_factors.tsv",
-       "{experiment}/bedgraph/{sample}_{unit}_{splice}{prefix}.{strand}.bedgraph",
-       lambda wildcards: ("resources/genomes/" + str(get_source(wildcards)) + ".chrom.sizes")
+       "bedgraph/{sample}/{unit}/{reference}/{splice}{prefix}.{strand}.bedgraph",
+       lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + ".fasta.chrom.sizes")
     output:
-       "{experiment}/bedgraph/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
-       "results/{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.bigwig",
+       "bedgraph/{experiment}/{reference}/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
+       "results/{experiment}/bigwig/{reference}/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.bigwig",
     conda:
        "../envs/bedgraphtobigwig.yaml"
     threads: 1
@@ -106,7 +106,7 @@ rule scale_bedgraph2bigwig:
         mem="12G",
         rmem="8G",
     log:
-       "logs/{experiment}/bg2bw/{sample}_{unit}_{strand}_by_{normaliser}_{counts}_{prefix}_{splice}_bg2bw.log"
+       "logs/{experiment}/bg2bw/{sample}_{unit}/{reference}/{strand}_by_{normaliser}_{counts}_{prefix}_{splice}_bg2bw.log"
     shell:
        """
        awk -F'\\t' -v OFS='\\t' 'FNR==NR{{scalefactor[$1]=$3; next}} {{print $1,$2,$3,$4*scalefactor["{wildcards.sample}"]}}' {input[0]} {input[1]} |
