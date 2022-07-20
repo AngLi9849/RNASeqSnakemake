@@ -56,7 +56,7 @@ rule deseq2_expression:
     conda:
         "../envs/differential.yaml"
     log:
-        "logs/{experiment}/{reference}/deseq2/{test}_vs_{control}_{splice}ed{prefix}.{lineage}_{valid}.{tag}_{spikein}_{feature}_{normaliser}.diffexp.log",
+        "logs/{experiment}/{reference}/deseq2/{splice}ed{prefix}.{lineage}_{valid}.{tag}_{spikein}_{feature}_{normaliser}.diffexp.log",
     threads: get_deseq2_threads()
     script:
         "../scripts/R/deseq2_express.R"

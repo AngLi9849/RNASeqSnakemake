@@ -52,7 +52,7 @@ rule all:
         #get_differential_splicing(),
         #get_meta_profiles(),
         #"resources/annotations/ensembl_homo_sapiens_genome.gtf.basic_features.bed"
-        "resources/annotations/ensembl_homo_sapiens_genome.custom.annotated_basic.GeneBody.bed.nuc.tab"
+        #"resources/annotations/ensembl_homo_sapiens_genome.custom.annotated_basic.GeneBody.bed.nuc.tab"
         #"HCT_U_UL1-AID_TT-Seq/feature_counts/AllAligned.annotated_basic.GeneBody.lengths.tsv"
         #"resources/annotations/HCT116.star.splice_junctions.bed"
         #"resources/annotations/ensembl_homo_sapiens.HCT116.custom.annotated_basic.GeneBody.star_splice_sites.saf"
@@ -60,4 +60,4 @@ rule all:
         #"results/HCT_U_UL1-AID_TT-Seq/differential_expression/HNRNPU-AID_vs_HCT116/spikein_GeneBodyReadCount_normalised.All_Aligned.annotated_basic.PROMPT-TSS.docx"
         #"resources/templates/Arial.docx"
         #"test.tsv"
-        #"HCT_U_UL1-AID_TT-Seq/feature_counts/SplicedAligned.HCT116_annotated.basic.GeneBody.star.SpliceSite.lengths.tsv"
+        "featurecounts/HNRNPU-AID_KO_vs_HCT116_TT-Seq/ensembl_homo_sapiens/SplicedAligned.genome_annotated.basic.GeneBodyReads.lengths.tsv"

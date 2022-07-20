@@ -1,3 +1,19 @@
+rule sort_raw_reads:
+    input:
+        sort_raw_reads,
+    output:
+        "reads/raw/{sample}_{unit}_{fq}_raw.{ext}",
+    log:
+        "logs/sort/{sample}_{unit}_{fq}_raw.{ext}.log",
+    resources:
+        mem="6G",
+        rmem="4G",
+    wildcard_constraints:
+        ext=r"fastq|fastq\.gz",
+    threads: 1
+    shell:
+        "cat {input} > {output} 2> {log}"
+
 rule get_sra:
     output:
         "sra/{accession}_1.fastq",
@@ -12,14 +28,14 @@ rule cutadapt_pe:
     input:
         get_cutadapt_input,
     output:
-        fastq1="{experiment}/trimmed_reads/{sample}_{unit}_fq1_trimmed.fastq.gz",
-        fastq2="{experiment}/trimmed_reads/{sample}_{unit}_fq2_trimmed.fastq.gz",
-        qc="{experiment}/qc/{sample}-{unit}.paired.qc.txt",
+        fastq1="reads/trimmed/{sample}_{unit}_fq1_trimmed.fastq.gz",
+        fastq2="reads/trimmed/{sample}_{unit}_fq2_trimmed.fastq.gz",
+        qc="qc/{sample}-{unit}.paired.qc.txt",
     log:
-        "logs/cutadapt/{experiment}-{sample}-{unit}.log",
+        "logs/cutadapt/{sample}-{unit}.log",
     params:
         extra= ("--minimum-length " + str(config["trimming"]["minimum_read_length"]) + " -q " + str(config["trimming"]["minimum_read_quality"])) ,
-        adapters=lambda w: str(samples.loc[w.experiment].loc[w.sample].loc[w.unit].squeeze(axis=0)["adapters"]),
+        adapters=lambda w: str(samples.loc[w.sample].loc[w.unit].squeeze(axis=0)["adapters"]),
     threads: 4
     resources:
         mem="8G",
@@ -32,13 +48,13 @@ rule cutadapt_se:
     input:
         get_cutadapt_input,
     output:
-        fastq="{experiment}/trimmed_reads/{sample}_{unit}_trimmed.fastq.gz",
-        qc="{experiment}/qc/{sample}_{unit}_trimmed.qc.txt",
+        fastq="reads/trimmed/{sample}_{unit}_trimmed.fastq.gz",
+        qc="qc/{sample}_{unit}_trimmed.qc.txt",
     log:
-        "logs/cutadapt/{experiment}-{sample}-{unit}.log",
+        "logs/cutadapt/{sample}-{unit}.log",
     params:
         extra= ("--minimum-length " + str(config["trimming"]["minimum_read_length"]) + " -q " + str(config["trimming"]["minimum_read_quality"])) ,
-        adapters_r1=lambda w: str(samples.loc[w.experiment].loc[w.sample].loc[w.unit].squeeze(axis=0)[ "adapters"]),
+        adapters_r1=lambda w: str(samples.loc[w.sample].loc[w.unit].squeeze(axis=0)[ "adapters"]),
     threads: 4
     resources:
         mem="8G",

@@ -85,20 +85,20 @@ rule feature_nuc_info:
 rule custom_feature:
     input:
         region=lambda wildcards: ("{{prefix}}.{s}.{{type}}.{f}.bed".format(
-            s="custom" if (features.loc[wildcards.feature,"region"].item() in features["feature_name"].tolist()) else "gtf",
-            f=features.loc[wildcards.feature,"region"].item()
+            s="custom" if (features.loc[wildcards.feature,"region"] in features["feature_name"].tolist()) else "gtf",
+            f=features.loc[wildcards.feature,"region"]
         )),
         exclude=lambda wildcards: ("{{prefix}}.{s}.{{type}}.{f}.bed".format(
-            s="custom" if (features.loc[wildcards.feature,"exclude"].item() in features["feature_name"].tolist()) else "gtf",
-            f=features.loc[wildcards.feature,"exclude"].item()
+            s="custom" if (features.loc[wildcards.feature,"exclude"] in features["feature_name"].tolist()) else "gtf",
+            f=features.loc[wildcards.feature,"exclude"]
         )),
         group=lambda wildcards: ("{{prefix}}.{s}.{{type}}.{f}.bed".format(
-            s="custom" if (features.loc[wildcards.feature,"group"].item() in features["feature_name"].tolist()) else "gtf",
-            f=features.loc[wildcards.feature,"group"].item()
+            s="custom" if (features.loc[wildcards.feature,"group"] in features["feature_name"].tolist()) else "gtf",
+            f=features.loc[wildcards.feature,"group"]
         )),
         feature=lambda wildcards: ("{{prefix}}.{s}.{{type}}.{f}.bed".format(
-            s="custom" if (features.loc[wildcards.feature,"feature"].item() in features["feature_name"].tolist()) else "gtf",
-            f=features.loc[wildcards.feature,"feature"].item()
+            s="custom" if (features.loc[wildcards.feature,"feature"] in features["feature_name"].tolist()) else "gtf",
+            f=features.loc[wildcards.feature,"feature"]
         )),
     threads: 1
     resources:
@@ -107,17 +107,17 @@ rule custom_feature:
     output:
         bed="{prefix}.custom.{type}.{feature}.bed"
     params:
-        feat=lambda wildcards: features.loc[wildcards.feature,"feature"].item(),
-        group=lambda wildcards: features.loc[wildcards.feature,"group"].item(),
-        sect=lambda wildcards: features.loc[wildcards.feature,"section"].item(),
-        sense=lambda wildcards: features.loc[wildcards.feature,"sense"].item(),
-        no_first=lambda wildcards: features.loc[wildcards.feature,"no_1st"].item(),
-        no_last=lambda wildcards: features.loc[wildcards.feature,"no_last"].item(),
-        min_len=lambda wildcards: features.loc[wildcards.feature,"min_len"].item(),
-        tsl=lambda wildcards: features.loc[wildcards.feature,"tsl"].item(),
-        before=lambda wildcards: features.loc[wildcards.feature,"len_bef"].item(),
-        after=lambda wildcards: features.loc[wildcards.feature,"len_aft"].item(),
-        annotation=lambda wildcards: features.loc[wildcards.feature,"annotation_bed"].item(),
+        feat=lambda wildcards: features.loc[wildcards.feature,"feature"],
+        group=lambda wildcards: features.loc[wildcards.feature,"group"],
+        sect=lambda wildcards: features.loc[wildcards.feature,"section"],
+        sense=lambda wildcards: features.loc[wildcards.feature,"sense"],
+        no_first=lambda wildcards: features.loc[wildcards.feature,"no_1st"],
+        no_last=lambda wildcards: features.loc[wildcards.feature,"no_last"],
+        min_len=lambda wildcards: features.loc[wildcards.feature,"min_len"],
+        tsl=lambda wildcards: features.loc[wildcards.feature,"tsl"],
+        before=lambda wildcards: features.loc[wildcards.feature,"len_bef"],
+        after=lambda wildcards: features.loc[wildcards.feature,"len_aft"],
+        annotation=lambda wildcards: features.loc[wildcards.feature,"annotation_bed"],
     log:
         "logs/features/{prefix}/custom_{type}_{feature}.log"
     conda:
@@ -205,8 +205,8 @@ rule custom_feature:
 rule star_detected_splice_junctions:
     input:
         sj=lambda wildcards: expand(
-                "{sample.experiment}/star/{sample.sample_name}-{sample.unit_name}/SJ.out.tab",
-                sample=samples[samples.lineage==wildcards.lineage].itertuples(),
+                "star/{sample.sample_name}/{sample.unit_name}/{reference}/SJ.out.tab",
+                sample=get_lineage_sj_samples(wildcards).itertuples(),
         ),
     output:
         sj="resources/annotations/{species}.{lineage}.star.splice_junctions.bed",

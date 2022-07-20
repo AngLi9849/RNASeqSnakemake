@@ -35,7 +35,7 @@ experiments["experiment"] = experiments.apply( lambda row: \
 experiments = (experiments.set_index(["experiment"], drop=False).sort_index())
 
 # Read samples config table into pandas dataframe
-samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol: str, "replicate": str, "unit_name": str}, comment="#"))
+samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol": str, "replicate": str, "unit_name": str}, comment="#"))
 samples["sample_name"]=samples.apply(lambda row: str(row.condition) + "_" + str(row.protocol) + "_Replicate_" + str(row.replicate), axis=1)
 #samples=samples.set_index(["experiment"], drop=False).sort_index()
 #samples=samples.loc[samples["experiment"].isin(experiments["experiment"].tolist())]
@@ -199,7 +199,15 @@ def get_annotation(species):
 def get_experiment_samples(wildcards):
     exp = experiments.loc[wildcards.experiment].squeeze()
     cond = [exp.control,exp.treatment]
-    sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)].itertuples()
+    sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
+    return sample
+
+def get_lineage_sj_samples(wildcards):
+    exp = experiments[ (experiments.sample_lineage==wildcards.lineage).tolist() & experiments.splice & (experiments.sample_species == wildcards.species).tolist() ]
+    cond = [exp.control,exp.treatment]
+    sample=samples[(samples.condition + "_" + samples.protocol).isin(
+        (exp["control"] + "_" + exp["protocol"]).tolist() + (exp["treatment"] + "_" + exp["protocol"]).tolist()
+    )]
     return sample
 
 def feature_descript(wildcards):
@@ -224,7 +232,7 @@ def feature_descript(wildcards):
     return descript
  
 def get_cutadapt_input(wildcards):
-    sample = samples.loc[wildcards.experiment].loc[wildcards.sample].loc[wildcards.unit].squeeze(axis=0)
+    sample = samples.loc[wildcards.sample].loc[wildcards.unit].squeeze(axis=0)
 
     if pd.isna(sample["fq1"]):
         # SRA sample (always paired-end for now)
@@ -238,14 +246,14 @@ def get_cutadapt_input(wildcards):
 
     if pd.isna(sample["fq2"]):
         # single end local sample
-        return "{X}/raw_reads/{S}_{U}_fq1_raw.fastq{E}".format(
-            X=sample.experiment, S=sample.sample_name, U=sample.unit_name, E=ending
+        return "reads/raw/{S}_{U}_fq1_raw.fastq{E}".format(
+            S=sample.sample_name, U=sample.unit_name, E=ending
         )
     else :
          # paired end local sample
         return expand(
-            "{X}/raw_reads/{S}_{U}_{{read}}_raw.fastq{E}".format(
-                X=sample.experiment, S=sample.sample_name, U=sample.unit_name, E=ending
+            "reads/raw/{S}_{U}_{{read}}_raw.fastq{E}".format(
+                 S=sample.sample_name, U=sample.unit_name, E=ending
             ),
             read=["fq1", "fq2"],
         )
@@ -253,13 +261,13 @@ def get_cutadapt_input(wildcards):
 
 def sort_raw_reads(wildcards):
     files = list(
-        sorted(glob.glob(samples.loc[wildcards.experiment].loc[wildcards.sample].loc[wildcards.unit].squeeze(axis=0)[wildcards.fq]))
+        sorted(glob.glob(samples.loc[wildcards.sample].loc[wildcards.unit].squeeze(axis=0)[wildcards.fq]))
     )
     assert len(files) > 0
     return files
 
 def get_raw_fastqc_input(wildcards):
-    sample = samples.loc[wildcards.experiment].loc[wildcards.sample].loc[wildcards.unit]
+    sample = samples.loc[wildcards.sample].loc[wildcards.unit]
     
     if sample["fq1"].endswith("gz"):
         ending = ".gz"
@@ -268,18 +276,18 @@ def get_raw_fastqc_input(wildcards):
 
     if pd.isna(sample["fq2"]):
         # single end sample
-        return "{X}/results/raw_reads/{S}_{U}_fq1_raw.fastq{E}".format(
-            X=sample.experiment, S=sample.sample_name, U=sample.unit_name, E=ending
+        return "reads/raw/{S}_{U}_fq1_raw.fastq{E}".format(
+            S=sample.sample_name, U=sample.unit_name, E=ending
         )
     else :
         # paired end sample
-        return "{X}/results/raw_reads/{S}_{U}_{fq}_raw.fastq{E}".format(
-                X=sample.experiment, S=sample.sample_name, U=sample.unit_name, E=ending, fq=wildcards.fq,
+        return "reads/raw/{S}_{U}_{fq}_raw.fastq{E}".format(
+                S=sample.sample_name, U=sample.unit_name, E=ending, fq=wildcards.fq,
         )
 
 
-def is_paired_end(experiment,sample):
-    sample_units = samples.loc[experiment].loc[sample]
+def is_paired_end(sample):
+    sample_units = samples.loc[sample]
     fq2_null = sample_units["fq2"].isnull()
     sra_null = sample_units["sra"].isnull()
     paired = ~fq2_null | ~sra_null
@@ -294,26 +302,26 @@ def is_paired_end(experiment,sample):
 
 
 def get_fq(wildcards):
-    if not pd.isna(samples.loc[(wildcards.experiment,wildcards.sample,wildcards.unit),"adapters"].item()):
+    if not pd.isna(samples.loc[(wildcards.sample,wildcards.unit),"adapters"]):
         # activated trimming, use trimmed data
-        if is_paired_end(wildcards.experiment,wildcards.sample):
+        if is_paired_end(wildcards.sample):
             # paired-end sample
             return dict(
                 zip(
                     ["fq1", "fq2"],
                     expand(
-                        "{experiment}/trimmed_reads/{sample}_{unit}_{group}_trimmed.fastq.gz",
+                        "reads/trimmed/{sample}_{unit}_{group}_trimmed.fastq.gz",
                         group=["fq1", "fq2"],
                         **wildcards,
                     )
                 )
             )
         # single end sample
-        return {"fq1": "{experiment}/trimmed_reads/{sample}_{unit}_single.fastq.gz".format(**wildcards)}
+        return {"fq1": "reads/trimmed/{sample}_{unit}_single.fastq.gz".format(**wildcards)}
     else :
         # no trimming, use raw reads
-        u = samples.loc[(wildcards.experiment, wildcards.sample, wildcards.unit), ["fq1", "fq2"]].dropna()
-        if not is_paired_end(wildcards.experiment, wildcards.sample):
+        u = samples.loc[(wildcards.sample, wildcards.unit), ["fq1", "fq2"]].dropna()
+        if not is_paired_end(wildcards.sample):
             return {"fq1": f"{u.fq1}"}
         else :
             return {"fq1": f"{u.fq1}", "fq2": f"{u.fq2}"}
@@ -327,10 +335,10 @@ def get_strandedness(samples):
         return strand_list * samples.shape[0]
 
 def get_sample_strandedness(wildcards):
-      if samples.loc[wildcards.experiment].loc[wildcards.sample].loc[wildcards.unit].squeeze(axis=0)['strandedness'] == "yes" :
+      if samples.loc[wildcards.sample].loc[wildcards.unit].squeeze(axis=0)['strandedness'] == "yes" :
           return 1
       else :
-          if samples.loc[wildcards.experiment].loc[wildcards.sample].loc[wildcards.unit].squeeze(axis=0)['strandedness'] == "reverse":
+          if samples.loc[wildcards.sample].loc[wildcards.unit].squeeze(axis=0)['strandedness'] == "reverse":
               return 2
           else :
               return 0
@@ -351,7 +359,7 @@ def is_activated(xpath):
 def get_fastqs(wc):
     if config["trimming"]["activate"]:
         return expand(
-            "{experiment}/trimmed_reads/{sample}/{unit}_{read}.fastq.gz",
+            "reads/trimmed/{sample}/{unit}_{read}.fastq.gz",
             unit=samples.loc[wc.sample, "unit_name"],
             sample=wc.sample,
             read=wc.read,

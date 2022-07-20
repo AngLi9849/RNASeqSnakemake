@@ -3,7 +3,7 @@ Chromatin_RNA-Seq   	HCT116          	HNRNPU-AID_KO      	homo_sapiens          
 Nucleoplasm_RNA-Seq   	HCT116              	HNRNPU-AID_KO        	homo_sapiens                  	HCT116         	TRUE	TRUE	FALSE	FALSE	                         	GeneBody	
 Cytoplasm_RNA-Seq   	HCT116             	HNRNPU-AID_KO          	homo_sapiens                  	HCT116         	TRUE	TRUE	FALSE	FALSE	                         	mRNA     	
 TT-Seq           	HCT116          	HNRNPU-AID_KO      	homo_sapiens                  	HCT116         	TRUE	FALSE	TRUE	TRUE	saccharomyces_cerevisiae      	GeneBody  	
-TT-Seq             	HCT116           	HNRNPUL1-AID_KO        	homo_sapiens               	HCT116        	TRUE  	FALSE 	TRUE	TRUE 	saccharomyces_cerevisiae     	GeneBody	
+TT-Seq             	HCT116           	HNRNPUL1-AID_KO        	homo_sapiens               	HCT116        	TRUE	FALSE	TRUE	TRUE	saccharomyces_cerevisiae     	GeneBody	
 TT-Seq            	FUS-mAID_+DMSO_6hr  	FUS-mAID_+5PhIAA_6hr  	homo_sapiens                   	HCT116         	TRUE	FALSE	TRUE	TRUE	saccharomyces_cerevisiae      	GeneBody	
 Total_RNA-Seq   	FUS-mAID_+DMSO_6hr	FUS-mAID_+5PhIAA_6hr  	homo_sapiens                   	HCT116         	TRUE	TRUE	FALSE	FALSE	                              	mRNA         	
 Total_RNA-Seq   	FUS-mAID_+DMSO_48hr	FUS-mAID_+5PhIAA_48hr 	homo_sapiens                   	HCT116         	TRUE	TRUE	FALSE	FALSE	                              	mRNA      	

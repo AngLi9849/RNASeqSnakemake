@@ -20,8 +20,8 @@ rule star_index:
 rule star_align:
     input:
         unpack(get_fq),
-        index= ("resources/star/" + {reference} + "_genome" ),
-        gtf=("resources/annotations/" + {reference} + "_genome.gtf"),
+        index=lambda wildcards:  ("resources/star/" + str(wildcards.reference) + "_genome" ),
+        gtf= lambda wildcards: ("resources/annotations/" + str(wildcards.reference) + "_genome.gtf"),
     output:
         "star/{sample}/{unit}/{reference}/Aligned.sortedByCoord.out.bam",
         "star/{sample}/{unit}/{reference}/ReadsPerGene.out.tab",

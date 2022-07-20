@@ -56,23 +56,22 @@ rule feature_splice_sites:
 
 rule splice_site_featurecount:
     input:
-        splice_bam="{experiment}/star/{sample}-{unit}/Spliced{prefix}.sortedByCoord.out.bam",
-        splice_bai="{experiment}/star/{sample}-{unit}/Spliced{prefix}.sortedByCoord.out.bam.bai",
-        unsplice_bam="{experiment}/star/{sample}-{unit}/Unspliced{prefix}.sortedByCoord.out.bam",
-        unsplice_bai="{experiment}/star/{sample}-{unit}/Unspliced{prefix}.sortedByCoord.out.bam.bai",
-        saf=lambda w: "resources/annotations/{species}.{{lineage}}.{type}.{{valid}}_{{tag}}.{{feature}}.{{source}}_splice_sites.saf".format(
-            species= str( get_sample_source(w) ),
+        splice_bam="star/{sample}/{unit}/{reference}/Spliced{prefix}.sortedByCoord.out.bam",
+        splice_bai="star/{sample}/{unit}/{reference}/Spliced{prefix}.sortedByCoord.out.bam.bai",
+        unsplice_bam="star/{sample}/{unit}/{reference}/Unspliced{prefix}.sortedByCoord.out.bam",
+        unsplice_bai="star/{sample}/{unit}/{reference}/Unspliced{prefix}.sortedByCoord.out.bam.bai",
+        saf=lambda w: "resources/annotations/{{reference}}.{{lineage}}.{type}.{{valid}}_{{tag}}.{{feature}}.{{source}}_splice_sites.saf".format(
             type="custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
         ),
     output:
-        splice="{experiment}/star/{sample}-{unit}/Spliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSite.featurecounts.tab",
-        unsplice="{experiment}/star/{sample}-{unit}/Unspliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSite.featurecounts.tab",
+        splice="star/{sample}/{unit}/{reference}/Spliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSite.featurecounts.tab",
+        unsplice="star/{sample}/{unit}/{reference}/Unspliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSite.featurecounts.tab",
     threads: 6
     resources:
         mem=lambda wildcards, input: (str((input.size//4000000000)+4) + "G"),
         rmem=lambda wildcards, input: (str((input.size//8000000000)+4) + "G"),
     log:
-        "logs/feature_counts/{experiment}/{sample}-{unit}/Spliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSiteReads.log"
+        "logs/feature_counts/{reference}/{sample}-{unit}/Spliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSiteReads.log"
     conda:
         "../envs/subread.yaml",
     params:

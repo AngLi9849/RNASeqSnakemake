@@ -1,34 +1,18 @@
 ##FASTQC on input reads and RSEQC on STAR-aligned reads, generates a MULTIQC html report
 
-rule sort_raw_reads:
-    input:
-        sort_raw_reads,
-    output:
-        "{experiment}/raw_reads/{sample}_{unit}_{fq}_raw.{ext}",
-    log:
-        "logs/sort/{experiment}_{sample}_{unit}_{fq}_raw.{ext}.log",
-    resources:
-        mem="6G",
-        rmem="4G",
-    wildcard_constraints:
-        ext=r"fastq|fastq\.gz",
-    threads: 1
-    shell:
-        "cat {input} > {output} 2> {log}"
-
 
 rule raw_fastqc:
     input:
         get_raw_fastqc_input,
     output:
-        html="{experiment}/qc/fastqc/{sample}-{unit}-{fq}-raw.html",
-        zip="{experiment}/qc/fastqc/{sample}-{unit}-{fq}-raw_fastqc.zip"
+        html="qc/fastqc/{sample}-{unit}-{fq}-raw.html",
+        zip="qc/fastqc/{sample}-{unit}-{fq}-raw_fastqc.zip"
     params: "--quiet"
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/fastqc/{experiment}_{sample}_{unit}_{fq}_raw.log"
+        "logs/fastqc/{sample}_{unit}_{fq}_raw.log"
     threads: 1
     wrapper:
         "0.80.2/bio/fastqc"
@@ -36,16 +20,16 @@ rule raw_fastqc:
 
 rule trimmed_fastqc:
     input:
-        "{experiment}/trimmed_reads/{sample}_{unit}_{fq}_trimmed.fastq.gz",
+        "trimmed_reads/{sample}_{unit}_{fq}_trimmed.fastq.gz",
     output:
-        html="{experiment}/qc/fastqc/{sample}-{unit}-{fq}-trimmed.html",
-        zip="{experiment}/qc/fastqc/{sample}-{unit}-{fq}-trimmed_fastqc.zip"
+        html="qc/fastqc/{sample}-{unit}-{fq}-trimmed.html",
+        zip="qc/fastqc/{sample}-{unit}-{fq}-trimmed_fastqc.zip"
     params: "--quiet"
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/fastqc/{experiment}_{sample}_{unit}_{fq}.log"
+        "logs/fastqc/{sample}_{unit}_{fq}.log"
     threads: 1
     wrapper:
         "0.80.2/bio/fastqc"

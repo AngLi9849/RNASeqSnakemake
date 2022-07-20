@@ -122,7 +122,7 @@ rule featurecounts:
         "../envs/subread.yaml",
     params:
         strand=get_sample_strandedness,
-        paired=lambda wildcards:("" if not is_paired_end(wildcards.experiment,wildcards.sample) else "-p"),
+        paired=lambda wildcards:("" if not is_paired_end(wildcards.sample) else "-p"),
         overlap="-O" if config["counting"]["count_every_overlap"] else "",
     shell:
         """
@@ -133,7 +133,7 @@ rule count_matrix:
     input:
         featurecounts=lambda wildcards: expand(
             "star/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.featurecounts.tab",
-            sample= get_experiment_samples(wildcards),
+            sample= get_experiment_samples(wildcards).itertuples(),
         ),
     output:
         counts="featurecounts/{experiment}/{reference}/{prefix}.counts.tsv",
@@ -141,7 +141,7 @@ rule count_matrix:
     log:
         "logs/{experiment}/{reference}/featurecounts/{prefix}_count_matrix.log",
     params:
-        names=lambda wildcards: "\t".join(map(str,samples.loc[wildcards.experiment].sample_name.tolist())),
+        names=lambda wildcards: "\t".join(map(str,get_experiment_samples(wildcards).sample_name.tolist())),
     resources:
         mem="8G",
         rmem="6G",
