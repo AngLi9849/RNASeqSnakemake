@@ -38,18 +38,18 @@ rule stranded_bam:
 
 rule unstranded_genomecov:
     input:
-        bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
-        bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai", 
+        bam="star/{prefix}.sortedByCoord.out.bam",
+        bai="star/{prefix}.sortedByCoord.out.bam.bai", 
     output:
-        "bedgraph/{sample}/{unit}/{reference}/{prefix}.unstranded.bedgraph",
-        "bedgraph/{sample}/{unit}/{reference}/{prefix}.BaseCoverage.txt",
+        "bedgraph/{prefix}.unstranded.bedgraph",
+        "bedgraph/{prefix}.BaseCoverage.txt",
     params:
         bin_size=config["bigwig_bin_size"]
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/{experiment}/deeptools/{sample}/{unit}/{reference}/{prefix}_unstranded_bamcoverage.log",
+        "logs/deeptools/{prefix}_unstranded_bamcoverage.log",
     conda:
         "../envs/bedtools.yaml",
     threads: 2
@@ -68,20 +68,20 @@ rule unstranded_genomecov:
         
 rule stranded_genomecov:
     input:
-        fwdbam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.fwd.bam",
-        fwdbai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.fwd.bam.bai",
-        revbam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.rev.bam",
-        revbai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.rev.bam.bai",
+        fwdbam="star/{prefix}.sortedByCoord.fwd.bam",
+        fwdbai="star/{prefix}.sortedByCoord.fwd.bam.bai",
+        revbam="star/{prefix}.sortedByCoord.rev.bam",
+        revbai="star/{prefix}.sortedByCoord.rev.bam.bai",
     output:
-        bg_fwd="bedgraph/{sample}/{unit}/{reference}/{prefix}.fwd.bedgraph",
-        bg_rev="bedgraph/{sample}/{unit}/{reference}/{prefix}.rev.bedgraph",
+        bg_fwd="bedgraph/{prefix}.fwd.bedgraph",
+        bg_rev="bedgraph/{prefix}.rev.bedgraph",
     params:
         bin_size=config["bigwig_bin_size"]
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/{experiment}/deeptools/{sample}/{unit}/{reference}/{prefix}_stranded_bamcoverage.log",
+        "logs/deeptools/{prefix}_stranded_bamcoverage.log",
     conda:
         "../envs/bedtools.yaml",
     threads: 2
@@ -93,12 +93,12 @@ rule stranded_genomecov:
  
 rule scale_bedgraph2bigwig:
     input:
-       "{experiment}/deseq2/All{prefix}_{counts}_{normaliser}_scale_factors.tsv",
-       "bedgraph/{sample}/{unit}/{reference}/{splice}{prefix}.{strand}.bedgraph",
-       lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + ".fasta.chrom.sizes")
+       scale = "deseq2/{experiment}/All{prefix}_{counts}_{normaliser}_scale_factors.tsv",
+       bedgraph = "bedgraph/{sample}/{unit}/{reference}/{splice}{prefix}.{strand}.bedgraph",
+       chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + ".fasta.chrom.sizes")
     output:
-       "bedgraph/{experiment}/{reference}/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
-       "results/{experiment}/bigwig/{reference}/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.bigwig",
+       bg = "bedgraph/{experiment}/{reference}/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
+       bw = "results/{experiment}/{reference}/bigwigs/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
     conda:
        "../envs/bedgraphtobigwig.yaml"
     threads: 1
@@ -109,8 +109,13 @@ rule scale_bedgraph2bigwig:
        "logs/{experiment}/bg2bw/{sample}_{unit}/{reference}/{strand}_by_{normaliser}_{counts}_{prefix}_{splice}_bg2bw.log"
     shell:
        """
-       awk -F'\\t' -v OFS='\\t' 'FNR==NR{{scalefactor[$1]=$3; next}} {{print $1,$2,$3,$4*scalefactor["{wildcards.sample}"]}}' {input[0]} {input[1]} |
-       LC_COLLATE=C sort -k1,1 -k2,2n - > {output[0]} &&
-       bedGraphToBigWig {output[0]} {input[2]} {output[1]}
+       awk -F'\\t' -v OFS='\\t' '
+         FNR==NR{{scalefactor[$1]=$3}} 
+         FNR < NR {{
+           print $1,$2,$3,$4*scalefactor["{wildcards.sample}"]
+         }}' {input.scale} {input.bedgraph} |
+
+       LC_COLLATE=C sort -k1,1 -k2,2n - > {output.bg} &&
+       bedGraphToBigWig {output.bw} {input.chr_size} {output.bg}
        """
 

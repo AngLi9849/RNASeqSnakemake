@@ -136,8 +136,8 @@ rule count_matrix:
             sample= get_experiment_samples(wildcards),
         ),
     output:
-        counts="featurecounts/{reference}/{experiment}/{prefix}.counts.tsv",
-        length="featurecounts/{reference}/{experiment}/{prefix}.lengths.tsv",
+        counts="featurecounts/{experiment}/{reference}/{prefix}.counts.tsv",
+        length="featurecounts/{experiment}/{reference}/{prefix}.lengths.tsv",
     log:
         "logs/{experiment}/{reference}/featurecounts/{prefix}_count_matrix.log",
     params:

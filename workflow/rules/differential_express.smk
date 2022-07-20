@@ -18,9 +18,9 @@ rule pca:
 
 rule deseq2_expression:
     input:
-        size_table="{experiment}/deseq2/All{prefix}.{normaliser}.{spikein}_scale_factors.tsv",
-        length = "featurecounts/{reference}/{experiment}/{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}.lengths.tsv",
-        counts="featurecounts/{reference}/{experiment}/{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.counts.tsv",
+        size_table="deseq2/{experiment}/{reference}/All{prefix}.{normaliser}.{spikein}_scale_factors.tsv",
+        length = "featurecounts/{experiment}/{reference}/{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}.lengths.tsv",
+        counts="featurecounts/{experiment}/{reference}/{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.counts.tsv",
         genetab=lambda w: "resources/annotations/{source}_genome.gtf.{{tag}}_gene_info.tab".format(
             source= str( get_sample_source(w) ),
         ),
@@ -41,22 +41,22 @@ rule deseq2_expression:
             c=str(config["differential_plots"]["word_docx"]["font_colour"]),
         ),
     output:
-        normcounts="{experiment}/differential_expression/{exp}_vs_{control}/{spikein}_{normaliser}_normalised.{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}.tsv",
-        docx="results/{experiment}/differential_expression/{exp}_vs_{control}/{spikein}_{normaliser}_normalised.{splice}_{prefix}.{lineage}_{valid}.{tag}.{feature}.docx",
-        rpkm="results/{experiment}/differential_expression/{exp}_vs_{control}/{spikein}_{normaliser}_normalised.{splice}_{prefix}.{lineage}_{valid}.{tag}.{feature}.rpkm.tsv",
+        normcounts="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}_normalised.{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}.tsv",
+        docx="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}_normalised.{splice}_{prefix}.{lineage}_{valid}.{tag}.{feature}.docx",
+        rpkm="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}_normalised.{splice}_{prefix}.{lineage}_{valid}.{tag}.{feature}.rpkm.tsv",
     params:
         sample_table="config/samples.tsv",
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control_condition"],
         paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
         descript= lambda wildcards: feature_descript(wildcards),
-        dir="results/{experiment}/differential_expression/{test}_vs_{control}/{spikein}_{normaliser}_normalised.{splice}_{prefix}.{lineage}_{valid}.{tag}.{feature}",        
+        dir="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}_normalised.{splice}_{prefix}.{lineage}_{valid}.{tag}.{feature}",        
     resources:
         mem="16G",
         rmem="12G",
     conda:
         "../envs/differential.yaml"
     log:
-        "logs/{experiment}/deseq2/{test}_vs_{control}_{splice}ed{prefix}.{lineage}_{valid}.{tag}_{spikein}_{feature}_{normaliser}.diffexp.log",
+        "logs/{experiment}/{reference}/deseq2/{test}_vs_{control}_{splice}ed{prefix}.{lineage}_{valid}.{tag}_{spikein}_{feature}_{normaliser}.diffexp.log",
     threads: get_deseq2_threads()
     script:
         "../scripts/R/deseq2_express.R"
