@@ -1,10 +1,10 @@
 rule extract_annotated_feature:
     input:
-        "resources/annotations/{prefix}.gtf.{tag}_{valid}.bed",
+        "resources/annotations/{prefix}_{lineage}.gtf.{tag}_{valid}.bed",
     output:
-        "resources/annotations/{prefix}.gtf.{valid}_{tag}.{feature}.bed"
+        "resources/annotations/{prefix}.gtf.{lineage}_{valid}.{tag}.{feature}.bed"
     log:
-        "logs/features/extract_{prefix}_{valid}_{tag}_{feature}.log"
+        "logs/features/extract_{prefix}_{lineage}_{valid}_{tag}_{feature}.log"
     threads: 1
     resources:
         mem="4G",

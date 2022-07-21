@@ -111,7 +111,7 @@ rule featurecounts:
             type="custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
         ), 
     output:
-        tab = "star/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.featurecounts.tab",
+        tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.featurecounts.tab",
     threads: 6
     resources:
         mem=lambda wildcards, input: (str((input.size//3000000000)+4) + "G"),
@@ -132,7 +132,7 @@ rule featurecounts:
 rule count_matrix:
     input:
         featurecounts=lambda wildcards: expand(
-            "star/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.featurecounts.tab",
+            "featurecounts/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.featurecounts.tab",
             sample= get_experiment_samples(wildcards).itertuples(),
         ),
     output:

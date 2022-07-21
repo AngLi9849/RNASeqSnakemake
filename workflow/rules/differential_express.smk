@@ -19,7 +19,7 @@ rule pca:
 rule deseq2_expression:
     input:
         size_table="deseq2/{experiment}/{reference}/All{prefix}.{normaliser}.{spikein}_scale_factors.tsv",
-        length = "featurecounts/{experiment}/{reference}/{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}.lengths.tsv",
+        length = "featurecounts/{experiment}/{reference}/{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.lengths.tsv",
         counts="featurecounts/{experiment}/{reference}/{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.counts.tsv",
         genetab=lambda w: "resources/annotations/{source}_genome.gtf.{{tag}}_gene_info.tab".format(
             source= str( get_sample_source(w) ),

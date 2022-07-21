@@ -152,27 +152,27 @@ def get_root_feature(feature):
 def get_source(wildcards):
     if experiments.loc[wildcards.experiment,"spikein_species"]:
         return "combined_{sample_species}_and_{spikein_species}".format(
-            sample_species=experiments.loc[wildcards.experiment,"sample_species"].item(),
-            spikein_species=experiments.loc[wildcards.experiment,"spikein_species"].item()
+            sample_species=experiments.loc[wildcards.experiment,"sample_species"],
+            spikein_species=experiments.loc[wildcards.experiment,"spikein_species"]
         )
     else :
-        if not pd.isna(references.loc[experiments.loc[wildcards.experiment,"sample_species"],"genome_dir"].item()):
+        if not pd.isna(references.loc[experiments.loc[wildcards.experiment,"sample_species"],"genome_dir"]):
             return "local_{sample_species}".format(
-                sample_species=experiments.loc[wildcards.experiment,"sample_species"].item()
+                sample_species=experiments.loc[wildcards.experiment,"sample_species"]
             )
         else :
             return "ensembl_{sample_species}".format(
-                sample_species=experiments.loc[wildcards.experiment,"sample_species"].item()
+                sample_species=experiments.loc[wildcards.experiment,"sample_species"]
             )    
 
 def get_sample_source(wildcards):
-    if not pd.isna(references.loc[experiments.loc[wildcards.experiment,"sample_species"],"genome_dir"].item()):
+    if not pd.isna(references.loc[experiments.loc[wildcards.experiment,"sample_species"],"genome_dir"]):
         return "local_{sample_species}".format(
-            sample_species=experiments.loc[wildcards.experiment,"sample_species"].item()
+            sample_species=experiments.loc[wildcards.experiment,"sample_species"]
         )
     else :
         return "ensembl_{sample_species}".format(
-            sample_species=experiments.loc[wildcards.experiment,"sample_species"].item()
+            sample_species=experiments.loc[wildcards.experiment,"sample_species"]
         )
 
 
