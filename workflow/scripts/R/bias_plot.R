@@ -108,7 +108,7 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$log2Fo
   facet_wrap(
     ~factor(change,levels=c("Significantly Upregulated","Significantly Downregulated")), scales="free"
   ) +
-  xlab(paste("Mean RPKM",sep=" ")) +
+  xlab(paste("Mean Expression Levels (RPKM)",sep=" ")) +
   ylab("log2 Fold Change") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 

@@ -1,3 +1,15 @@
+mean_level_i <- mean_level[, match(c(control,exp),names(mean_level))]
+violin_data <- data.frame(
+  unlist(
+    lapply(colnames(mean_level_i), function (x) {
+      mean_level_i[paste(x)]
+    })),
+  unlist(
+    lapply(colnames(mean_level_i), function (x) {
+      replicate(nrow(mean_level_i),paste(x))
+    }))
+)
+
 names(violin_data) <- c("value","condition")
 violin_ymax <- max(violin_data$value) + 0.2*abs(max(violin_data$value)-min(violin_data$value))
 violin_p_y <- max(violin_data$value) + 0.1*abs(max(violin_data$value)-min(violin_data$value))
@@ -22,3 +34,5 @@ violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +
     axis.title.y = element_text(size=9)
   )
 
+violin_caption <- paste(
+  

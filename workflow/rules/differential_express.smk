@@ -46,7 +46,8 @@ rule deseq2_expression:
         rpkm="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}_normalised.{splice}_{prefix}.{lineage}_{valid}.{tag}.{feature}.rpkm.tsv",
     params:
         sample_table="config/samples.tsv",
-        control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control_condition"],
+        control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
+        treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],
         paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
         descript= lambda wildcards: feature_descript(wildcards),
         dir="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}_normalised.{splice}_{prefix}.{lineage}_{valid}.{tag}.{feature}",        

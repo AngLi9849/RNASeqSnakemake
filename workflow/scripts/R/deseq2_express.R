@@ -21,10 +21,10 @@ if (snakemake@threads > 1) {
 dir <- as.character(snakemake@params[["dir"]])
 dir.create(dir)
 
-analysis <- "Differential Expression Analysis"
+difference <- "Expression Levels"
 
-exp <-  as.character(snakemake@wildcards[["exp"]])
-control <- as.character(snakemake@wildcards[["control"]])
+treat <-  as.character(snakemake@params[["treat"]])
+control <- as.character(snakemake@params[["control"]])
 spikein <- as.character(snakemake@wildcards[["spikein"]])
 
 biotypes <- c(snakemake@config[["biotypes"]])
@@ -79,12 +79,12 @@ names(rpkm) <- names(cts)
 rownames(rpkm) <- rownames(cts)
 rpkm <- rpkm/length$Length[match(rownames(rpkm),length$gene)]*(10^9)
 
-mean_rpkm <- data.frame(
+mean_level <- data.frame(
   lapply(sample_table$condition, function(x) {
     apply(rpkm[,match(sample_table$sample_name[sample_table$condition==x],names(rpkm))],1,FUN=mean)
   }
 )
-names(mean_rpkm) <- sample_table$condition
+names(mean_level) <- sample_table$condition
 
 cts <- cts[ , order(names(cts))]
 cts_names <- row.names(cts)
@@ -118,7 +118,7 @@ norm_counts <- counts(dds, normalized=T)
 write.table(data.frame("gene_id"=rownames(norm_counts), norm_counts), file=snakemake@output[["normcounts"]], sep='\t', row.names=F,quote=F)
 
 # Generate log2FoldChange shrunk results table for each experiment condition
-contrast <- c("condition", exp, control)
+contrast <- c("condition", treat, control)
 res <- results(dds, contrast=contrast, parallel=parallel)
 res <- lfcShrink(dds, contrast=contrast, res=res, type="ashr")
 
@@ -136,7 +136,7 @@ expr$Length <- length$Length[match(rownames(expr),length$gene)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
 expr$rpkm <- expr$baseMean*1000000000/expr$Length
 
-title <- gsub("_"," ",paste(exp,"vs",control,toTitleCase(change),sep=" "))
+title <- gsub("_"," ",paste(treat,"vs",control,toTitleCase(change),sep=" "))
 write.table(data.frame(expr[c(1,2,5,6:9)]),file=paste(dir,"/",title," TopTable.tsv",sep=""), sep='\t',row.names=F,quote=F)
 
 # Initialise Plotting
@@ -154,13 +154,13 @@ if (i =="") {
 }
 
 # Set file name and path
-file_i <- gsub("_"," ",paste(exp, "vs", control,  i, change,sep=" "))
+file_i <- gsub("_"," ",paste(treat, "vs", control,  i, change,sep=" "))
 
 dir_i <- paste(dir,"/",ifelse(i=="","All",i),sep="")
 dir.create(dir_i)
 
 # Set variables for titles and legends
-title <- gsub("_"," ",paste(exp,"vs",control, toTitleCase(i),toTitleCase(change),sep=" "))
+title <- gsub("_"," ",paste(treat,"vs",control, toTitleCase(i),toTitleCase(change),sep=" "))
 capt <- gsub("_"," ",paste(splice, tolower(prefix), counting, sep=" "))
 norm <- gsub("_"," ",paste(spikein, tolower(normaliser), sep=" "))
 
@@ -190,45 +190,12 @@ expr_i <- expr_i %>% arrange(change,abs(log2FoldChange)) %>% group_by(change) %>
 max_sig_log2FC <- max(abs(expr_i$log2FoldChange[expr_i$padj < sig_p]))
 expr_i$colour <- ifelse(expr_i$padj < sig_p, ifelse(expr_i$log2FoldChange < 0, down_col, up_col), insig_col)
 
+mean_level_i <- mean_level[, match(c(control,treat),names(mean_level))]
 
 # Pie Chart ===================================================
-sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0)
-sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0)
-insig <- sum(expr_i$pad[expr_i$padj < undetect_p] >= sig_p)
-undetect <- length(cts_names) - insig - sig_up - sig_down
-
-pie_data <- data.frame(
-  c("Undetectable Change","Insignificant Change","Significant Increase","Significant Decrease"),
-  c(undetect,insig,sig_up,sig_down),
-  c(background,insig_col,up_col,down_col)
-)
-
-names(pie_data) <- c("Category","Numbers","Colours")
-pie_label <- paste(length(cts_names),"Considered")
-pie_data$Category <- paste(pie_data$Numbers,pie_data$Category)
-
 source(snakemake@config[["differential_plots"]][["scripts"]][["pie_chart"]])
-pie
-
-
 # Violin Plot =================================================
-mean_rpkm_i <- mean_rpkm[, match(c(control,exp),names(mean_rpkm))]
-violin_data <- data.frame(
-  unlist(
-    lapply(colnames(mean_rpkm_i), function (x) { 
-      mean_rpkm_i[paste(x)] 
-    })),
-  unlist(
-    lapply(colnames(mean_rpkm_i), function (x) { 
-      replicate(nrow(mean_rpkm_i),paste(x)) 
-    }))
-)
-names(violin_data) <- c("value","condition")
-
 source(snakemake@config[["differential_plots"]][["scripts"]][["violin"]])
-violin
-
-
 # MA plot ====================================================
 
 ma_title <- paste(title, " MA Plot.", sep = "" )
@@ -260,6 +227,8 @@ bias
 sum_list <- list(pie,violin,ma,volcano)
 sum_ncol <- 2
 sum_nrow <- ceiling(length(sum_list)/sum_ncol)
+
+
 
 summary <- ggarrange(plotlist=sum_list,ncol=sum_ncol,nrow=sum_nrow,labels="AUTO")
 
