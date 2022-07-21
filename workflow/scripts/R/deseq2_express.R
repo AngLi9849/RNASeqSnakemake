@@ -23,6 +23,7 @@ dir.create(dir)
 
 difference <- "Expression Levels"
 
+experiment <- as.character(snakemake@wildcards[["experiment"]])
 treat <-  as.character(snakemake@params[["treat"]])
 control <- as.character(snakemake@params[["control"]])
 spikein <- as.character(snakemake@wildcards[["spikein"]])
@@ -154,7 +155,7 @@ if (i =="") {
 }
 
 # Set file name and path
-file_i <- gsub("_"," ",paste(treat, "vs", control,  i, change,sep=" "))
+file_i <- gsub("_"," ",paste(experiment, i, change,sep=" "))
 
 dir_i <- paste(dir,"/",ifelse(i=="","All",i),sep="")
 dir.create(dir_i)
@@ -197,15 +198,10 @@ source(snakemake@config[["differential_plots"]][["scripts"]][["pie_chart"]])
 # Violin Plot =================================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["violin"]])
 # MA plot ====================================================
-
-ma_title <- paste(title, " MA Plot.", sep = "" )
-ma_title <- fpar(fig_num,ftext(ma_title,prop=plain))
-
 source(snakemake@config[["differential_plots"]][["scripts"]][["ma_plot"]])
 
-ggsave(file=paste(file_i," MA Plot.pdf",sep=""), path=dir_i,plot=plot_i,height=9,width=12,dpi=plot_dpi)
-ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=plot_i,height=9,width=12,dpi=plot_dpi)
-
+ggsave(file=paste(file_i," MA Plot.pdf",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
+ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
 
 # Volcano Plot ===============================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["volcano_plot"]])

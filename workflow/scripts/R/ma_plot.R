@@ -58,4 +58,6 @@ ma_plot <- ma +
     force_pull=5
   ) 
 
+ggsave(file=paste(file_i," MA Plot.pdf",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
+ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
 
