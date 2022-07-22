@@ -28,6 +28,8 @@ treat <-  as.character(snakemake@params[["treat"]])
 control <- as.character(snakemake@params[["control"]])
 spikein <- as.character(snakemake@wildcards[["spikein"]])
 
+compare <- list(c(control,treat))
+
 biotypes <- c(snakemake@config[["biotypes"]])
 goi <- c(snakemake@config[["GOI"]])
 
@@ -45,7 +47,7 @@ genes <- bed[3:6]
 names(genes) <- c("gene_id","gene_name","biotype","exon_count") 
 
 #  Import sample config, size factors and count table and conduct DESeq2 Differential Expression Analysis
-paired <- as.logical(snakemake@params[["paired"]])
+rep_pair <- as.logical(snakemake@params[["paired"]])
 
 sample_table <- read.table(snakemake@params[["sample_table"]], sep='\t',header=TRUE, check.names=FALSE)
 sample_table <- sample_table[sample_table$experiment==snakemake@wildcards[["experiment"]],]
@@ -100,7 +102,7 @@ cts_genes$group <- toTitleCase(gsub("_"," ",paste(cts_genes$exon_count,cts_genes
 cts_genes <- data.frame(unique(cts_genes$group),lapply(unique(cts_genes$group),function(x){sum(cts_genes$group %in% x)}))
 
 # Set up DESeq2 data object
-if (paired){
+if (rep_pair){
   dds <- DESeqDataSetFromMatrix(countData=cts,colData=coldata,design=~condition + replicate)
 } else {
   dds <- DESeqDataSetFromMatrix(countData=cts,colData=coldata,design=~condition)
@@ -137,7 +139,7 @@ expr$Length <- length$Length[match(rownames(expr),length$gene)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
 expr$rpkm <- expr$baseMean*1000000000/expr$Length
 
-title <- gsub("_"," ",paste(treat,"vs",control,toTitleCase(change),sep=" "))
+title <- gsub("_"," ",paste(experiment, toTitleCase(change),sep=" "))
 write.table(data.frame(expr[c(1,2,5,6:9)]),file=paste(dir,"/",title," TopTable.tsv",sep=""), sep='\t',row.names=F,quote=F)
 
 # Initialise Plotting
@@ -161,7 +163,7 @@ dir_i <- paste(dir,"/",ifelse(i=="","All",i),sep="")
 dir.create(dir_i)
 
 # Set variables for titles and legends
-title <- gsub("_"," ",paste(treat,"vs",control, toTitleCase(i),toTitleCase(change),sep=" "))
+title <- gsub("_"," ",paste(experiment, toTitleCase(i),toTitleCase(change),sep=" "))
 capt <- gsub("_"," ",paste(splice, tolower(prefix), counting, sep=" "))
 norm <- gsub("_"," ",paste(spikein, tolower(normaliser), sep=" "))
 
@@ -171,8 +173,6 @@ doc <- body_add(doc,fpar(ftext(group_heading, prop=heading_3)),style = "heading 
 
 # Start figure counting from 1
 fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ".", prop=bold,tnd=3, tns=".", bkm = "plot", start_at = 1)
-
-plot_n <- 1
 
 # Shrink Infinite log10Ps to 1.1 x maximum non-Inf log10P
 max_log10P <- max(expr_i$log10P[expr_i$log10P < Inf],na.rm = T)
@@ -188,10 +188,14 @@ expr_i <-
 expr_i <- expr_i %>% arrange(change,padj) %>% group_by(change) %>% mutate(p_rank=1:n()) %>% ungroup
 expr_i <- expr_i %>% arrange(change,abs(log2FoldChange)) %>% group_by(change) %>% mutate(lfc_rank=n():1) %>% ungroup
 
-max_sig_log2FC <- max(abs(expr_i$log2FoldChange[expr_i$padj < sig_p]))
+lfc_max <- max(abs(expr_i$log2FoldChange[expr_i$padj < sig_p]))
 expr_i$colour <- ifelse(expr_i$padj < sig_p, ifelse(expr_i$log2FoldChange < 0, down_col, up_col), insig_col)
 
 mean_level_i <- mean_level[, match(c(control,treat),names(mean_level))]
+
+cts_genes_i <- ifelse(i=="",cts_genes,cts_genes[cts_genes$group==i,])
+
+feature_i <- ifelse(i=="", feature, paste(i,feature))
 
 # Pie Chart ===================================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["pie_chart"]])

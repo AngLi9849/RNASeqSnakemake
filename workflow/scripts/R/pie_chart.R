@@ -1,12 +1,12 @@
 sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0)
 sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0)
 insig <- sum(expr_i$pad[expr_i$padj < undetect_p] >= sig_p)
-undetect <- length(cts_names) - insig - sig_up - sig_down
+undetect <- nrow(cts_genes_i) - insig - sig_up - sig_down
 
-sig_up_pc <- paste(signif(sig_up/length(cts_names)*100,2), "%")
-sig_down_pc <- paste(signif(sig_down/length(cts_names)*100,2), "%")
-insig_pc <- paste(signif(insig/length(cts_names)*100,2), "%")
-undetect_pc <- paste(signif(undetect/length(cts_names)*100,2), "%")
+sig_up_pc <- paste(signif(sig_up/nrow(cts_genes_i)*100,2), "%")
+sig_down_pc <- paste(signif(sig_down/nrow(cts_genes_i)*100,2), "%")
+insig_pc <- paste(signif(insig/nrow(cts_genes_i)*100,2), "%")
+undetect_pc <- paste(signif(undetect/nrow(cts_genes_i)*100,2), "%")
 
 pie_data <- data.frame(
   c("Undetectable Change","Insignificant Change","Significant Increase","Significant Decrease"),
@@ -15,8 +15,8 @@ pie_data <- data.frame(
 )
 
 names(pie_data) <- c("Category","Numbers","Colours")
-pie_label <- paste(length(cts_names),"Considered")
-pie_data$Percent <- paste(signif(pie_data$Numbers/length(cts_names)*100,2), "%")
+pie_label <- paste(change, "of", nrow(cts_genes_i),feature_i)
+pie_data$Percent <- paste(signif(pie_data$Numbers/nrow(cts_genes_i)*100,2), "%")
 pie_data$Label <- paste(pie_data$Numbers,pie_data$Category)
 
 
@@ -29,13 +29,13 @@ pie_data <- pie_data %>%
 pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
   geom_bar(width=1,stat="identity", colour="black") +
   coord_polar("y",start=0) +
-  scale_fill_manual(paste(feature,change),values=pie_data$Colours) +
+  scale_fill_manual(paste(feature_i,change),values=pie_data$Colours) +
   xlab("") +
   ylab(pie_label) +
   geom_label_repel(
     data = pie_data,
     mapping = aes(y=pos, label=fct_inorder(Label)),
-    size=2,
+    size=3,
     color="black",
     fontface=1,
     segment.color="black",
@@ -53,11 +53,11 @@ pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
     axis.ticks = element_blank(),
     axis.text = element_blank(),
     axis.line=element_blank(),
-    axis.title.y = element_text(size=9)
+    axis.title.x = element_text(size=9)
   )
 
 pie_caption <- paste(
-  "Amongst ", tolower(difference), " of ", paste(length(cts_names)), feature, " considered, ", 
+  "Amongst ", tolower(difference), " of ", paste(nrow(cts_genes_i)), feature_i, 
   sig_up, " significantly increased (", sig_up_pc, ",", up_col, "), ", 
   sig_down, " significantly decreased (", sig_down_pc, ",", down_col, "), ",
   insig, " changed insignificantly (", insig_pc, ", p >= ", sig_p, "), and ",

@@ -3,6 +3,8 @@ caption <- paste(capt, " of ", length(expr_i$gene_name), " ", toTitleCase(i), " 
 
 ma_title <- fpar(fig_num,ftext(plot_title,prop=plain))
 
+lfc_max <- max(abs(expr_i$log2FoldChange[expr_i$padj <= sig_p]))
+
 ma <- ggplot(data = expr_i, aes(x = baseMean, y = log2FoldChange)) +
   geom_point(
     size = 0.5,
@@ -23,7 +25,7 @@ ma <- ggplot(data = expr_i, aes(x = baseMean, y = log2FoldChange)) +
     alpha=0.3,
     linetype=5
   ) +
-  xlab(toTitleCase(paste("Mean",feature, counting,sep=" "))) +
+  xlab(toTitleCase(paste("Mean",feature, "Normalised", counting,sep=" "))) +
   ylab("log2 Fold Change") +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
@@ -35,6 +37,7 @@ ma <- ggplot(data = expr_i, aes(x = baseMean, y = log2FoldChange)) +
     axis.line=element_line(colour="black",size=0.1),
     axis.line.x.top=element_line(colour="black",size=0.1),
     axis.line.y.right=element_line(colour="black",size=0.1),
+    axis.title = element_text(size=9)
   )
 
 ma_plot <- ma +
@@ -44,6 +47,7 @@ ma_plot <- ma +
     size=1.5,
     alpha=1
   ) +
+  ylab(paste("log2 Fold Change of", feature,change,sep= " ")) +
   geom_text_repel(
     mapping=aes(label=ifelse((gene_name %in% goi), as.character(gene_name),ifelse((p_rank<=ma_n | lfc_rank <= ma_n) & padj < sig_p ,as.character(gene_name),NA))),
     size=ifelse(expr_i$gene_name %in% goi, 4.0, 3.0),
@@ -57,6 +61,14 @@ ma_plot <- ma +
     force=10,
     force_pull=5
   ) 
+
+ma_caption <- paste(
+ "Log2 fold change in ", difference, " of each ", feature_i, " is plotted against their mean normalised ", counting, ". Those significantly (p > " ,sig_p,") increased (", up_col, ") and decreased (", down_col, ") are indicated by colours.",sep=""
+)
+
+ma_plot_caption <- paste(
+  ma_caption, " Top ", ma_n, " most significantly increased and decreased are labelled.", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold", ""),sep=""
+)
 
 ggsave(file=paste(file_i," MA Plot.pdf",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
 ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)

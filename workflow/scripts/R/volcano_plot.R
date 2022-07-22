@@ -16,9 +16,9 @@ volcano <- ggplot(data = expr_i, aes(x = log2FoldChange, y = log10P)) +
     linetype=5
   ) +
   xlab(
-    paste("log2 Fold Change of",change)
+    paste("log2 Fold Change")
   ) +
-  ylab("-log10 Adjusted P-Value") +
+  ylab("-log10 P-Value") +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),
@@ -29,6 +29,7 @@ volcano <- ggplot(data = expr_i, aes(x = log2FoldChange, y = log10P)) +
     axis.line=element_line(colour="black",size=0.1),
     axis.line.x.top=element_line(colour="black",size=0.1),
     axis.line.y.right=element_line(colour="black",size=0.1),
+    axis.title = element_text(size=9)
   )
 
 volcano_plot <- volcano +
@@ -38,6 +39,8 @@ volcano_plot <- volcano +
     size=1.5,
     alpha=1
   ) +
+  xlab(paste("log2 Fold Change of",feature_i,change)) +
+  ylab("-log10 Adjusted P-Value") +
   geom_text_repel(
     mapping=aes(label=ifelse((gene_name %in% goi), as.character(gene_name),ifelse((p_rank<=volc_n | lfc_rank <= volc_n) & padj < sig_p ,as.character(gene_name),NA))),
     size=ifelse(expr_i$gene_name %in% goi, 4.0, 3.0),
@@ -49,4 +52,14 @@ volcano_plot <- volcano +
     bg.r=ifelse(expr_i$gene_name %in% goi, 0.2, NA),
     max.overlaps=Inf,force=10,force_pull=5
   )
+
+volcano_caption <- paste(
+  "-log10 ajusted p-value of changes in ", difference, " of each ", feature_i, " is plotted against the log2 fold change value. Significant (p > " ,sig_p,") increase (", up_col, ") and decrease (", down_col, ") are indicated by colours.",sep=""
+)
+
+volcano_plot_caption <- paste(
+  volcano_caption, " Top ", volc_n, " most significantly increased and decreased are labelled.", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold", ""),sep=""
+)
+
+ 
 
