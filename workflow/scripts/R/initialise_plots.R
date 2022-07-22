@@ -12,12 +12,6 @@ library(rvg)
 library(scales)
 
 
-# Import wildcards as characters
-prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
-tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
-valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
-feature <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]]))
-
 # Import Plotting Parameters
 descript <- as.character(snakemake@params[["descript"]])
 
@@ -60,9 +54,5 @@ plain <- fp_text(font.size=font_size)
 bold <- fp_text(bold=TRUE, font.size=font_size)
 italic <- fp_text(italic=TRUE, font.size=font_size)
 italic_bold <- fp_text(bold=TRUE, italic=TRUE, font.size=font_size)
-
-# Add heading to this differential analysis
-heading <- gsub("_"," ",paste(exp,"vs",control, feature, analysis ,sep=" "))
-doc <- body_add(doc,fpar(ftext(heading,prop=heading_2)), style="heading 2")
 
 

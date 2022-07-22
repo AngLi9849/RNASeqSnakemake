@@ -21,7 +21,7 @@ if (snakemake@threads > 1) {
 dir <- as.character(snakemake@params[["dir"]])
 dir.create(dir)
 
-difference <- "Expression Levels"
+difference <- "expression levels"
 
 experiment <- as.character(snakemake@wildcards[["experiment"]])
 treat <-  as.character(snakemake@params[["treat"]])
@@ -130,7 +130,7 @@ rownames(expr) <- res@rownames
 expr <- expr[!is.na(expr$padj),]
 expr[6:8] <- genes[match(rownames(expr),genes$gene_id),2:4]
 expr$exon <- ifelse(expr$exon_count>1,"Multiexonic","Monoexonic")
-expr$change <- ifelse(expr$log2FoldChange>=0,"Upregulated","Downregulated")
+expr$change <- ifelse(expr$log2FoldChange>=0,"Increased","Decreased")
 expr$group <- toTitleCase(gsub("_"," ",paste(expr$exon,expr$biotype)))
 expr$group2<-paste(expr$change,expr$group)
 expr$log10P <- -log10(expr$padj)
@@ -145,6 +145,17 @@ write.table(data.frame(expr[c(1,2,5,6:9)]),file=paste(dir,"/",title," TopTable.t
 # Initialise Plotting
 source(snakemake@config[["differential_plots"]][["scripts"]][["initialise"]])
 expr$colour <- ifelse(expr$padj < sig_p, ifelse(expr$log2FoldChange < 0, down_col, up_col), insig_col)
+
+# Import wildcards as characters
+prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
+tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
+valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
+feature <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]]))
+
+# Initialise Word Document
+doc <- read_docx(snakemake@input[["docx"]])
+analysis_heading <- paste( "Differential", toTitleCase(difference))
+doc <- body_add(doc,fpar(ftext(analysis_heading, prop=heading_2)),style = "heading 2")
 
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(unique(expr$group[expr$biotype %in% biotypes]), "")
@@ -228,9 +239,13 @@ sum_list <- list(pie,violin,ma,volcano)
 sum_ncol <- 2
 sum_nrow <- ceiling(length(sum_list)/sum_ncol)
 
-
-
 summary <- ggarrange(plotlist=sum_list,ncol=sum_ncol,nrow=sum_nrow,labels="AUTO")
+
+summary_captions <- c(pie_caption,violin_caption,ma_caption,volcano_caption)
+summary_caption <- paste(paste( "(", LETTERS[1:length(summary_captions)], "). ", summary_captions, sep=""),collapse="/n")
+
+
+
 
 
 caption <- paste(capt, " of ", length(expr_i$gene_name), " ", toTitleCase(i), " ", feature,"s normalised by " , norm, ". ", descript, sep="")

@@ -69,7 +69,3 @@ ma_caption <- paste(
 ma_plot_caption <- paste(
   ma_caption, " Top ", ma_n, " most significantly increased and decreased are labelled.", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold", ""),sep=""
 )
-
-ggsave(file=paste(file_i," MA Plot.pdf",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
-ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
-

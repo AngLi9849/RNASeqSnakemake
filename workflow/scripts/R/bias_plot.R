@@ -26,7 +26,7 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$log2FoldCh
     colour="black") +
   scale_x_continuous(limits=c(0.25,0.75),breaks=c(0,0.25,0.5,0.75,1),labels=scales::percent) + 
   facet_wrap(
-    ~factor(change,levels=c("Significantly Upregulated","Significantly Downregulated")), scales="free"
+    ~factor(change,levels=c("Significantly Increased","Significantly Decreased")), scales="free"
   ) +
   xlab(paste("GC Content (%)",sep=" ")) +
   ylab("log2 Fold Change") +
@@ -65,7 +65,7 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$lo
     colour="black") +
   scale_x_log10() + 
   facet_wrap(
-    ~factor(change,levels=c("Significantly Upregulated","Significantly Downregulated")), scales="free"
+    ~factor(change,levels=c("Significantly Increased","Significantly Decreased")), scales="free"
   ) +
   xlab(paste(feature, "Length (bps)",sep=" ")) +
   ylab("log2 Fold Change") +
@@ -125,3 +125,6 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$log2Fo
 
 bias <- ggarrange(plotlist=list(GC_plot,Length_plot,rpkm_plot),ncol=1,nrow=3,labels="AUTO")
 
+bias_caption <- paste(
+  "Significant(p < ", sig_p, ") log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC Content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
+)
