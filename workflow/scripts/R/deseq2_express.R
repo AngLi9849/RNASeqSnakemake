@@ -8,6 +8,15 @@ library(DESeq2)
 library(ashr)
 library(dplyr)
 library(tools)
+library(tidyverse)
+library(ggpubr)
+library(ggrepel)
+library(ggtext)
+library(stringr)
+library(officer)
+library(rvg)
+library(scales)
+
 
 parallel <- FALSE
 if (snakemake@threads > 1) {
@@ -22,22 +31,29 @@ dir <- as.character(snakemake@params[["dir"]])
 dir.create(dir)
 
 difference <- "expression levels"
+analysis <- paste("differential", difference, "analysis")
 
-experiment <- as.character(snakemake@wildcards[["experiment"]])
-treat <-  as.character(snakemake@params[["treat"]])
-control <- as.character(snakemake@params[["control"]])
-spikein <- as.character(snakemake@wildcards[["spikein"]])
+# Import wildcards as text
+prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
+tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
+valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
+feature <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]]))
+
+experiment <- gsub("_"," ",as.character(snakemake@wildcards[["experiment"]]))
+treat <-  gsub("_"," ",as.character(snakemake@params[["treat"]]))
+control <- gsub("_"," ",as.character(snakemake@params[["control"]]))
+spikein <- gsub("_"," ",as.character(snakemake@wildcards[["spikein"]]))
+
+splice <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["splice"]]))
+normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["normaliser"]]))
+counting <- "read count"
+counted <- gsub("_"," ",paste(splice, tolower(prefix), feature, counting, sep=" "))
+norm <- gsub("_"," ",paste(spikein, tolower(normaliser), sep=" "))
 
 compare <- list(c(control,treat))
 
 biotypes <- c(snakemake@config[["biotypes"]])
 goi <- c(snakemake@config[["GOI"]])
-
-splice <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["splice"]]))
-normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["normaliser"]]))
-
-counting <- "read count"
-change <- paste(feature,counting,sep=" ")
 
 genes <- read.csv(snakemake@input[["genetab"]],sep='\t',header=F,col.names=c("gene_id","gene_name","biotype","exon_count"),check.names=F)
 bed <- unique(read.csv(snakemake@input[["bed"]],sep='\t',header=F,check.names=F)[,c(7,4,8,9)])
@@ -139,18 +155,12 @@ expr$Length <- length$Length[match(rownames(expr),length$gene)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
 expr$rpkm <- expr$baseMean*1000000000/expr$Length
 
-title <- gsub("_"," ",paste(experiment, toTitleCase(change),sep=" "))
+title <- gsub("_"," ",paste(experiment, toTitleCase(analysis),sep=" "))
 write.table(data.frame(expr[c(1,2,5,6:9)]),file=paste(dir,"/",title," TopTable.tsv",sep=""), sep='\t',row.names=F,quote=F)
 
 # Initialise Plotting
 source(snakemake@config[["differential_plots"]][["scripts"]][["initialise"]])
 expr$colour <- ifelse(expr$padj < sig_p, ifelse(expr$log2FoldChange < 0, down_col, up_col), insig_col)
-
-# Import wildcards as characters
-prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
-tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
-valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
-feature <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]]))
 
 # Initialise Word Document
 doc <- read_docx(snakemake@input[["docx"]])
@@ -168,15 +178,10 @@ if (i =="") {
 }
 
 # Set file name and path
-file_i <- gsub("_"," ",paste(experiment, i, change,sep=" "))
+file_i <- gsub("_"," ",paste(experiment, feature_i, analysis ,sep=" "))
 
 dir_i <- paste(dir,"/",ifelse(i=="","All",i),sep="")
 dir.create(dir_i)
-
-# Set variables for titles and legends
-title <- gsub("_"," ",paste(experiment, toTitleCase(i),toTitleCase(change),sep=" "))
-capt <- gsub("_"," ",paste(splice, tolower(prefix), counting, sep=" "))
-norm <- gsub("_"," ",paste(spikein, tolower(normaliser), sep=" "))
 
 # Write heading for this analysis group
 group_heading <- gsub("_"," ",toTitleCase(ifelse(i=="","Overview",i)))
@@ -208,6 +213,8 @@ cts_genes_i <- ifelse(i=="",cts_genes,cts_genes[cts_genes$group==i,])
 
 feature_i <- ifelse(i=="", feature, paste(i,feature))
 
+title_i <- gsub("_"," ",paste(experiment, feature_i, "Differential", toTitleCase(difference),sep=" "))
+
 # Pie Chart ===================================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["pie_chart"]])
 # Violin Plot =================================================
@@ -235,22 +242,30 @@ bias
 
 # Summary ====================================================
 
-sum_list <- list(pie,violin,ma,volcano)
+sum_list <- list("pie","violin","ma","volcano")
+sum_plot_list <- lapply(sum_list,function(x) {get(x)})
 sum_ncol <- 2
-sum_nrow <- ceiling(length(sum_list)/sum_ncol)
+sum_nrow <- ceiling(length(sum_plot_list)/sum_ncol)
 
-summary <- ggarrange(plotlist=sum_list,ncol=sum_ncol,nrow=sum_nrow,labels="AUTO")
+summary <- ggarrange(plotlist=sum_plot_list,ncol=sum_ncol,nrow=sum_nrow,labels="AUTO")
 
-summary_captions <- c(pie_caption,violin_caption,ma_caption,volcano_caption)
-summary_caption <- paste(paste( "(", LETTERS[1:length(summary_captions)], "). ", summary_captions, sep=""),collapse="/n")
+summary_title <- paste(title_i, "Analysis Summary.")
+summary_caption <- paste("Overviews of ", experiment, feature_i, analysis, ".", str_to_sentence(difference), " are compared in Deseq2 based on ", counted, " normalised to ", norm, ".")
+summary_captions <- lapply(paste(sum_list,"_caption",sep=""),function(x) {get(x)})
+summary_captions <- paste( "(", LETTERS[1:length(summary_captions)], "). ", summary_captions, sep="")
+summary_captions <- unlist(list(summary_caption,summary_captions)
+
+plots <- list("summary","bias","ma_plot","volcano_plot")
+
+for ( p in plots) ) {
+
+plot_p <- get(p)
+title_p <- get(paste(p,"_title",sep="")
+caption_p <- get(paste(p,"_caption",sep="")
 
 
 
-
-
-caption <- paste(capt, " of ", length(expr_i$gene_name), " ", toTitleCase(i), " ", feature,"s normalised by " , norm, ". ", descript, sep="")
-
-
+}
 doc <- body_add(doc,value=plot_i,style = "centered")
 doc <- body_add(doc,plot_title)
 doc <- body_add(doc,fpar(ftext(caption,prop=plain)))

@@ -56,6 +56,7 @@ pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
     axis.title.x = element_text(size=9)
   )
 
+
 pie_caption <- paste(
   "Amongst ", tolower(difference), " of ", paste(nrow(cts_genes_i)), feature_i, 
   sig_up, " significantly increased (", sig_up_pc, ",", up_col, "), ", 

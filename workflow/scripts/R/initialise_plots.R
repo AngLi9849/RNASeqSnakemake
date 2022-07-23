@@ -1,17 +1,6 @@
 sink(log)
 sink(log, type="message")
 
-# Activate libraries for differential plotting
-library(tidyverse)
-library(ggpubr)
-library(ggrepel)
-library(ggtext)
-library(stringr)
-library(officer)
-library(rvg)
-library(scales)
-
-
 # Import Plotting Parameters
 descript <- as.character(snakemake@params[["descript"]])
 
