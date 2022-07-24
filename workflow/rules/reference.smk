@@ -105,11 +105,11 @@ rule combine_genome_and_annotation:
     input:
         sample_genome=lambda wildcards: "resources/genomes/{species}_genome.fasta",
         spikein_genome="resources/genomes/spikein_{spikein}_genome.fasta",
-        sample_gtf=lambda wildcards: "resources/genomes/{species}_genome.gtf",
-        spikein_gtf="resources/genomes/spikein_{spikein}_genome.gtf",
+        sample_gtf=lambda wildcards: "resources/annotations/{species}_genome.gtf",
+        spikein_gtf="resources/annotations/spikein_{spikein}_genome.gtf",
     output:
        fasta="resources/genomes/combined_{species}_and_{spikein}_genome.fasta",
-       gtf="resources/genomes/combined_{species}_and_{spikein}_genome.gtf",
+       gtf="resources/annotations/combined_{species}_and_{spikein}_genome.gtf",
     resources:
         mem="6G",
         rmem="4G",
@@ -117,7 +117,7 @@ rule combine_genome_and_annotation:
         "logs/ref/combine_{species}_and_{spikein}_genome.log",
     shell:
         """
-        cat {input.sample_genome} {input.spikein_genome} > {output.genome} &&
+        cat {input.sample_genome} {input.spikein_genome} > {output.fasta} &&
         cat {input.sample_gtf} {input.spikein_gtf} > {output.gtf} 
         """
 

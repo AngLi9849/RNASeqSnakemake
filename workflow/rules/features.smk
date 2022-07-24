@@ -2,7 +2,7 @@ rule extract_annotated_feature:
     input:
         "resources/annotations/{prefix}_{lineage}.gtf.{tag}_{valid}.bed",
     output:
-        "resources/annotations/{prefix}.gtf.{lineage}_{valid}.{tag}.{feature}.bed"
+        "resources/annotations/{prefix}_{lineage}.gtf.{valid}_{tag}.{feature}.bed"
     log:
         "logs/features/extract_{prefix}_{lineage}_{valid}_{tag}_{feature}.log"
     threads: 1

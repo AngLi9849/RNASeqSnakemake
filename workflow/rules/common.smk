@@ -85,7 +85,7 @@ experiments = (experiments.set_index(["experiment"], drop=False).sort_index())
 # Helper Functions for experiments
 
 def get_source(experiment):
-    if experiments.loc[experiment,"spikein_species"]:
+    if not pd.isna(experiments.loc[experiment,"spikein_species"]):
         return "combined_{sample_species}_and_{spikein_species}".format(
             sample_species=get_ref_source(experiments.loc[experiment,"sample_species"]),
             spikein_species=get_ref_source(experiments.loc[experiment,"spikein_species"])
@@ -164,7 +164,7 @@ def get_feature_counts():
 
 def get_genebody_diffexp_docx():
     counts = expand(
-        "featurecounts/{exp.experiment}/{exp.reference}/{exp.normaliser}_{exp.norm_feat}ReadCount_normalised.{splice}Aligned{demulti}{dedup}.genome_{valid}.{tag}.GeneBody.docx",
+        "results/{exp.experiment}/{exp.reference}/differential_expression/{exp.normaliser}_{exp.norm_feat}ReadCount_normalised.{splice}_Aligned{demulti}{dedup}.genome_{valid}.{tag}.GeneBody.docx",
         exp=experiments.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICE,  
     ),
     return counts

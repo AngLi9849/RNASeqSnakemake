@@ -111,7 +111,7 @@ rule read_count_scale_factors:
 rule feature_count_scale_factors:
     input:
         counts="featurecounts/{experiment}/{reference}/{prefix}.genome_annotated.basic.{feature}Reads.counts.tsv",
-        bed=lambda w: "resources/annotations/{{reference}}_genome.{type}.genome_annotated.basic.{{feature}}.bed".format(
+        bed=lambda w: "resources/annotations/{{reference}}_genome.{type}.annotated_basic.{{feature}}.bed".format(
             type = "custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
         ),
     output:
