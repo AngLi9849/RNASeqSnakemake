@@ -188,7 +188,7 @@ group_heading <- gsub("_"," ",toTitleCase(ifelse(i=="","Overview",i)))
 doc <- body_add(doc,fpar(ftext(group_heading, prop=heading_3)),style = "heading 3")
 
 # Start figure counting from 1
-fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ".", prop=bold,tnd=3, tns=".", bkm = "plot", start_at = 1)
+fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ".", prop=bold,tnd=3, tns="-", bkm = "plot", start_at = 1)
 
 # Shrink Infinite log10Ps to 1.1 x maximum non-Inf log10P
 max_log10P <- max(expr_i$log10P[expr_i$log10P < Inf],na.rm = T)
@@ -228,6 +228,8 @@ ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=ma_plot,height=
 # Volcano Plot ===============================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["volcano_plot"]])
 
+ggsave(file=paste(file_i," MA Plot.pdf",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
+ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
 
 # Metagene ===================================================
 #source(snakemake@config[["differential_plots"]][["scripts"]][["metagene"]])
@@ -253,32 +255,38 @@ summary_title <- paste(title_i, "Analysis Summary.")
 summary_caption <- paste("Overviews of ", experiment, feature_i, analysis, ".", str_to_sentence(difference), " are compared in Deseq2 based on ", counted, " normalised to ", norm, ".")
 summary_captions <- lapply(paste(sum_list,"_caption",sep=""),function(x) {get(x)})
 summary_captions <- paste( "(", LETTERS[1:length(summary_captions)], "). ", summary_captions, sep="")
-summary_captions <- unlist(list(summary_caption,summary_captions)
+summary_captions <- unlist(list(summary_caption,summary_captions))
 
 plots <- list("summary","bias","ma_plot","volcano_plot")
+plot_n <- 1
 
-for ( p in plots) ) {
+# Loop for each plot listed
+for ( p in plots) {
 
 plot_p <- get(p)
-title_p <- get(paste(p,"_title",sep="")
-caption_p <- get(paste(p,"_caption",sep="")
+title_p <- get(paste(p,"_title",sep=""))
+caption_p <- get(paste(p,"_caption",sep=""))
 
-
-
+if (plot_n > 1) {  
+fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ".", prop=bold,tnd=3, tns="-", bkm = "plot")
 }
-doc <- body_add(doc,value=plot_i,style = "centered")
-doc <- body_add(doc,plot_title)
-doc <- body_add(doc,fpar(ftext(caption,prop=plain)))
+
+title_p <- fpar(fig_num,title_p) 
+
+plot_n <- plot_n + 1
+doc <- body_add(doc,value=plot_p,width = 6, height = 6, res= plot_dpi,style = "centered")
+doc <- body_add(doc,title_p)
+
+# Loop for each line in caption
+for (c in caption_p) {
+doc <- body_add(doc,fpar(ftext(c,prop=plain)))
+}
+
 doc <- body_add(doc,run_pagebreak())
 
-fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ".", prop=bold,tnd=3, tns=".", bkm = "plot")
-
-
 }
 
-print(doc, target = snakemake@output[["docx"]])
-
-
+}
 
 print(doc, target = snakemake@output[["docx"]])
 
