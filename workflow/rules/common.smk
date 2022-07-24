@@ -23,14 +23,14 @@ def get_ref_source(species):
     if not pd.isna(references.loc[species,"genome_dir"]):
         return str("local_" + species)
     else :
-        return "ensembl_{S}-{B}-{R}".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
+        return "ensembl_{S}.{B}.{R}".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
 
 
 def get_genome(species):
     if not pd.isna(references.loc[species,"genome_dir"]):
         return "resources/genomes/local_{S}_genome.fasta".format(S=species)
     else :
-        return "resources/genomes/ensembl_{S}-{B}-{R}_genome.fasta".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
+        return "resources/genomes/ensembl_{S}.{B}.{R}_genome.fasta".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
 
 
 def get_annotation(species):

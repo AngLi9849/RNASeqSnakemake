@@ -1,6 +1,6 @@
 rule get_ensembl_genome:
     output:
-        "resources/genomes/ensembl_{species}-{build}-{release}_genome.fasta",
+        "resources/genomes/ensembl_{species}.{build}.{release}_genome.fasta",
     log:
         "logs/{species}_{build}_{release}_genome.log",
     params:
@@ -16,7 +16,7 @@ rule get_ensembl_genome:
 
 rule get_ensembl_annotation:
     output:
-        "resources/annotations/ensembl_{species}-{build}-{release}_genome.gtf",
+        "resources/annotations/ensembl_{species}.{build}.{release}_genome.gtf",
     params:
         fmt="gtf",
         species=lambda wildcards: wildcards.species,
