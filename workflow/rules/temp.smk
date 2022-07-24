@@ -1,8 +1,8 @@
-rule mv_spliced_bam:
+rule mv_bam:
     input:
-        "{prefix}Aligned{midfix}counts{suffix}",
+        "{prefix}/star/{sample}-{unit}/AllAligned{suffix}",
     output:
-        "{prefix}AllAligned{midfix}counts{suffix}",
+        "star/{sample}",
     shell:
         "mv {input} {output}"
 

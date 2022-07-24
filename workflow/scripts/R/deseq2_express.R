@@ -65,31 +65,18 @@ names(genes) <- c("gene_id","gene_name","biotype","exon_count")
 #  Import sample config, size factors and count table and conduct DESeq2 Differential Expression Analysis
 rep_pair <- as.logical(snakemake@params[["paired"]])
 
-sample_table <- read.table(snakemake@params[["sample_table"]], sep='\t',header=TRUE, check.names=FALSE)
-sample_table <- sample_table[sample_table$experiment==snakemake@wildcards[["experiment"]],]
-sample_table <- sample_table[(sample_table$condition==control | sample_table$condition==a),]
-sample_table$sample_name <- paste(sample_table$condition,"_Rep_",sample_table$replicate,sep="")
-rownames(sample_table) <- sample_table$sample_name
+# Import Counts table and extract sample names involved
+cts <- read.table(snakemake@input[["counts"]], sep='\t', header=TRUE, row.names="gene", check.names=FALSE, stringsAsFactors=FALSE)
+cts <- cts[ , order(names(cts))]
+samples <- names(cts)
 
-coldata <- sample_table[,c("condition","replicate")]
-coldata <- coldata[order(row.names(coldata)), , drop=F]
-
-condition_col <- as.character(sample_table$colour[match(unique(coldata$condition),sample_table$condition)])
-names(condition_col) <-unique(coldata$condition)
 # Import size factors
 size_table <- read.csv(snakemake@input[["size_table"]],header=T,sep="\t",check.names=F)
-size_table <- size_table[match(size_table$sample_name,sample_table$sample_name),]
+size_table <- size_table[match(size_table$sample_name,samples),]
 size_factors <- as.numeric(size_table$size_factor)
 names(size_factors) <- size_table$sample_name
 
-# Import feature lengths and nucleotide content
-length <- read.table(snakemake@input[["length"]], sep='\t',header=TRUE, check.names=FALSE)
-nuc <- read.csv(snakemake@input[["nuc"]],header=T,row.names = 1, sep='\t')
-
-# Import Counts Table
-cts <- read.table(snakemake@input[["counts"]], sep='\t', header=TRUE, row.names="gene", check.names=FALSE, stringsAsFactors=FALSE)
-cts <- cts[,match(names(cts),sample_table$sample_name)]
-
+# Calculate expression levels by rpkm
 rpkm <- data.frame(lapply(names(cts), function(x) {
   cts[,paste(x)]*size_table$size_factor[size_table$sample_name==x]
 }))
@@ -98,17 +85,34 @@ names(rpkm) <- names(cts)
 rownames(rpkm) <- rownames(cts)
 rpkm <- rpkm/length$Length[match(rownames(rpkm),length$gene)]*(10^9)
 
+# Convert counts table to matrix
+cts_names <- row.names(cts)
+cts <- sapply(cts,as.numeric)
+row.names(cts) <- cts_names
+
+# Import sample table and define ColData dataframe for deseq2
+sample_table <- read.table(snakemake@params[["sample_table"]], sep='\t',header=TRUE, check.names=FALSE)
+sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
+sample_table <- sample_table[match(samples,sample_table$sample_name),]
+rownames(sample_table) <- sample_table$sample_name
+
+coldata <- sample_table[,c("condition","replicate")]
+coldata <- coldata[order(row.names(coldata)), , drop=F]
+
+condition_col <- as.character(sample_table$colour[match(unique(coldata$condition),sample_table$condition)])
+names(condition_col) <-unique(coldata$condition)
+
+# Import feature lengths and nucleotide content
+length <- read.table(snakemake@input[["length"]], sep='\t',header=TRUE, check.names=FALSE)
+nuc <- read.csv(snakemake@input[["nuc"]],header=T,row.names = 1, sep='\t')
+
+# Caculate mean expression levels of each condtion
 mean_level <- data.frame(
   lapply(sample_table$condition, function(x) {
     apply(rpkm[,match(sample_table$sample_name[sample_table$condition==x],names(rpkm))],1,FUN=mean)
   }
 )
 names(mean_level) <- sample_table$condition
-
-cts <- cts[ , order(names(cts))]
-cts_names <- row.names(cts)
-cts <- sapply(cts,as.numeric)
-row.names(cts) <- cts_names
 
 # Calculate number of features considered in each  multi/monoexonic-biotype group
 cts_genes <- data.frame(cts_names,genes$biotype[match(cts_names,genes$gene_id)],genes$exon_count[match(cts_names,genes$gene_id)])
@@ -271,7 +275,7 @@ if (plot_n > 1) {
 fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ".", prop=bold,tnd=3, tns="-", bkm = "plot")
 }
 
-title_p <- fpar(fig_num,title_p) 
+title_p <- fpar(fig_num,ftext(title_p,prop=plain)) 
 
 plot_n <- plot_n + 1
 doc <- body_add(doc,value=plot_p,width = 6, height = 6, res= plot_dpi,style = "centered")

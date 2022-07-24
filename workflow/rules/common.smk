@@ -78,7 +78,7 @@ SCORE=["sum","per_gene"] if config["metagene"]["plot_sum"] else "per_gene"
 #Functions for generating results
 def get_bams():
     bams = expand(
-        "{sample.experiment}/star/{sample.sample_name}-{sample.unit_name}/{splice}Aligned{demulti}{dedup}.sortedByCoord.out.bam",
+        "star/{sample.sample_name}-{sample.unit_name}/{splice}Aligned{demulti}{dedup}.sortedByCoord.out.bam",
         sample=samples.itertuples(), counts=COUNTS_BIGWIG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICING
     )
     return bams
@@ -92,7 +92,14 @@ def get_bigwigs():
 
 def get_feature_counts():
     counts = expand(
-        "{sample.experiment}/feature_counts/{sample.sample_name}-{sample.unit_name}/{splice}Aligned{demulti}{dedup}.{valid}_{tag}.gene.counts.tab",
+        "featurecounts/{experiment}/{reference}/{sample.sample_name}-{sample.unit_name}/{splice}Aligned{demulti}{dedup}.{valid}_{tag}.gene.counts.tab",
+        sample=samples.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICING
+    ),
+    return counts
+
+def get_feature_counts():
+    counts = expand(
+        "featurecounts/{experiment}/{reference}/{sample.sample_name}-{sample.unit_name}/{splice}Aligned{demulti}{dedup}.{valid}_{tag}.gene.counts.tab",
         sample=samples.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICING
     ),
     return counts

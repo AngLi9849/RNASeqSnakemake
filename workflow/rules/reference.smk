@@ -387,6 +387,8 @@ rule gtf_features:
           FNR==NR {{
             print $1, 0, $2, $1, $2, "+", "chr", $1, $1, 0, $1, 1, 1, 1 ;
             print $1, 0, $2, $1, $2, "-", "chr", $1, $1, 0, $1, 1, 1, 1 ;
+            print $1, 0, $2, "{wildcards.prefix}", $2, "+", "genome", $1, $1, 0, $1, 1, 1, 1 ;
+            print $1, 0, $2, $1, $2, "-", "genome", $1, $1, 0, $1, 1, 1, 1 ;
           }}
           FNR < NR {{ print }}' {input.chr} - |
 
