@@ -17,12 +17,59 @@ references = references.applymap(lambda x: x.strip() if isinstance(x, str) else 
 references = references.mask(references=='')
 references = (references.set_index(["species"], drop=False).sort_index())
 
+# Helper functions for references 
+
+def get_ref_source(species):
+    if not pd.isna(references.loc[species,"genome_dir"]):
+        return str("local_" + species)
+    else :
+        return "ensembl_{S}-{B}-{R}".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
+
+
+def get_genome(species):
+    if not pd.isna(references.loc[species,"genome_dir"]):
+        return "resources/genomes/local_{S}_genome.fasta".format(S=species)
+    else :
+        return "resources/genomes/ensembl_{S}-{B}-{R}_genome.fasta".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
+
+
+def get_annotation(species):
+    if not pd.isna(references.loc[species,"annotation_dir"]):
+        return "resources/annotations/local_{S}_genome.gtf".format(S=species)
+    else :
+        return "resources/annotations/ensembl_{S}-{B}-{R}_genome.gtf".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
+
 # Read feature_parameters config table into pandas dataframe
 features = (pd.read_csv(config["feature_parameters"], sep="\t", dtype={"feature_name": str, "feature": str, "subfeat": str , "annotation_bed6": str}, comment="#"))
 features.columns = features.columns.str.strip()
 features = features.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 features = features.mask( features == '')
 features = (features.set_index(["feature_name"], drop=False).sort_index())
+
+# Helper functions for features
+
+def get_feature_validity(feature):
+    feat=features.loc[feature].squeeze(axis=0)["feature"]
+    if not pd.isna(features.loc[feature].squeeze(axis=0)["annotation_bed"]):
+        return "provided"
+    else:
+        if feat in features["feature_name"].tolist():
+            return get_feature_validity(feat)
+        else:
+            if config["features"]["validate_features"]:
+                return "validated"
+            else:
+                return "annotated"
+
+def get_root_feature(feature):
+    base=features.loc[feature].squeeze(axis=0)["feature"]
+    if not pd.isna(features.loc[feature].squeeze(axis=0)["annotation_bed"]):
+        return str(feature)
+    else:
+        if base in features["feature_name"].tolist():
+            return get_root_feature(base)
+        else:
+            return str(features.loc[feature].squeeze(axis=0)["feature"])
 
 # Read experimentss config table into pandas dataframe
 experiments = (pd.read_csv(config["experiments"], sep="\t", dtype={"protocol": str, "sample_lineage" : str}, comment="#"))
@@ -34,35 +81,53 @@ experiments["experiment"] = experiments.apply( lambda row: \
 )
 experiments = (experiments.set_index(["experiment"], drop=False).sort_index())
 
+
+# Helper Functions for experiments
+
+def get_source(experiment):
+    if experiments.loc[experiment,"spikein_species"]:
+        return "combined_{sample_species}_and_{spikein_species}".format(
+            sample_species=get_ref_source(experiments.loc[experiment,"sample_species"]),
+            spikein_species=get_ref_source(experiments.loc[experiment,"spikein_species"])
+        )
+    else :
+        return get_ref_source(experiments.loc[experiment,"sample_species"])
+
+def get_sample_source(experiment):
+    return get_ref_source(experiments.loc[experiment,"sample_species"])
+
+# Assign reference to each experiment
+experiments["reference"] = experiments.apply( lambda row: get_source(row.experiment), axis = 1 )
+experiments["normaliser"] = experiments.apply( lambda row: "spikein" if row.spikein else "internal" , axis = 1 )
+
 # Read samples config table into pandas dataframe
 samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol": str, "replicate": str, "unit_name": str}, comment="#"))
 samples["sample_name"]=samples.apply(lambda row: str(row.condition) + "_" + str(row.protocol) + "_Replicate_" + str(row.replicate), axis=1)
-#samples=samples.set_index(["experiment"], drop=False).sort_index()
-#samples=samples.loc[samples["experiment"].isin(experiments["experiment"].tolist())]
-#samples["species"]=samples.apply(lambda row: experiments.loc[row.experiment,"sample_species"],axis=1)
-#samples["lineage"]=samples.apply(lambda row: experiments.loc[row.experiment,"sample_lineage"],axis=1)
 samples=samples.set_index(["sample_name","unit_name"], drop=False).sort_index()
-
-#samples["normaliser"]=samples.apply(lambda row: "spikein" if experiments.loc[row.experiment,"spikein"].bool() else "internal", axis=1)
-
-#samples["contrast"]=samples.apply( lambda row: \ 
-#    ( str( row.condition ) + "_vs_" + str( experiments.loc[row.experiment].squeeze(axis=0)["control"] ) ) \
-#    if not ( str( row.condition ) == str( experiments.loc[row.experiment].squeeze(axis=0)["control"] ) ) \
-#    else "", \
-#    axis=1
-#)
-
 samples = samples.mask(samples == '')
 
-# Write all possible test-control contrasts in each experiment to a dataframe
-#contrasts = samples.iloc[pd.notna(samples.contrast).tolist()][["experiment","contrast","normaliser"]].drop_duplicates(ignore_index=True)
+# Helper functions for samples
+
+def get_experiment_samples(wildcards):
+    exp = experiments.loc[wildcards.experiment].squeeze()
+    cond = [exp.control,exp.treatment]
+    sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
+    return sample
+
+def get_lineage_sj_samples(wildcards):
+    exp = experiments[ (experiments.sample_lineage==wildcards.lineage).tolist() & experiments.splice & (experiments.sample_species == wildcards.species).tolist() ]
+    cond = [exp.control,exp.treatment]
+    sample=samples[(samples.condition + "_" + samples.protocol).isin(
+        (exp["control"] + "_" + exp["protocol"]).tolist() + (exp["treatment"] + "_" + exp["protocol"]).tolist()
+    )]
+    return sample
 
 #Set variables for result filenames
 DEMULTI=['Demultimapped',''] if config["remove_multimappers"]=='BOTH' else 'Demultimapped' if config["remove_multimappers"] else ''
 DEDUP=['Deduplicated',''] if config["remove_duplicate_reads"]=='BOTH' else 'Deduplicated' if config["remove_duplicate_reads"] else ''
-SPLICING=['All','Spliced','Unspliced'] if config['seperate_spliced_reads'] else 'All'
+SPLICE=['All','Spliced','Unspliced'] if config['seperate_spliced_reads'] else 'All'
 
-VALID=['valid'] if config['features']['validate_features'] else ['gtf']
+VALID=['validated'] if config['features']['validate_features'] else ['annotated']
 TAG=list(config['ensembl_tags'])
 
 STRAND_BIGWIG=['unstranded','fwd','rev'] if config['strand_specific_bigwigs'] else ['unstranded']
@@ -97,10 +162,10 @@ def get_feature_counts():
     ),
     return counts
 
-def get_feature_counts():
+def get_genebody_diffexp_docx():
     counts = expand(
-        "featurecounts/{experiment}/{reference}/{sample.sample_name}-{sample.unit_name}/{splice}Aligned{demulti}{dedup}.{valid}_{tag}.gene.counts.tab",
-        sample=samples.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICING
+        "featurecounts/{exp.experiment}/{exp.reference}/{exp.normaliser}_{exp.norm_feat}ReadCount_normalised.{splice}Aligned{demulti}{dedup}.genome_{valid}.{tag}.GeneBody.docx",
+        exp=experiments.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICE,  
     ),
     return counts
 
@@ -133,90 +198,6 @@ def get_meta_profiles():
     return pdf
 
 #Functions for processing
-def get_feature_validity(feature):
-    feat=features.loc[feature].squeeze(axis=0)["feature"]
-    if not pd.isna(features.loc[feature].squeeze(axis=0)["annotation_bed"]):
-        return "provided"
-    else:
-        if feat in features["feature_name"].tolist():
-            return get_feature_validity(feat)
-        else: 
-            if config["features"]["validate_features"]:
-                return "validated"
-            else:
-                return "annotated"
-
-def get_root_feature(feature):
-    base=features.loc[feature].squeeze(axis=0)["feature"]
-    if not pd.isna(features.loc[feature].squeeze(axis=0)["annotation_bed"]):
-        return str(feature)
-    else:
-        if base in features["feature_name"].tolist():
-            return get_root_feature(base)
-        else:
-            return str(features.loc[feature].squeeze(axis=0)["feature"])
-
-def get_source(wildcards):
-    if experiments.loc[wildcards.experiment,"spikein_species"]:
-        return "combined_{sample_species}_and_{spikein_species}".format(
-            sample_species=experiments.loc[wildcards.experiment,"sample_species"],
-            spikein_species=experiments.loc[wildcards.experiment,"spikein_species"]
-        )
-    else :
-        if not pd.isna(references.loc[experiments.loc[wildcards.experiment,"sample_species"],"genome_dir"]):
-            return "local_{sample_species}".format(
-                sample_species=experiments.loc[wildcards.experiment,"sample_species"]
-            )
-        else :
-            return "ensembl_{sample_species}".format(
-                sample_species=experiments.loc[wildcards.experiment,"sample_species"]
-            )    
-
-def get_sample_source(wildcards):
-    if not pd.isna(references.loc[experiments.loc[wildcards.experiment,"sample_species"],"genome_dir"]):
-        return "local_{sample_species}".format(
-            sample_species=experiments.loc[wildcards.experiment,"sample_species"]
-        )
-    else :
-        return "ensembl_{sample_species}".format(
-            sample_species=experiments.loc[wildcards.experiment,"sample_species"]
-        )
-
-
-def get_ref_source(species):
-    if not pd.isna(references.loc[species,"genome_dir"]):
-        return "local"
-    else :
-        return "ensembl"
- 
-
-def get_genome(species):
-    if not pd.isna(references.loc[species,"genome_dir"]):
-        return "resources/genomes/local_{S}_genome.fasta".format(S=species)
-    else :
-        return "resources/genomes/ensembl_{S}_genome.fasta".format(S=species)
-
-
-def get_annotation(species):
-    if not pd.isna(references.loc[species,"annotation_dir"]):
-        return "resources/annotations/local_{S}_genome.gtf".format(S=species)
-    else :
-        return "resources/annotations/ensembl_{S}_genome.gtf".format(S=species)
-
-def get_experiment_samples(wildcards):
-    exp = experiments.loc[wildcards.experiment].squeeze()
-    cond = [exp.control,exp.treatment]
-    sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
-    return sample
-
-def get_lineage_sj_samples(wildcards):
-    exp = experiments[ (experiments.sample_lineage==wildcards.lineage).tolist() & experiments.splice & (experiments.sample_species == wildcards.species).tolist() ]
-    cond = [exp.control,exp.treatment]
-    sample=samples[(samples.condition + "_" + samples.protocol).isin(
-        (exp["control"] + "_" + exp["protocol"]).tolist() + (exp["treatment"] + "_" + exp["protocol"]).tolist()
-    )]
-    return sample
-
 def feature_descript(wildcards):
     descript = ( str(wildcards.feature) + " is based on " + "{v}"  + " " + str(wildcards.tag) + " {root}s" + "{ref}." ).format(
         v="annotated" if wildcards.valid=="annotated" else ( str( experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_lineage"] ) + "validated" ) if wildcards.valid=="validated" else "provided",

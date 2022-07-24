@@ -13,7 +13,7 @@ remove_duplicate_reads: FALSE
 # Bigwig track options
 bigwig_bin_size: 1
 strand_specific_bigwigs: TRUE # Generate strand-specific bigwigs for strand-specific data
-seperate_spliced_reads: TRUE
+seperate_spliced_reads: FALSE 
 unspliced_min_length: 20
 unspliced_max_length: 2000
 

@@ -72,7 +72,7 @@ samples <- names(cts)
 
 # Import size factors
 size_table <- read.csv(snakemake@input[["size_table"]],header=T,sep="\t",check.names=F)
-size_table <- size_table[match(size_table$sample_name,samples),]
+size_table <- size_table[match(samples,size_table$sample_name),]
 size_factors <- as.numeric(size_table$size_factor)
 names(size_factors) <- size_table$sample_name
 
@@ -244,7 +244,6 @@ ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=ma_plot,height=
 
 # GC, Length and RPKM Bias ===================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["bias"]])
-bias
 
 # Summary ====================================================
 

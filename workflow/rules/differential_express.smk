@@ -22,14 +22,14 @@ rule deseq2_expression:
         length = "featurecounts/{experiment}/{reference}/{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.lengths.tsv",
         counts="featurecounts/{experiment}/{reference}/{splice}{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.counts.tsv",
         genetab=lambda w: "resources/annotations/{source}_genome.gtf.{{tag}}_gene_info.tab".format(
-            source= str( get_sample_source(w) ),
+            source= str( get_sample_source(w.experiment) ),
         ),
         bed=lambda w: "resources/annotations/{source}_{{lineage}}.{type}.{{valid}}_{{tag}}.{{feature}}.bed".format(
-            source=  str( get_sample_source(w) ),
+            source=  str( get_sample_source(w.experiment) ),
             type="custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
         ),
         nuc=lambda w: "resources/annotations/{source}_{{lineage}}.{type}.{{valid}}_{{tag}}.{{feature}}.bed.nuc.tab".format(
-            source=  str( get_sample_source(w) ),
+            source=  str( get_sample_source(w.experiment) ),
             type="custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
         ),
         pptx="resources/templates/{w}cm_wide.{h}cm_tall.pptx".format(

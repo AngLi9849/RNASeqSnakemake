@@ -1,35 +1,33 @@
 rule get_ensembl_genome:
     output:
-        "resources/genomes/ensembl_{species}_genome.fasta",
+        "resources/genomes/ensembl_{species}-{build}-{release}_genome.fasta",
     log:
-        "logs/{species}_genome.log",
+        "logs/{species}_{build}_{release}_genome.log",
     params:
         datatype="dna",
         species=lambda wildcards: wildcards.species,
-        build=lambda wildcards: references.loc[wildcards.species,"ensembl_build"],
-        release=lambda wildcards: references.loc[wildcards.species,"ensembl_release"],
+        build=lambda wildcards: wildcards.build,
+        release=lambda wildcards: wildcards.release,
     resources:
         mem="6G",
         rmem="4G",
-    cache: True
     wrapper:
         "0.77.0/bio/reference/ensembl-sequence"
 
 rule get_ensembl_annotation:
     output:
-        "resources/annotations/ensembl_{species}_genome.gtf",
+        "resources/annotations/ensembl_{species}-{build}-{release}_genome.gtf",
     params:
         fmt="gtf",
         species=lambda wildcards: wildcards.species,
-        build=lambda wildcards: references.loc[wildcards.species,"ensembl_build"],
-        release=lambda wildcards: references.loc[wildcards.species,"ensembl_release"],
+        build=lambda wildcards: wildcards.build,
+        release=lambda wildcards: wildcards.release,
         flavor="",
-    cache: True
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/{species}_annotation.log",
+        "logs/{species}_{build}_{release}_annotation.log",
     wrapper:
         "0.77.0/bio/reference/ensembl-annotation"
 
@@ -43,7 +41,6 @@ rule get_local_genome:
     resources:
         mem="6G",
         rmem="4G",
-    cache: True
     shell:
         "cat {input} > {output} 2> {log}"
 
@@ -55,7 +52,6 @@ rule get_local_annotation:
     resources:
         mem="6G",
         rmem="4G",
-    cache: True
     log:
         "logs/get_local_{species}_annotation.log",
     shell:
@@ -63,9 +59,7 @@ rule get_local_annotation:
 
 rule prefix_spikein_genome:
     input:
-        fasta = lambda wildcards: "resources/genomes/{s}_{{species}}_genome.fasta".format(
-            s=get_ref_source(wildcards.species)
-        ),
+        fasta = "resources/genomes/{species}_genome.fasta",
     output:
         "resources/genomes/spikein_{species}_genome.fasta",
     resources:
@@ -78,18 +72,18 @@ rule prefix_spikein_genome:
 
 rule prefix_spikein_annotation:
     input:
-        lambda wildcards: "resources/annotations/{s}_{{species}}_genome.gtf".format(s=get_ref_source(wildcards.species)),
-        awk_spikein_prefix="workflow/scripts/awk/spikein_prefix.awk"
+        gtf="resources/annotations/{species}_genome.gtf",
     output:
-        "resources/annotations/spikein_{species}_genome.gtf",
-    cache: True
+        gtf="resources/annotations/spikein_{species}_genome.gtf",
     resources:
         mem="6G",
         rmem="4G",
     log:
         "logs/set_spikein_{species}_annotation.log",
     shell:
-        "awk -F'\\t' -v OFS='\\t' -f {input.awk_spikein_prefix} {input[0]} > {output} 2> {log}"
+        """
+        awk -F'\\t' -v OFS='\\t' '$2!=""{{ $1 = "spikein_"$1 ; print }}' {input.gtf} > {output.gtf} 
+        """
 
 
 rule chrom_sizes:
@@ -107,36 +101,25 @@ rule chrom_sizes:
     shell:
         "awk -f {params.chrom_sizes_awk} {input} > {output}"
 
-rule combine_genome:
+rule combine_genome_and_annotation:
     input:
-        sample_genome=lambda wildcards: "resources/genomes/{s}_{{species}}_genome.fasta".format(s=get_ref_source(wildcards.species)),
-        spikein_genome="resources/genomes/spikein_{spikein_species}_genome.fasta",
+        sample_genome=lambda wildcards: "resources/genomes/{species}_genome.fasta",
+        spikein_genome="resources/genomes/spikein_{spikein}_genome.fasta",
+        sample_gtf=lambda wildcards: "resources/genomes/{species}_genome.gtf",
+        spikein_gtf="resources/genomes/spikein_{spikein}_genome.gtf",
     output:
-       "resources/genomes/combined_{species}_and_{spikein_species}_genome.fasta",
+       fasta="resources/genomes/combined_{species}_and_{spikein}_genome.fasta",
+       gtf="resources/genomes/combined_{species}_and_{spikein}_genome.gtf",
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/ref/combine_{species}_and_{spikein_species}_genome.log",
+        "logs/ref/combine_{species}_and_{spikein}_genome.log",
     shell:
-        "cat {input.sample_genome} {input.spikein_genome} > {output} 2> {log}"
-
-rule combine_annotation:
-    input:
-        sample_gtf=lambda wildcards: "resources/annotations/{s}_{{species}}_genome.gtf".format(s=get_ref_source(wildcards.species)),
-        spikein_gtf="resources/annotations/spikein_{spikein_species}_genome.gtf",
-    output:
-       "resources/annotations/combined_{species}_and_{spikein_species}_genome.gtf",
-    params:
-        col2check_awk="workflow/scripts/awk/col2check.awk"
-    resources:
-        mem="6G",
-        rmem="4G",
-    log:
-        "logs/ref/combine_{species}_and_{spikein_species}_genome_gtf.log",
-    shell:
-        "cat {input.sample_gtf} > {output} ; "
-        "awk -F'\\t' -v OFS='\\t' -f {params.col2check_awk} {input.spikein_gtf} | tail -n +1 - >> {output}"
+        """
+        cat {input.sample_genome} {input.spikein_genome} > {output.genome} &&
+        cat {input.sample_gtf} {input.spikein_gtf} > {output.gtf} 
+        """
 
 rule genome_faidx:
     input:
@@ -148,7 +131,6 @@ rule genome_faidx:
         rmem="4G",
     log:
         "logs/{prefix}-faidx.log",
-    cache: True
     wrapper:
         "0.77.0/bio/samtools/faidx"
 
@@ -164,7 +146,6 @@ rule bwa_index:
         "logs/bwa_{prefix}_genome_index.log",
     resources:
         mem_mb=369000,
-    cache: True
     wrapper:
         "0.77.0/bio/bwa/index"
 
@@ -387,8 +368,8 @@ rule gtf_features:
           FNR==NR {{
             print $1, 0, $2, $1, $2, "+", "chr", $1, $1, 0, $1, 1, 1, 1 ;
             print $1, 0, $2, $1, $2, "-", "chr", $1, $1, 0, $1, 1, 1, 1 ;
-            print $1, 0, $2, "{wildcards.prefix}", $2, "+", "genome", $1, $1, 0, $1, 1, 1, 1 ;
-            print $1, 0, $2, $1, $2, "-", "genome", $1, $1, 0, $1, 1, 1, 1 ;
+            print $1, 0, $2, "{wildcards.prefix}", $2, "+", "genome", "{wildcards.prefix}", "{wildcards.prefix}", 0, "{wildcards.prefix}", 1, 1, 1 ;
+            print $1, 0, $2, "{wildcards.prefix}", $2, "+", "genome", "{wildcards.prefix}", "{wildcards.prefix}", 0, "{wildcards.prefix}", 1, 1, 1 ;
           }}
           FNR < NR {{ print }}' {input.chr} - |
 
