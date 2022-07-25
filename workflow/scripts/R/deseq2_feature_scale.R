@@ -36,7 +36,7 @@ dds <- dds[ rowSums(counts(dds)) > 1, ]
 features <- read.csv(file=snakemake@input[["bed"]],sep="\t")[,c(1,8)]
 spikein_feat <- features[grepl("spikein_",features[,1],fixed=TRUE),2]
 spikein_bool <- rownames(dds) %in% spikein_feat
-internal_bool <- rownames(dds) %!in% spikein_feat
+internal_bool <- !(rownames(dds) %in% spikein_feat)
 
 # Estimate Size Factors, if spiked-in, use spikein features as controlGenes option. 
 if (spikein == "spikein") {

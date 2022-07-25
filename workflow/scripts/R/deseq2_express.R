@@ -33,6 +33,10 @@ dir.create(dir)
 difference <- "expression levels"
 analysis <- paste("differential", difference, "analysis")
 
+# Import feature lengths and nucleotide content
+count_length <- read.table(snakemake@input[["length"]], sep='\t',header=TRUE, check.names=FALSE)
+nuc <- read.csv(snakemake@input[["nuc"]],header=T,row.names = 1, sep='\t')
+
 # Import wildcards as text
 prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
 tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
@@ -69,6 +73,7 @@ rep_pair <- as.logical(snakemake@params[["paired"]])
 cts <- read.table(snakemake@input[["counts"]], sep='\t', header=TRUE, row.names="gene", check.names=FALSE, stringsAsFactors=FALSE)
 cts <- cts[ , order(names(cts))]
 samples <- names(cts)
+samples
 
 # Import size factors
 size_table <- read.csv(snakemake@input[["size_table"]],header=T,sep="\t",check.names=F)
@@ -83,7 +88,7 @@ rpkm <- data.frame(lapply(names(cts), function(x) {
 
 names(rpkm) <- names(cts)
 rownames(rpkm) <- rownames(cts)
-rpkm <- rpkm/length$Length[match(rownames(rpkm),length$gene)]*(10^9)
+rpkm <- rpkm/count_length$Length[match(rownames(rpkm),count_length$gene)]*(10^9)
 
 # Convert counts table to matrix
 cts_names <- row.names(cts)
@@ -101,10 +106,6 @@ coldata <- coldata[order(row.names(coldata)), , drop=F]
 
 condition_col <- as.character(sample_table$colour[match(unique(coldata$condition),sample_table$condition)])
 names(condition_col) <-unique(coldata$condition)
-
-# Import feature lengths and nucleotide content
-length <- read.table(snakemake@input[["length"]], sep='\t',header=TRUE, check.names=FALSE)
-nuc <- read.csv(snakemake@input[["nuc"]],header=T,row.names = 1, sep='\t')
 
 # Caculate mean expression levels of each condtion
 mean_level <- data.frame(
@@ -155,7 +156,7 @@ expr$group <- toTitleCase(gsub("_"," ",paste(expr$exon,expr$biotype)))
 expr$group2<-paste(expr$change,expr$group)
 expr$log10P <- -log10(expr$padj)
 
-expr$Length <- length$Length[match(rownames(expr),length$gene)]
+expr$Length <- count_length$Length[match(rownames(expr),count_length$gene)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
 expr$rpkm <- expr$baseMean*1000000000/expr$Length
 
