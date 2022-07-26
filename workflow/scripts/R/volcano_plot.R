@@ -39,7 +39,7 @@ volcano_plot <- volcano +
     size=1.5,
     alpha=1
   ) +
-  xlab(paste("log2 Fold Change of",feature_i,change)) +
+  xlab(paste("log2 Fold Change of",feature_i,difference)) +
   ylab("-log10 Adjusted P-Value") +
   geom_text_repel(
     mapping=aes(label=ifelse((gene_name %in% goi), as.character(gene_name),ifelse((p_rank<=volc_n | lfc_rank <= volc_n) & padj < sig_p ,as.character(gene_name),NA))),

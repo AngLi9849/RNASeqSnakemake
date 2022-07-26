@@ -81,8 +81,9 @@ differential_plots:
     axis_title: 12
     axis_ticks: 9
     labels: 10
-    title: 12
-    legend: 12
+    title: 11
+    legend: 11
+    caption: 10
   powerpoint: # Dimensions for powerpoint output in centimetres. Standard powerpoint is 25.4 x 19.05cm (w x h), A4 paper is 21 x 29.7cm.
     width: 21
     height: 29.7

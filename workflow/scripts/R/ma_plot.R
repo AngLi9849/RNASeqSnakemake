@@ -1,10 +1,3 @@
-ma_title <- paste(title, " MA Plot.", sep = "" )
-caption <- paste(capt, " of ", length(expr_i$gene_name), " ", toTitleCase(i), " ", feature,"s normalised by " , norm, ". ", descript, sep="")
-
-ma_title <- fpar(fig_num,ftext(plot_title,prop=plain))
-
-lfc_max <- max(abs(expr_i$log2FoldChange[expr_i$padj <= sig_p]))
-
 ma <- ggplot(data = expr_i, aes(x = baseMean, y = log2FoldChange)) +
   geom_point(
     size = 0.5,
@@ -47,7 +40,7 @@ ma_plot <- ma +
     size=1.5,
     alpha=1
   ) +
-  ylab(paste("log2 Fold Change of", feature,change,sep= " ")) +
+  ylab(paste("log2 Fold Change of", feature_i, difference,sep= " ")) +
   geom_text_repel(
     mapping=aes(label=ifelse((gene_name %in% goi), as.character(gene_name),ifelse((p_rank<=ma_n | lfc_rank <= ma_n) & padj < sig_p ,as.character(gene_name),NA))),
     size=ifelse(expr_i$gene_name %in% goi, 4.0, 3.0),

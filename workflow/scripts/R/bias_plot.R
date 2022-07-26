@@ -1,12 +1,14 @@
 expr_bias <- expr_i[abs(expr_i$padj) < sig_p,]
 expr_bias$change <- paste("Significantly", expr_bias$change)
+expr_bias$abslog2FoldChange <- abs(expr_bias$log2FoldChange)
+
 
 FCmin=quantile(expr_bias$log2FoldChange,0.001)
 FCmax=quantile(expr_bias$log2FoldChange,0.999)
 
 expr_bias$density <- 0.01/expr_bias$padj
 
-GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$log2FoldChange)) +
+GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2FoldChange)) +
   geom_point(
     size=0.5,
     color=ifelse(expr_bias$log2FoldChange>0,up_col,down_col),
@@ -45,7 +47,7 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$log2FoldCh
 
 # Length to Log2foldChange with P-Value Color scale
 
-Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$log2FoldChange)) +
+Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$abslog2FoldChange)) +
   geom_point(
     size=0.5,
     color=ifelse(expr_bias$log2FoldChange>0,up_col,down_col),
@@ -86,7 +88,7 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$lo
 
 # Length to Log2foldChange with P-Value Color scale
 
-rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$log2FoldChange)) +
+rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog2FoldChange)) +
   geom_point(
     size=0.5,
     color=ifelse(expr_bias$log2FoldChange>0,up_col,down_col),
@@ -106,7 +108,7 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$log2Fo
     colour="black") +
   scale_x_log10() + 
   facet_wrap(
-    ~factor(change,levels=c("Significantly Upregulated","Significantly Downregulated")), scales="free"
+    ~factor(change,levels=c("Significantly Increased","Significantly Decreased")), scales="free"
   ) +
   xlab(paste("Mean Expression Levels (RPKM)",sep=" ")) +
   ylab("log2 Fold Change") +
@@ -128,5 +130,5 @@ bias <- ggarrange(plotlist=list(GC_plot,Length_plot,rpkm_plot),ncol=1,nrow=3,lab
 bias_title <- paste(title_i, "Potential Biases.")
 
 bias_caption <- paste(
-  "Significant(p < ", sig_p, ") log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC Content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
+  "Absolute values of significant(p < ", sig_p, ") log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
 )

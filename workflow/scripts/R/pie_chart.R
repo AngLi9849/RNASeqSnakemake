@@ -1,7 +1,12 @@
 sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0)
 sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0)
-insig <- sum(expr_i$pad[expr_i$padj < undetect_p] >= sig_p)
+insig <- sum(expr_i$padj[expr_i$padj < undetect_p] >= sig_p)
 undetect <- nrow(cts_genes_i) - insig - sig_up - sig_down
+
+sig_up
+sig_down
+insig
+undetect
 
 sig_up_pc <- paste(signif(sig_up/nrow(cts_genes_i)*100,2), "%")
 sig_down_pc <- paste(signif(sig_down/nrow(cts_genes_i)*100,2), "%")
@@ -9,13 +14,13 @@ insig_pc <- paste(signif(insig/nrow(cts_genes_i)*100,2), "%")
 undetect_pc <- paste(signif(undetect/nrow(cts_genes_i)*100,2), "%")
 
 pie_data <- data.frame(
-  c("Undetectable Change","Insignificant Change","Significant Increase","Significant Decrease"),
-  c(undetect,insig,sig_up,sig_down),
-  c(background,insig_col,up_col,down_col)
+  data1=c("Undetectable Change","Insignificant Change","Significant Increase","Significant Decrease"),
+  data2=c(undetect,insig,sig_up,sig_down),
+  data3=c(background,insig_col,up_col,down_col)
 )
 
 names(pie_data) <- c("Category","Numbers","Colours")
-pie_label <- paste(change, "of", nrow(cts_genes_i),feature_i)
+pie_label <- paste(nrow(cts_genes_i),feature_i)
 pie_data$Percent <- paste(signif(pie_data$Numbers/nrow(cts_genes_i)*100,2), "%")
 pie_data$Label <- paste(pie_data$Numbers,pie_data$Category)
 
@@ -29,7 +34,7 @@ pie_data <- pie_data %>%
 pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
   geom_bar(width=1,stat="identity", colour="black") +
   coord_polar("y",start=0) +
-  scale_fill_manual(paste(feature_i,change),values=pie_data$Colours) +
+  scale_fill_manual(paste(feature_i),values=pie_data$Colours) +
   xlab("") +
   ylab(pie_label) +
   geom_label_repel(
@@ -58,11 +63,11 @@ pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
 
 
 pie_caption <- paste(
-  "Amongst ", tolower(difference), " of ", paste(nrow(cts_genes_i)), feature_i, 
-  sig_up, " significantly increased (", sig_up_pc, ",", up_col, "), ", 
-  sig_down, " significantly decreased (", sig_down_pc, ",", down_col, "), ",
+  "Amongst ", tolower(difference), " of ", paste(nrow(cts_genes_i)), " ", feature_i, 
+  sig_up, " significantly increased (", sig_up_pc, ", ", up_col, "), ", 
+  sig_down, " significantly decreased (", sig_down_pc, ", ", down_col, "), ",
   insig, " changed insignificantly (", insig_pc, ", p >= ", sig_p, "), and ",
-  "changes were not detected in ", undetect, "(", undetect_pc, ", p >= ", undetect_p, ").", 
+  "changes were not detected in ", undetect, " (", undetect_pc, ", p >= ", undetect_p, ").", 
   sep="")
 
 

@@ -12,8 +12,8 @@ down_col <- as.character(snakemake@config[["differential_plots"]][["down_colour"
 insig_col <- as.character(snakemake@config[["differential_plots"]][["insignificant_colour"]])
 background <- "white"
 
-sig_p <- as.numeric(snakemake@config[["differential_plots"]][["significant_p"]])
-undetect_p <- as.numeric(snakemake@config[["differential_plots"]][["undetect_p"]]) 
+sig_p <- as.numeric(snakemake@config[["differential_analysis"]][["significant_p"]])
+undetect_p <- as.numeric(snakemake@config[["differential_analysis"]][["undetect_p"]]) 
 
 plot_dpi <- as.numeric(snakemake@config[["differential_plots"]][["dpi"]])
 tick_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]][["axis_ticks"]])
@@ -21,6 +21,7 @@ axis_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]]
 label_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]][["labels"]])
 title_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]][["title"]])
 legend_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]][["legend"]])
+caption_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]][["caption"]])
 font_size <- legend_size
 
 ppt_w <- as.numeric(snakemake@config[["differential_plots"]][["powerpoint"]][["width"]])
@@ -43,5 +44,7 @@ plain <- fp_text(font.size=font_size)
 bold <- fp_text(bold=TRUE, font.size=font_size)
 italic <- fp_text(italic=TRUE, font.size=font_size)
 italic_bold <- fp_text(bold=TRUE, italic=TRUE, font.size=font_size)
-
+title_prop <- fp_text(font.size=title_size)
+title_bold <- fp_text(bold=TRUE,font.size=title_size)
+caption_prop <- fp_text(font.size=caption_size)
 
