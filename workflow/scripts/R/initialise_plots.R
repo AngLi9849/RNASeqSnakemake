@@ -47,4 +47,25 @@ italic_bold <- fp_text(bold=TRUE, italic=TRUE, font.size=font_size)
 title_prop <- fp_text(font.size=title_size)
 title_bold <- fp_text(bold=TRUE,font.size=title_size)
 caption_prop <- fp_text(font.size=caption_size)
+caption_bold <- fp_text(bold=TRUE,font.size=caption_size)
+
+format_captions <- function(c) {
+  c_match <- str_match_all(c,"([^)]*\\()([^)]*)(\\)[^(]*)")
+  c_list <- lapply(1:length(c_match), function(x) {
+    if(nrow(c_match[[x]]) > 0) {
+      unlist(apply(c_match[[x]], 1,function(y) {
+        lapply(y[2:4],function(z){
+          if(grepl("^[A-Z]$",z)[1]==TRUE){
+            ftext(z,prop=caption_bold)
+          } else {
+            ftext(z,prop=caption_prop) 
+          }
+        })
+      }),recursive = FALSE)
+    } else {
+      list(ftext(c[x],prop=caption_prop))
+    }
+  })
+  return(c_list)
+}
 

@@ -51,10 +51,10 @@ control <- gsub("_"," ",control_cond)
 spikein <- gsub("_"," ",as.character(snakemake@wildcards[["spikein"]]))
 
 splice <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["splice"]]))
-normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["normaliser"]]))
+normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",gsub("(.*)ReadCount","\\1",as.character(snakemake@wildcards[["normaliser"]])))
 counting <- "read count"
 counted <- gsub("_"," ",paste(tolower(splice), tolower(prefix), feature, counting, sep=" "))
-norm <- gsub("_"," ",paste(spikein, tolower(normaliser), sep=" "))
+norm <- gsub("_"," ",paste(spikein, normaliser, "read count", sep=" "))
 
 biotypes <- c(snakemake@config[["biotypes"]])
 goi <- c(snakemake@config[["GOI"]])
@@ -198,7 +198,7 @@ if (i =="") {
 }
 
 # Set file name and path
-feature_i <- ifelse(i=="", feature, paste(i,feature))
+feature_i <- ifelse(i=="", feature, paste(tolower(i),feature))
 
 file_i <- gsub("_"," ",paste(experiment, feature_i, analysis ,sep=" "))
 
@@ -210,7 +210,7 @@ group_heading <- gsub("_"," ",toTitleCase(ifelse(i=="","Overview",i)))
 doc <- body_add(doc,fpar(ftext(group_heading, prop=heading_3)),style = "heading 3")
 
 # Start figure counting from 1
-fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ".", prop=title_bold ,tnd=3, tns="-", bkm = "plot", start_at = 1)
+fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ". ", prop=title_bold ,tnd=3, tns="-", bkm = "plot", start_at = 1)
 
 # Shrink Infinite log10Ps to 1.1 x maximum non-Inf log10P
 max_log10P <- max(expr_i$log10P[expr_i$log10P < Inf],na.rm = T)
@@ -243,41 +243,8 @@ head(cts_genes_i,5)
 title_i <- gsub("_"," ",paste(experiment, feature_i, "Differential", toTitleCase(difference),sep=" "))
 
 # Pie Chart ===================================================
-sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0)
-sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0)
-insig <- sum(expr_i$padj[expr_i$padj < undetect_p] >= sig_p)
-undetect <- nrow(cts_genes_i) - insig - sig_up - sig_down
-
-sig_up
-sig_down
-insig
-undetect
-
-sig_up_pc <- paste(signif(sig_up/nrow(cts_genes_i)*100,2), "%")
-sig_down_pc <- paste(signif(sig_down/nrow(cts_genes_i)*100,2), "%")
-insig_pc <- paste(signif(insig/nrow(cts_genes_i)*100,2), "%")
-undetect_pc <- paste(signif(undetect/nrow(cts_genes_i)*100,2), "%")
-
-pie_data <- data.frame(
-  data1=c("Undetectable Change","Insignificant Change","Significant Increase","Significant Decrease"),
-  data2=c(undetect,insig,sig_up,sig_down),
-  data3=c(background,insig_col,up_col,down_col)
-)
-
 source(snakemake@config[["differential_plots"]][["scripts"]][["pie_chart"]])
 # Violin Plot =================================================
-violin_data <- data.frame(
-  unlist(
-    lapply(colnames(mean_level_i), function (x) {
-      mean_level_i[paste(x)]
-    })),
-  unlist(
-    lapply(colnames(mean_level_i), function (x) {
-      replicate(nrow(mean_level_i),paste(x))
-    }))
-)
-head(violin_data,10)
-
 source(snakemake@config[["differential_plots"]][["scripts"]][["violin_plot"]])
 # MA plot ====================================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["ma_plot"]])
@@ -311,24 +278,26 @@ sum_nrow <- ceiling(length(sum_plot_list)/sum_ncol)
 summary <- ggarrange(plotlist=sum_plot_list,ncol=sum_ncol,nrow=sum_nrow,labels="AUTO")
 
 summary_title <- paste(title_i, "Analysis Summary.")
-summary_caption <- paste("Overviews of changes in ", experiment, " ", feature_i, " ", difference, ". ", str_to_sentence(difference), " are compared in Deseq2 based on ", counted, " normalised to ", norm, ".", sep="")
+summary_caption <- paste("Overviews of changes in ", feature_i, " ", difference, ". ", str_to_sentence(difference), " are compared in Deseq2 based on ", counted, " normalised to ", norm, ".", sep="")
 summary_captions <- lapply(paste(sum_list,"_caption",sep=""),function(x) {get(x)})
 summary_captions <- paste( "(", LETTERS[1:length(summary_captions)], "). ", summary_captions, sep="")
-summary_caption <- unlist(list(summary_caption," ",summary_captions))
+summary_caption <- unlist(list(summary_caption,summary_captions))
 
 plots <- list("summary","bias","ma_plot","volcano_plot")
 plot_n <- 1
 
 # Loop for each plot listed
 for ( p in plots) {
-
 plot_p <- get(p)
 title_p <- get(paste(p,"_title",sep=""))
 caption_p <- get(paste(p,"_caption",sep=""))
+caption_p <- format_captions(caption_p)
 
 if (plot_n > 1) {  
-fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ".", prop=title_bold ,tnd=3, tns="-", bkm = "plot")
-}
+fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ". ", prop=title_bold ,tnd=3, tns="-", bkm = "plot")
+doc <- body_add(doc,run_pagebreak())
+} 
+
 
 title_p <- fpar(fig_num,ftext(title_p,prop=title_prop)) 
 
@@ -341,13 +310,10 @@ doc <- body_add(doc,value=plot_p,width = 6, height = 6, res= plot_dpi,style = "c
 }
 
 doc <- body_add(doc,title_p)
-doc <- body_add(doc,fpar(ftext(" ",prop=caption_prop)))
 # Loop for each line in caption
 for (c in caption_p) {
-doc <- body_add(doc,fpar(ftext(c,prop=caption_prop)))
+doc <- body_add(doc,fpar(values=c,fp_p = fp_par(padding.top=(caption_size/2))))
 }
-
-doc <- body_add(doc,run_pagebreak())
 
 }
 

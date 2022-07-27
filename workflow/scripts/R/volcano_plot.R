@@ -54,12 +54,12 @@ volcano_plot <- volcano +
   )
 
 volcano_caption <- paste(
-  "-log10 ajusted p-value of changes in ", difference, " of each ", feature_i, " is plotted against the log2 fold change value. Significant (p > " ,sig_p,") increase (", up_col, ") and decrease (", down_col, ") are indicated by colours.",sep=""
+  "Significance (-log10 adjusted p-value) of changes in ", difference, " of each ", feature_i, " is plotted against the log2 fold change value. Significant (p > " ,sig_p,") increase (", up_col, ") and decrease (", down_col, ") are indicated by colours.",sep=""
 )
 
 volcano_plot_title <- paste(title_i, "Volcano Plot.")
 volcano_plot_caption <- paste(
-  volcano_caption, " Top ", volc_n, " most significantly increased and decreased are labelled.", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold", ""),sep=""
+  volcano_caption, " Names of top ", volc_n, " most significantly increased and decreased are labelled. ", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold", ""),sep=""
 )
 
  

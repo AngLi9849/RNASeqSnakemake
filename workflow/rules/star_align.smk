@@ -12,7 +12,6 @@ rule star_index:
         extra="",
     log:
         "logs/{prefix}_star_index_genome.log",
-    cache: True
     wrapper:
         "0.80.2/bio/star/index"
 

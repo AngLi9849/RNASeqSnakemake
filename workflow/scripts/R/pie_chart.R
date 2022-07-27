@@ -8,10 +8,10 @@ sig_down
 insig
 undetect
 
-sig_up_pc <- paste(signif(sig_up/nrow(cts_genes_i)*100,2), "%")
-sig_down_pc <- paste(signif(sig_down/nrow(cts_genes_i)*100,2), "%")
-insig_pc <- paste(signif(insig/nrow(cts_genes_i)*100,2), "%")
-undetect_pc <- paste(signif(undetect/nrow(cts_genes_i)*100,2), "%")
+sig_up_pc <- paste(signif(sig_up/nrow(cts_genes_i)*100,2), "%",sep="")
+sig_down_pc <- paste(signif(sig_down/nrow(cts_genes_i)*100,2), "%",sep="")
+insig_pc <- paste(signif(insig/nrow(cts_genes_i)*100,2), "%",sep="")
+undetect_pc <- paste(signif(undetect/nrow(cts_genes_i)*100,2), "%",sep="")
 
 pie_data <- data.frame(
   data1=c("Undetectable Change","Insignificant Change","Significant Increase","Significant Decrease"),
@@ -63,7 +63,7 @@ pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
 
 
 pie_caption <- paste(
-  "Amongst ", tolower(difference), " of ", paste(nrow(cts_genes_i)), " ", feature_i, 
+  "In ", paste(nrow(cts_genes_i)), " ", feature_i, ", ", difference, " of ",
   sig_up, " significantly increased (", sig_up_pc, ", ", up_col, "), ", 
   sig_down, " significantly decreased (", sig_down_pc, ", ", down_col, "), ",
   insig, " changed insignificantly (", insig_pc, ", p >= ", sig_p, "), and ",

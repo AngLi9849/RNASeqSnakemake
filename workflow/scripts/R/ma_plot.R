@@ -56,10 +56,10 @@ ma_plot <- ma +
   ) 
 
 ma_caption <- paste(
- "Log2 fold change in ", difference, " of each ", feature_i, " is plotted against their mean normalised ", counting, ". Those significantly (p > " ,sig_p,") increased (", up_col, ") and decreased (", down_col, ") are indicated by colours.",sep=""
+ "Log2 fold change in ", difference, " of each ", feature_i, " is plotted against their mean normalised ", counting, ". Significant (p > " ,sig_p,") increases (", up_col, ") and decreases (", down_col, ") are indicated by colours.",sep=""
 )
 
 ma_plot_title <- paste(title, "MA Plot.")
 ma_plot_caption <- paste(
-  ma_caption, " Top ", ma_n, " most significantly increased and decreased are labelled.", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold", ""),sep=""
+  ma_caption, " Names of top ", ma_n, " most significantly increased and decreased ", feature_i, " are labelled. ", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold.", ""),sep=""
 )

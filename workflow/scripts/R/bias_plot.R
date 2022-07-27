@@ -31,7 +31,7 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2Fol
     ~factor(change,levels=c("Significantly Increased","Significantly Decreased")), scales="free"
   ) +
   xlab(paste("GC Content (%)",sep=" ")) +
-  ylab("log2 Fold Change") +
+  ylab("|log2 Fold Change|") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 
         strip.background=element_rect(colour="white",fill="white",size=0.1), 
@@ -70,7 +70,7 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$ab
     ~factor(change,levels=c("Significantly Increased","Significantly Decreased")), scales="free"
   ) +
   xlab(paste(feature, "Length (bps)",sep=" ")) +
-  ylab("log2 Fold Change") +
+  ylab("|log2 Fold Change|") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 
         strip.background=element_rect(colour="white",fill="white",size=0.1), 
@@ -111,7 +111,7 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog
     ~factor(change,levels=c("Significantly Increased","Significantly Decreased")), scales="free"
   ) +
   xlab(paste("Mean Expression Levels (RPKM)",sep=" ")) +
-  ylab("log2 Fold Change") +
+  ylab("|log2 Fold Change|") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 
         strip.background=element_rect(colour="white",fill="white",size=0.1), 
@@ -127,8 +127,8 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog
 
 bias <- ggarrange(plotlist=list(GC_plot,Length_plot,rpkm_plot),ncol=1,nrow=3,labels="AUTO")
 
-bias_title <- paste(title_i, "Potential Biases.")
+bias_title <- paste("Potential Biases in ", title_i, ".",sep="")
 
 bias_caption <- paste(
-  "Absolute values of significant(p < ", sig_p, ") log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
+  "Absolute values of significant (p < ", sig_p, ") log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
 )
