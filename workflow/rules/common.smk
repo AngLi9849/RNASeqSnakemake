@@ -3,6 +3,7 @@
 import glob
 
 import pandas as pd
+import hashlib as hashlib
 from snakemake.remote import FTP
 from snakemake.utils import validate
 
@@ -81,6 +82,9 @@ def get_root_feature(feature):
             return get_root_feature(base)
         else:
             return str(features.loc[feature].squeeze(axis=0)["feature"])
+
+def get_prefixed_feature(f):
+    
 
 # Read experimentss config table into pandas dataframe
 experiments = (pd.read_csv(config["experiments"], sep="\t", dtype={"protocol": str, "sample_lineage" : str}, comment="#"))

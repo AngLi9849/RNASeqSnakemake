@@ -105,7 +105,7 @@ rule custom_feature:
         mem="4G",
         rmem="6G",
     output:
-        bed="{prefix}.custom.{type}.{feature}.bed"
+        bed=lambda wildcards : "{{prefix}}.custom.{{type}}.{md5}.{{feature}}.bed".format( md5 = features.loc[wildcards.feature,"prefix_md5"] )
     params:
         feat=lambda wildcards: features.loc[wildcards.feature,"feature"],
         group=lambda wildcards: features.loc[wildcards.feature,"group"],
