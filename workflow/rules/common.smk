@@ -45,6 +45,17 @@ features.columns = features.columns.str.strip()
 features = features.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 features = features.mask( features == '')
 features = (features.set_index(["feature_name"], drop=False).sort_index())
+feat_prefix = features.iloc[:, features.columns.get_loc("region"): features.columns.get_loc("plotbef")]
+feat_plot = features.iloc[:,features.columns.get_loc("region"): features.columns.get_loc("annotation_bed")]
+features["prefix"] = feat_prefix.apply(lambda row: 
+    ''.join([str(a)+ "_" + str(b) + "." for a,b in zip(row.index.tolist(), row.tolist())]) 
+    , axis=1) 
+features["plot_prefix"] = feat_plot.apply(lambda row:
+    ''.join([str(a)+ "_" + str(b) + "." for a,b in zip(row.index.tolist(), row.tolist())])
+    , axis=1)
+
+features['prefix_md5'] = [hashlib.md5(i.encode('utf-8')).hexdigest() for i in features.prefix.tolist()]
+features['plot_md5'] = [hashlib.md5(i.encode('utf-8')).hexdigest() for i in features.plot_prefix.tolist()]
 
 # Helper functions for features
 
