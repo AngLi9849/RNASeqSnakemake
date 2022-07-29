@@ -56,7 +56,7 @@ ma_plot <- ma +
   ) 
 
 ma_caption <- paste(
- "Log2 fold change in ", difference, " of each ", feature_i, " is plotted against their mean normalised ", counting, ". Significant (p > " ,sig_p,") increases (", up_col, ") and decreases (", down_col, ") are indicated by colours.",sep=""
+ "Log2 fold change in ", difference, " of each ", feature_i, " is plotted against their mean normalised ", counting, ". Dot colours represent significant (p < " ,sig_p,") increases (", up_col, ") and decreases (", down_col, ").",sep=""
 )
 
 ma_plot_title <- paste(title, "MA Plot.")

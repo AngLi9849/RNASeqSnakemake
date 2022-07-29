@@ -1,16 +1,21 @@
-rule non_overlap_feature_annotations:
+rule biotype_genebody_annotations:
     input:
-        bed=lambda w: "{{prefix}}.custom-{id}.{{type}}.{{feature}}.bed".format(
-            id = features.loc[w.feature,"prefix_md5"],
-        ),
+        {prefix}.gtf.bed",
     output:
-        bed="{prefix}.plot-{md5}.{type}.{feature}.non-overlap.{strand}.bed",
-    threads: 1 
+        {prefix}.gtf.{biotype}_genebody.bed",
+        {prefix}.gtf.{biotype}_genebody.fwd.bed",
+        {prefix}.gtf.{biotype}_genebody.rev.bed",
+        {prefix}.gtf.{biotype}_genebody.range.bed",
+        {prefix}.gtf.{biotype}_genebody.range.fwd.bed",
+        {prefix}.gtf.{biotype}_genebody.range.rev.bed",
+        {prefix}.gtf.{biotype}_genebody.non_overlap.fwd.bed",
+        {prefix}.gtf.{biotype}_genebody.non_overlap.rev.bed",
+        {prefix}.gtf.{biotype}_genebody.non_overlap.stranded.bed",
+        {prefix}.gtf.{biotype}_genebody.non_overlap.unstranded.bed",
+    threads: 4 
     params:
-        strand=lambda w: "-s" if w.strand == "stranded" else "",
-        distinct= lambda w: "distinc" if w.strand == "stranded" else "collapse",
-        before=lambda w: features.loc[w.feature,"plot_bef"],
-        after=lambda w: features.loc[w.feature,"plot_aft"],
+        before=config["metagene"]["genebody"]["before_TSS"],
+        after=config["metagene"]["genebody"]["after_TTS"],
     conda:
         "../envs/bedtools.yaml"
     resources:
@@ -20,36 +25,88 @@ rule non_overlap_feature_annotations:
         "logs/metagene/{prefix}_{biotype}_genebody.annotations.log",
     shell:
         """
-        awk -F'\\t' -v OFS='\\t' '
-          $6=="+" && $2 >= {params.before} {{
-            a=$2 ; b=$3 ; 
-            $2=(a-{params.before}) ; 
-            $3=(b+{params.after}) ;
-            print
-          }}
-          $6=="-" && $2 >= {params.after} {{
-            a=$2 ; b=$3 ;
-            $2=(a-{params.after}) ;
-            $3=(b+{params.before}) ;
-            print
-          }}' {input.bed} |
-        sort -k1,1 -k2,2n - |
-        bedtools merge {params.strand} -i - -c 4,5,6,8 -o count,collapse,{params.distinct},collapse |
-        awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && $4==1 {{ 
-            n[$7]=1
-          }}
-          FNR < NR && n[$8] == 1 {{
-            print
-          }}' - {input.bed} > {output.bed}
+        awk -F'\\t' -v OFS='\\t' '$0 ~ "{wildcards.biotype}" {{if ($8 ~ "gene") {{print}}}}' {input} > {output[0]} &&
+        awk -F'\\t' -v OFS='\\t' '$6=="+"{{print $0}}' {output[0]} > {output[1]} &&
+        awk -F'\\t' -v OFS='\\t' '$6=="-"{{print $0}}' {output[0]} > {output[2]} &&
+	awk -F'\\t' -v OFS='\\t' '$0 ~ "{wildcards.biotype}" {{if ($8 ~ "gene") {{$2=$2-(before+after);$3=$3+(before+after);print}}}}' {input} > {output[3]} &&  
+        awk -F'\\t' -v OFS='\\t' '$6=="+"{{print $0}}' {output[3]} > {output[4]} &&
+        awk -F'\\t' -v OFS='\\t' '$6=="-"{{print $0}}' {output[3]} > {output[5]} &&
+        bedtools merge -s -i {output[4]} -c 1 -o count | 
+        awk '$4>1 {{print}}' - | 
+        bedtools intersect -a {output[1]} -b - -v > {output[6]} && 
+        bedtools merge -s -i {output[5]} -c 1 -o count |
+        awk '$4>1 {{print}}' - |
+        bedtools intersect -a {output[2]} -b - -v > {output[7]} &&
+        cat {output[6]} {output[7]} > {output[8]}
+        bedtools merge -i {output[3]} -c 1 -o count |
+        awk '$4>1 {{print}}' - |
+        bedtools intersect -a {output[0]} -b - -v > {output[9]}
+        """
+
+
+rule promptTSS_annotations:
+    input:
+        {prefix}.gtf.{biotype}_genebody.non_overlap.stranded.bed",
+    output:
+        {prefix}.gtf.{biotype}_promptTSS.bed",
+        {prefix}.gtf.{biotype}_promptTSS.non_overlap.bed",
+        {prefix}.gtf.{biotype}_promptTSS.non_overlap.fwd.bed",
+        {prefix}.gtf.{biotype}_promptTSS.non_overlap.rev.bed",
+    threads: 4
+    params:
+        prompt=config["metagene"]["promptTSS"]["prompt_length"],
+        tss=config["metagene"]["promptTSS"]["TSS_length"],
+    conda:
+        "../envs/bedtools.yaml"
+    resources:
+        mem="6G",
+        rmem="4G",
+    log:
+        "logs/metagene/{prefix}_{biotype}_prompt_TSS_annotations.log",
+    shell:
+        """
+        awk -F'\\t' -v OFS='\\t' '{{if($2>={params.prompt} && $6=="+"){{print $1,$2-{params.prompt},$2+{params.tss},$4,$5,"-",$7,"prompt_TSS_antisense",$9,$10;}} else if($3>={params.tss} && $6=="-"){{print $1,$3-{params.tss},$3+{params.prompt},$4,$5,"+",$7,"prompt_TSS_antisense",$9,$10}}}}' {input[0]} > {output[0]} && 
+        bedtools intersect -s -v -a {output[0]} -b {input} | 
+        bedtools intersect -wa -a {input} -b - > {output[1]} &&
+        awk -F'\\t' -v OFS='\\t' '$6=="+"{{print $0}}' {output[1]} > {output[2]} && 
+        awk -F'\\t' -v OFS='\\t' '$6=="-"{{print $0}}' {output[1]} > {output[3]} 
+        """
+        
+rule TTSpostgene_annotations:
+    input:
+        {prefix}.gtf.{biotype}_genebody.non_overlap.stranded.bed",
+    output:
+        {prefix}.gtf.{biotype}_TTSpostgene.bed",
+        {prefix}.gtf.{biotype}_TTSpostgene.non_overlap.bed",
+        {prefix}.gtf.{biotype}_TTSpostgene.non_overlap.fwd.bed",
+        {prefix}.gtf.{biotype}_TTSpostgene.non_overlap.rev.bed",
+    threads: 4
+    params:
+        tts=config["metagene"]["TTSpostgene"]["TTS_length"],
+        postgene=config["metagene"]["TTSpostgene"]["postgene_length"],
+    conda:
+        "../envs/bedtools.yaml"
+    resources:
+        mem="6G",
+        rmem="4G",
+    log:
+        "logs/metagene/{prefix}_{biotype}_TTSpostgene_annotations.log",
+    shell:
+        """
+        awk -F'\\t' -v OFS='\\t' '{{if($3>={params.tts} && $6=="+"){{print $1,$3+1,$3+{params.postgene},$4,$5,"+",$7,"TTS_postgene_antisense",$9,$10;}} else if($2>={params.postgene} && $6=="-"){{print $1,$2-{params.postgene},$2-1,$4,$5,"-",$7,"TTS_postgene_antisense",$9,$10}}}}' {input[0]} > {output[0]} &&
+        bedtools intersect -s -v -a {output[0]} -b {input} |
+        bedtools intersect -wa -a {input} -b - > {output[1]} &&
+        awk -F'\\t' -v OFS='\\t' '$6=="+"{{print $0}}' {output[1]} > {output[2]} &&
+        awk -F'\\t' -v OFS='\\t' '$6=="-"{{print $0}}' {output[1]} > {output[3]}
         """
 
 
 rule compute_matrix_promptTSS_stranded:
     input:        
         fwd_bed=lambda wildcards: (str(get_annotation(experiments.loc[wildcards.experiment,"sample_source"]) + ".{wildcards.biotype}_promptTSS.non_overlap.fwd.bed"),
-        bigwig=expand(
-            "results/{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.fwd_{splice}.bigwig",
+        rev_bed=lambda wildcards: (str(get_annotation(experiments.loc[wildcards.experiment,"sample_source"]) + ".{wildcards.biotype}_promptTSS.non_overlap.rev.bed"),
+        fwd_bigwig="{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.fwd_{splice}.bigwig",
+        rev_bigwig="{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.rev_{splice}.bigwig",
     output:
         "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.sense.fwd.matrix.gz",
         "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.sense.rev.matrix.gz",
@@ -62,7 +119,9 @@ rule compute_matrix_promptTSS_stranded:
     log:
         "logs/metagene/by_{normaliser}_{counts}_{splice}{prefix}/{biotype}_promptTSS/{sample}_{unit}.matrix.log",
     params:
+        prompt=config["metagene"]["promptTSS"]["prompt_length"],
         bin_size=config["metagene"]["promptTSS"]["bin_size"],
+        tss=config["metagene"]["promptTSS"]["TSS_length"],
     threads: 4
     resources:
         mem="10G",

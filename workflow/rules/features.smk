@@ -20,9 +20,9 @@ rule provided_feature:
            features.loc[wildcards.feature].squeeze(axis=0)["annotation_bed"]
         ),
     output:
-        bed = "resources/annotations/{prefix}.custom.provided_basic.{feature}.bed",
+        bed = "resources/annotations/{prefix}.custom-{md5}.provided_basic.{feature}.bed" 
     log:
-        "logs/features/provided_{prefix}_{feature}.log"
+        "logs/features/provided-{md5}_{prefix}_{feature}.log"
     threads: 1
     resources:
         mem="4G",
@@ -105,21 +105,21 @@ rule custom_feature:
         mem="4G",
         rmem="6G",
     output:
-        bed=lambda wildcards : "{{prefix}}.custom.{{type}}.{md5}.{{feature}}.bed".format( md5 = features.loc[wildcards.feature,"prefix_md5"] )
+        bed="{prefix}.custom-{md5}.{type}.{feature}.bed"
     params:
         feat=lambda wildcards: features.loc[wildcards.feature,"feature"],
         group=lambda wildcards: features.loc[wildcards.feature,"group"],
         sect=lambda wildcards: features.loc[wildcards.feature,"section"],
         sense=lambda wildcards: features.loc[wildcards.feature,"sense"],
-        no_first=1 if lambda wildcards: features.loc[wildcards.feature,"no_1st"] else 0,
-        no_last=1 if lambda wildcards: features.loc[wildcards.feature,"no_last"] else 0,
+        no_first=lambda wildcards: features.loc[wildcards.feature,"no_frst"],
+        no_last=lambda wildcards: features.loc[wildcards.feature,"no_last"],
         min_len=lambda wildcards: features.loc[wildcards.feature,"min_len"],
         tsl=lambda wildcards: features.loc[wildcards.feature,"tsl"],
         before=lambda wildcards: features.loc[wildcards.feature,"len_bef"],
         after=lambda wildcards: features.loc[wildcards.feature,"len_aft"],
         annotation=lambda wildcards: features.loc[wildcards.feature,"annotation_bed"],
     log:
-        "logs/features/{prefix}/custom_{type}_{feature}.log"
+        "logs/features/{prefix}/custom-{md5}_{type}_{feature}.log"
     conda:
         "../envs/bedtools.yaml"
     shell:

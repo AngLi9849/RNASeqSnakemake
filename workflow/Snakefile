@@ -57,7 +57,7 @@ rule all:
         #"resources/annotations/HCT116.star.splice_junctions.bed"
         #"resources/annotations/ensembl_homo_sapiens.HCT116.custom.annotated_basic.GeneBody.star_splice_sites.saf"
         #"HCT_U-AID_Chromatin_RNA-Seq/deseq2/AllAligned.GeneBodyReads.spikein_scale_factors.tsv"
-        "results/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/differential_expression/internal_mRNAReadCount_normalised.All_Aligned.genome_annotated.basic.GeneBody.docx"
+        "results/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/differential_expression/internal_mRNAReadCount_normalised.All_Aligned.genome_annotated.custom-137b0876fc9ef82c9b34f6e1f1a90898.basic.GeneBody.docx",
         #get_genebody_diffexp_docx()
         #"resources/templates/Arial.docx"
         #"test.tsv"

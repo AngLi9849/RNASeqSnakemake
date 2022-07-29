@@ -28,7 +28,7 @@ def get_ref_source(species):
 
 
 def get_genome(species):
-    if not pd.isna(references.loc[species,"genome_dir"]):
+    if pd.notna(references.loc[species,"genome_dir"]):
         return "resources/genomes/local_{S}_genome.fasta".format(S=species)
     else :
         return "resources/genomes/ensembl_{S}.{B}.{R}_genome.fasta".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
@@ -38,7 +38,7 @@ def get_annotation(species):
     if not pd.isna(references.loc[species,"annotation_dir"]):
         return "resources/annotations/local_{S}_genome.gtf".format(S=species)
     else :
-        return "resources/annotations/ensembl_{S}-{B}-{R}_genome.gtf".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
+        return "resources/annotations/ensembl_{S}.{B}.{R}_genome.gtf".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
 
 # Read feature_parameters config table into pandas dataframe
 features = (pd.read_csv(config["feature_parameters"], sep="\t", dtype={"feature_name": str, "feature": str, "subfeat": str , "annotation_bed6": str}, comment="#"))
@@ -83,7 +83,9 @@ def get_root_feature(feature):
         else:
             return str(features.loc[feature].squeeze(axis=0)["feature"])
 
-def get_prefixed_feature(f):
+def get_feature_md5(reference,feature):
+    if f in features["feature_name"].tolist() :
+        return hashlib.md5
     
 
 # Read experimentss config table into pandas dataframe
@@ -179,8 +181,8 @@ def get_feature_counts():
 
 def get_genebody_diffexp_docx():
     counts = expand(
-        "results/{exp.experiment}/{exp.reference}/differential_expression/{exp.normaliser}_{exp.norm_feat}ReadCount_normalised.{splice}_Aligned{demulti}{dedup}.genome_{valid}.{tag}.GeneBody.docx",
-        exp=experiments.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICE,  
+        "results/{exp.experiment}/{exp.reference}/differential_expression/{exp.normaliser}_{exp.norm_feat}ReadCount_normalised.{splice}_Aligned{demulti}{dedup}.genome_{valid}.{type}.{tag}.GeneBody.docx",
+        exp=experiments.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICE, type="custom-" + str(features.loc["GeneBody","prefix_md5"]) 
     ),
     return counts
 

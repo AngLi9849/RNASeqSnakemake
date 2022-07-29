@@ -107,17 +107,15 @@ rule featurecounts:
     input:
         bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
         bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai",
-        saf=lambda w: "resources/annotations/{{reference}}_{{lineage}}.{type}.{{valid}}_{{tag}}.{{feature}}.bed.saf".format(
-            type="custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
-        ), 
+        saf=lambda w: "resources/annotations/{reference}_{lineage}.{type}.{valid}_{tag}.{feature}.bed.saf" 
     output:
-        tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{tag}.{feature}Reads.featurecounts.tab",
+        tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.featurecounts.tab",
     threads: 6
     resources:
         mem=lambda wildcards, input: (str((input.size//3000000000)+4) + "G"),
         rmem=lambda wildcards, input: (str((input.size//6000000000)+4) + "G"),
     log:
-        "logs/featurecounts/{sample}/{unit}/{reference}/{prefix}_{lineage}_{valid}.{tag}_{feature}Reads.log"
+        "logs/featurecounts/{sample}/{unit}/{reference}/{prefix}_{lineage}_{valid}.{type}.{tag}_{feature}Reads.log"
     conda:
         "../envs/subread.yaml",
     params:

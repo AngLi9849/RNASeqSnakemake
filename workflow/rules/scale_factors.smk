@@ -110,12 +110,10 @@ rule read_count_scale_factors:
 
 rule feature_count_scale_factors:
     input:
-        counts="featurecounts/{experiment}/{reference}/{prefix}.genome_annotated.basic.{feature}Reads.counts.tsv",
-        bed=lambda w: "resources/annotations/{{reference}}_genome.{type}.annotated_basic.{{feature}}.bed".format(
-            type = "custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
-        ),
+        counts="featurecounts/{experiment}/{reference}/{prefix}.genome_annotated.{type}.basic.{feature}Reads.counts.tsv",
+        bed="resources/annotations/{reference}_genome.{type}.annotated_basic.{feature}.bed"
     output:
-        "deseq2/{experiment}/{reference}/{prefix}.{feature}ReadCount.{spikein}_scale_factors.tsv",
+        "deseq2/{experiment}/{reference}/{prefix}.{type}.{feature}ReadCount.{spikein}_scale_factors.tsv",
     params:
         paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
         sample_table="config/samples.tsv",
@@ -125,7 +123,7 @@ rule feature_count_scale_factors:
     conda:
         "../envs/deseq2.yaml"
     log:
-        "logs/deseq2/{experiment}/{reference}/{prefix}_{spikein}_{feature}Reads_scale.log",
+        "logs/deseq2/{experiment}/{reference}/{prefix}_{spikein}.{type}.{feature}Reads_scale.log",
     script:
         "../scripts/R/deseq2_feature_scale.R"
 

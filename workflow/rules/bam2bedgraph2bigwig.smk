@@ -93,11 +93,13 @@ rule stranded_genomecov:
  
 rule scale_bedgraph2bigwig:
     input:
-       scale = "deseq2/{experiment}/All{prefix}_{counts}_{normaliser}_scale_factors.tsv",
+       scale = lambda w: "deseq2/{{experiment}}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_scale_factors.tsv".format(
+            norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
+        ),
        bedgraph = "bedgraph/{sample}/{unit}/{reference}/{splice}{prefix}.{strand}.bedgraph",
        chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + ".fasta.chrom.sizes")
     output:
-       bg = "bedgraph/{experiment}/{reference}/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
+       bg = "bedgraph/{experiment}/{reference}/{splice}{prefix}_normalised_by_{spikein}_{normaliser}ReadCount/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
        bw = "results/{experiment}/{reference}/bigwigs/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
     conda:
        "../envs/bedgraphtobigwig.yaml"

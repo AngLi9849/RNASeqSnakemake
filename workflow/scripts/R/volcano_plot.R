@@ -54,7 +54,7 @@ volcano_plot <- volcano +
   )
 
 volcano_caption <- paste(
-  "Significance (-log10 adjusted p-value) of changes in ", difference, " of each ", feature_i, " is plotted against the log2 fold change value. Significant (p > " ,sig_p,") increase (", up_col, ") and decrease (", down_col, ") are indicated by colours.",sep=""
+  "Significance (-log10 adjusted p-value) of changes in ", difference, " of each ", feature_i, " is plotted against the log2 fold change value. Dot colours represent significant (p < " ,sig_p,") increases (", up_col, ") and decreases (", down_col, ").",sep=""
 )
 
 volcano_plot_title <- paste(title_i, "Volcano Plot.")

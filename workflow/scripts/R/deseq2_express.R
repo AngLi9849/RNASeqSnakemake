@@ -51,7 +51,7 @@ control <- gsub("_"," ",control_cond)
 spikein <- gsub("_"," ",as.character(snakemake@wildcards[["spikein"]]))
 
 splice <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["splice"]]))
-normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",gsub("(.*)ReadCount","\\1",as.character(snakemake@wildcards[["normaliser"]])))
+normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["normaliser"]]))
 counting <- "read count"
 counted <- gsub("_"," ",paste(tolower(splice), tolower(prefix), feature, counting, sep=" "))
 norm <- gsub("_"," ",paste(spikein, normaliser, "read count", sep=" "))
