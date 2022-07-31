@@ -67,7 +67,8 @@ def get_feature_validity(feature):
     else:
         if feat in features["feature_name"].tolist():
             return get_feature_validity(feat)
-        else           if config["features"]["validate_features"]:
+        else: 
+            if config["features"]["validate_features"]:
                 return "validated"
             else:
                 return "annotated"
@@ -103,13 +104,11 @@ experiments["norm_group"]=experiments.apply(
             [row.control,row.treatment] + \
             experiments[experiments.sample_species == row.sample_species][experiments.control==row.control][ experiments.protocol==row.protocol]["treatment"].tolist()
         )
-    ), axis=1
-)
+    ), axis=1)
 
 experiments["group_name"] = experiments.apply(
     lambda row: "_and_".join(row.norm_group) + "_" + str(row.protocol), 
-    axis = 1 
-)
+    axis = 1 )
 
 # Helper Functions for experiments
 
@@ -145,8 +144,8 @@ def get_experiment_samples(wildcards):
 
 def get_norm_group_samples(wildcards):
     exp = experiments[experiments.group_name==wildcards.norm_group]
-    cond = exp.norm_group[1]
-    protocol = exp.protocol[1]
+    cond = exp.norm_group[0]
+    protocol = exp.protocol[0]
     sample = samples[samples.protocol == protocol][samples.condition.isin(cond)]
     return sample
 
