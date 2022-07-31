@@ -100,7 +100,7 @@ rule scale_bedgraph2bigwig:
        chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + ".fasta.chrom.sizes")
     output:
        bg = "bedgraph/{experiment}/{reference}/{splice}{prefix}_normalised_by_{spikein}_{normaliser}ReadCount/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
-       bw = "results/{experiment}/{reference}/bigwigs/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
+       bw = "results/{experiment}/{reference}/bigwigs/{splice}{prefix}_normalised_by_{spikein}_{normaliser}ReadCount/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
     conda:
        "../envs/bedgraphtobigwig.yaml"
     threads: 1
@@ -108,7 +108,7 @@ rule scale_bedgraph2bigwig:
         mem="12G",
         rmem="8G",
     log:
-       "logs/{experiment}/bg2bw/{sample}_{unit}/{reference}/{strand}_by_{normaliser}_{counts}_{prefix}_{splice}_bg2bw.log"
+       "logs/{experiment}/bg2bw/{sample}_{unit}/{reference}/{strand}_by_{spikein}_{normaliser}_{prefix}_{splice}_{strand}_bg2bw.log"
     shell:
        """
        awk -F'\\t' -v OFS='\\t' '

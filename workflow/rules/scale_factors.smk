@@ -1,17 +1,17 @@
 rule base_coverage_scale_factors:
     input:
         lambda wildcards: expand(
-            "bedgraph/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.BaseCoverage.txt",sample=get_experiment_samples(wildcards),
+            "bedgraph/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.BaseCoverage.txt",sample=get_norm_group_samples(wildcards),
         ),
     output:
-        summary = "deseq2/{experiment}/{reference}/{prefix}.BaseCoverage.summary.tsv",
-        internal = "deseq2/{experiment}/{reference}/{prefix}.BaseCoverage.internal_scale_factors.tsv",
-        spikein = "deseq2/{experiment}/{reference}/{prefix}.BaseCoverage.spikein_scale_factors.tsv",
+        summary = "deseq2/{norm_group}/{reference}/{prefix}.BaseCoverage.summary.tsv",
+        internal = "deseq2/{norm_group}/{reference}/{prefix}.BaseCoverage.internal_scale_factors.tsv",
+        spikein = "deseq2/{norm_group}/{reference}/{prefix}.BaseCoverage.spikein_scale_factors.tsv",
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/scale_factors/{experiment}/{reference}/{prefix}_base_coverage.log",
+        "logs/scale_factors/{norm_group}/{reference}/{prefix}_base_coverage.log",
     shell:
         """
         cat {input} > {output.summary} &&
@@ -56,17 +56,17 @@ rule base_coverage_scale_factors:
 rule read_count_scale_factors:
     input:
         reads = lambda wildcards: expand(
-            "star/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.total_read_count.tab",sample=get_experiment_samples(wildcards),
+            "star/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.total_read_count.tab",sample=get_norm_group_samples(wildcards),
         ),
     output:
-        summary = "deseq2/{experiment}/{reference}/{prefix}.TotalAlignedReadsCount.summary.tsv",
-        internal = "deseq2/{experiment}/{reference}/{prefix}.TotalAlignedReadsCount.internal_scale_factors.tsv",
-        spikein = "deseq2/{experiment}/{reference}/{prefix}.TotalAlignedReadsCount.spikein_scale_factors.tsv",
+        summary = "deseq2/{norm_group}/{reference}/{prefix}.TotalAlignedReadsCount.summary.tsv",
+        internal = "deseq2/{norm_group}/{reference}/{prefix}.TotalAlignedReadsCount.internal_scale_factors.tsv",
+        spikein = "deseq2/{norm_group}/{reference}/{prefix}.TotalAlignedReadsCount.spikein_scale_factors.tsv",
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/scale_factors/{experiment}/{reference}/{prefix}_readcount_scale.log",
+        "logs/scale_factors/{norm_group}/{reference}/{prefix}_readcount_scale.log",
     shell:
         """
         cat {input} > {output.summary} &&
@@ -110,12 +110,12 @@ rule read_count_scale_factors:
 
 rule feature_count_scale_factors:
     input:
-        counts="featurecounts/{experiment}/{reference}/{prefix}.genome_annotated.{type}.basic.{feature}Reads.counts.tsv",
+        counts="featurecounts/{norm_group}/{reference}/{prefix}.genome_annotated.{type}.basic.{feature}Reads.counts.tsv",
         bed="resources/annotations/{reference}_genome.{type}.annotated_basic.{feature}.bed"
     output:
-        "deseq2/{experiment}/{reference}/{prefix}.{type}.{feature}ReadCount.{spikein}_scale_factors.tsv",
+        paired = "deseq2/{norm_group}/{reference}/{prefix}.{type}.{feature}ReadCount.{spikein}_paired.scale_factors.tsv",
+        unpaired = "deseq2/{norm_group}/{reference}/{prefix}.{type}.{feature}ReadCount.{spikein}_unpaired.scale_factors.tsv",
     params:
-        paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
         sample_table="config/samples.tsv",
     resources:
         mem="8G",
@@ -123,7 +123,7 @@ rule feature_count_scale_factors:
     conda:
         "../envs/deseq2.yaml"
     log:
-        "logs/deseq2/{experiment}/{reference}/{prefix}_{spikein}.{type}.{feature}Reads_scale.log",
+        "logs/deseq2/{norm_group}/{reference}/{prefix}_{spikein}.{type}.{feature}Reads_scale.log",
     script:
         "../scripts/R/deseq2_feature_scale.R"
 

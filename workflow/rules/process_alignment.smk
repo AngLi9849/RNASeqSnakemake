@@ -131,13 +131,13 @@ rule count_matrix:
     input:
         featurecounts=lambda wildcards: expand(
             "featurecounts/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.featurecounts.tab",
-            sample= get_experiment_samples(wildcards).itertuples(),
+            sample= get_norm_group_samples(wildcards).itertuples(),
         ),
     output:
-        counts="featurecounts/{experiment}/{reference}/{prefix}.counts.tsv",
-        length="featurecounts/{experiment}/{reference}/{prefix}.lengths.tsv",
+        counts="featurecounts/{norm_group}/{reference}/{prefix}.counts.tsv",
+        length="featurecounts/{norm_group}/{reference}/{prefix}.lengths.tsv",
     log:
-        "logs/{experiment}/{reference}/featurecounts/{prefix}_count_matrix.log",
+        "logs/{norm_group}/{reference}/featurecounts/{prefix}_count_matrix.log",
     params:
         names=lambda wildcards: "\t".join(map(str,get_experiment_samples(wildcards).sample_name.tolist())),
     resources:

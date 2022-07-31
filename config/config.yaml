@@ -2,7 +2,7 @@
 # Units are biological or technical replicates of experiment or sequencing lanes.
 # Conditions are compared in differential expression analysis.
 samples: config/samples.tsv
-comparisons: config/comparisons.tsv
+experiments: config/experiments.tsv
 feature_parameters: config/features.tsv
 references_info: config/references.tsv
 

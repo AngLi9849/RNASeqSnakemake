@@ -18,11 +18,16 @@ rule pca:
 
 rule deseq2_expression:
     input:
-        size_table=lambda w: "deseq2/{{experiment}}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_scale_factors.tsv".format(
+        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
+            norm_group=experiments.loc[w.experiment,"group_name"],
         ),
-        length = "featurecounts/{experiment}/{reference}/{splice}{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.lengths.tsv",
-        counts="featurecounts/{experiment}/{reference}/{splice}{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.counts.tsv",
+        length = lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}Reads.lengths.tsv".format(
+            norm_group=experiments.loc[w.experiment,"group_name"],
+        ),
+        counts= lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}Reads.counts.tsv".format(
+            norm_group=experiments.loc[w.experiment,"group_name"],
+        ),
         genetab=lambda w: "resources/annotations/{source}_genome.gtf.{{tag}}_gene_info.tab".format(
             source= str( get_sample_source(w.experiment) ),
         ),

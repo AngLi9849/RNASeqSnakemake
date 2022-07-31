@@ -67,8 +67,7 @@ def get_feature_validity(feature):
     else:
         if feat in features["feature_name"].tolist():
             return get_feature_validity(feat)
-        else:
-            if config["features"]["validate_features"]:
+        else           if config["features"]["validate_features"]:
                 return "validated"
             else:
                 return "annotated"
@@ -89,33 +88,46 @@ def get_feature_md5(reference,feature):
     
 
 # Read experimentss config table into pandas dataframe
-comparisons = (pd.read_csv(config["comparisons"], sep="\t", dtype={"protocol": str, "sample_lineage" : str}, comment="#"))
-comparisons.columns=comparisons.columns.str.strip()
-comparisons = comparisons.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-comparisons = comparisons.mask(comparisons == '')
-comparisons["comparison"] = comparisons.apply( lambda row: \
+experiments = (pd.read_csv(config["experiments"], sep="\t", dtype={"protocol": str, "sample_lineage" : str}, comment="#"))
+experiments.columns=experiments.columns.str.strip()
+experiments = experiments.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+experiments = experiments.mask(experiments == '')
+experiments["experiment"] = experiments.apply( lambda row: \
     ( str( row.treatment ) + "_vs_" + str( row.control ) + "_" + str( row.protocol ) ), axis = 1
 )
-comparisons = (comparisons.set_index(["comparison"], drop=False).sort_index())
+experiments = (experiments.set_index(["experiment"], drop=False).sort_index())
 
+experiments["norm_group"]=experiments.apply(
+    lambda row: sorted(
+        pd.unique(
+            [row.control,row.treatment] + \
+            experiments[experiments.sample_species == row.sample_species][experiments.control==row.control][ experiments.protocol==row.protocol]["treatment"].tolist()
+        )
+    ), axis=1
+)
+
+experiments["group_name"] = experiments.apply(
+    lambda row: "_and_".join(row.norm_group) + "_" + str(row.protocol), 
+    axis = 1 
+)
 
 # Helper Functions for experiments
 
-def get_source(comparison):
-    if not pd.isna(comparisons.loc[comparison,"spikein_species"]):
+def get_source(experiment):
+    if not pd.isna(experiments.loc[experiment,"spikein_species"]):
         return "combined_{sample_species}_and_{spikein_species}".format(
-            sample_species=get_ref_source(comparisons.loc[comparison,"sample_species"]),
-            spikein_species=get_ref_source(comparisons.loc[comparison,"spikein_species"])
+            sample_species=get_ref_source(experiments.loc[experiment,"sample_species"]),
+            spikein_species=get_ref_source(experiments.loc[experiment,"spikein_species"])
         )
     else :
-        return get_ref_source(comparisons.loc[comparison,"sample_species"])
+        return get_ref_source(experiments.loc[experiment,"sample_species"])
 
-def get_sample_source(comparison):
-    return get_ref_source(comparisons.loc[comparison,"sample_species"])
+def get_sample_source(experiment):
+    return get_ref_source(experiments.loc[experiment,"sample_species"])
 
 # Assign reference to each experiment
-comparisons["reference"] = comparisons.apply( lambda row: get_source(row.comparison), axis = 1 )
-comparisons["normaliser"] = comparisons.apply( lambda row: "spikein" if row.spikein else "internal" , axis = 1 )
+experiments["reference"] = experiments.apply( lambda row: get_source(row.experiment), axis = 1 )
+experiments["normaliser"] = experiments.apply( lambda row: "spikein" if row.spikein else "internal" , axis = 1 )
 
 # Read samples config table into pandas dataframe
 samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol": str, "replicate": str, "unit_name": str}, comment="#"))
@@ -125,17 +137,24 @@ samples = samples.mask(samples == '')
 
 # Helper functions for samples
 
-def get_comparison_samples(wildcards):
-    compare = comparisons.loc[wildcards.comparison].squeeze()
-    cond = [compare.control,compare.treatment]
-    sample = samples[samples.protocol == compare.protocol][samples.condition.isin(cond)]
+def get_experiment_samples(wildcards):
+    exp = experiments.loc[wildcards.experiment].squeeze()
+    cond = [exp.control,exp.treatment]
+    sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
+    return sample
+
+def get_norm_group_samples(wildcards):
+    exp = experiments[experiments.group_name==wildcards.norm_group]
+    cond = exp.norm_group[1]
+    protocol = exp.protocol[1]
+    sample = samples[samples.protocol == protocol][samples.condition.isin(cond)]
     return sample
 
 def get_lineage_sj_samples(wildcards):
-    compare = comparisons[ (comparisons.sample_lineage==wildcards.lineage).tolist() & comparisons.splice & (comparisons.sample_species == wildcards.species).tolist() ]
-    cond = [compare.control,compare.treatment]
+    exp = experiments[ (experiments.sample_lineage==wildcards.lineage).tolist() & experiments.splice & (experiments.sample_species == wildcards.species).tolist() ]
+    cond = [exp.control,exp.treatment]
     sample=samples[(samples.condition + "_" + samples.protocol).isin(
-        (compare["control"] + "_" + compare["protocol"]).tolist() + (compare["treatment"] + "_" + compare["protocol"]).tolist()
+        (exp["control"] + "_" + exp["protocol"]).tolist() + (exp["treatment"] + "_" + exp["protocol"]).tolist()
     )]
     return sample
 
@@ -167,49 +186,49 @@ def get_bams():
 
 def get_bigwigs():
     bigwigs = expand(
-        "results/{sample.comparison}/bigwig/{splice}Aligned{demulti}{dedup}_normalised_by_{sample.normaliser}_{normaliser}/{sample.sample_name}_{sample.unit_name}.{strand}_{splice}.bigwig",
+        "results/{sample.experiment}/bigwig/{splice}Aligned{demulti}{dedup}_normalised_by_{sample.normaliser}_{normaliser}/{sample.sample_name}_{sample.unit_name}.{strand}_{splice}.bigwig",
         sample=samples.itertuples(), demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICING
     )
     return bigwigs
 
 def get_feature_counts():
     counts = expand(
-        "featurecounts/{comparison}/{reference}/{sample.sample_name}-{sample.unit_name}/{splice}Aligned{demulti}{dedup}.{valid}_{tag}.gene.counts.tab",
+        "featurecounts/{experiment}/{reference}/{sample.sample_name}-{sample.unit_name}/{splice}Aligned{demulti}{dedup}.{valid}_{tag}.gene.counts.tab",
         sample=samples.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICING
     ),
     return counts
 
 def get_genebody_diffexp_docx():
-    counts = compareand(
-        "results/{compare.comparison}/{compare.reference}/differential_expression/{compare.normaliser}_{compare.norm_feat}ReadCount_normalised.{splice}_Aligned{demulti}{dedup}.genome_{valid}.{type}.{tag}.GeneBody.docx",
-        compare=comparisons.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICE, type="custom-" + str(features.loc["GeneBody","prefix_md5"]) 
+    counts = expand(
+        "results/{exp.experiment}/{exp.reference}/differential_expression/{exp.normaliser}_{exp.norm_feat}ReadCount_normalised.{splice}_Aligned{demulti}{dedup}.genome_{valid}.{type}.{tag}.GeneBody.docx",
+        exp=experiments.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICE, type="custom-" + str(features.loc["GeneBody","prefix_md5"]) 
     ),
     return counts
 
 def get_differential_exp():
     diff_exp = expand(
-        "results/{contrast.comparison}/differential_expression/{contrast.contrast}/{contrast.normaliser}_normalised.{splice}Aligned{demulti}{dedup.{feature}",
+        "results/{contrast.experiment}/differential_expression/{contrast.contrast}/{contrast.normaliser}_normalised.{splice}Aligned{demulti}{dedup.{feature}",
         contrast=contrasts.itertuples(), dedup=DEDUP, feature=features[features.diffexp==True].itertuples(), demulti=DEMULTI, splice=SPLICING,
     ),
     return diff_exp
 
 def get_differential_usage():
     diff_use=expand(
-        "results/{contrast.comparison}/differential_usage/{usage}_Usage/{splice}Aligned{demulti}{dedup}",
+        "results/{contrast.experiment}/differential_usage/{usage}_Usage/{splice}Aligned{demulti}{dedup}",
         contrast=contrasts.itertuples(), dedup=DEDUP, demulti=DEMULTI, splice=SPLICING, usage=USAGE,
     ),   
     return diff_use
 
 def get_differential_splicing():
     diffsplice = expand(
-        "results/{sample.comparison}/differential_splicing/AllAligned{demulti}{dedup}",
+        "results/{sample.experiment}/differential_splicing/AllAligned{demulti}{dedup}",
         sample=samples.itertuples(), dedup=DEDUP, demulti=DEMULTI, splice=SPLICING,
     )
     return diffsplice if config["differential_analysis"]["splicing"] else ""
 
 def get_meta_profiles():
     pdf = expand(
-        "results/{sample.comparison}/meta_profiles/{splice}Aligned{demulti}{dedup}_normalised_by_{sample.normaliser}_{counts}/{biotype}_{feature.feature}/{splice}_{biotype}_{feature}_normalised_{score}.{strand}.meta_profile.pdf",
+        "results/{sample.experiment}/meta_profiles/{splice}Aligned{demulti}{dedup}_normalised_by_{sample.normaliser}_{counts}/{biotype}_{feature.feature}/{splice}_{biotype}_{feature}_normalised_{score}.{strand}.meta_profile.pdf",
         sample=samples.itertuples(), counts=COUNTS_BIGWIG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_META,biotype=BIOTYPE,feature=features.itertuples,score=SCORE, splice=SPLICING,
     )
     return pdf
@@ -217,19 +236,19 @@ def get_meta_profiles():
 #Functions for processing
 def feature_descript(wildcards):
     descript = ( str(wildcards.feature) + " is based on " + "{v}"  + " " + str(wildcards.tag) + " {root}s" + "{ref}." ).format(
-        v="annotated" if wildcards.valid=="annotated" else ( str( comparisons.loc[wildcards.comparison].squeeze(axis=0)["sample_lineage"] ) + "validated" ) if wildcards.valid=="validated" else "provided",
+        v="annotated" if wildcards.valid=="annotated" else ( str( experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_lineage"] ) + "validated" ) if wildcards.valid=="validated" else "provided",
         root=get_root_feature(wildcards.feature),
         ref="" if wildcards.valid=="provided" \
             else \
             (" in local " + \
-            str(comparisons.loc[wildcards.comparison].squeeze(axis=0)["sample_species"]).capitalize().replace("_"," ") + \
+            str(experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]).capitalize().replace("_"," ") + \
             " genome")  if not \
-            pd.isna(references.loc[comparisons.loc[wildcards.comparison].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["annotation_dir"]) \
+            pd.isna(references.loc[experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["annotation_dir"]) \
             else \
             (" in Ensembl " +
-            str(comparisons.loc[wildcards.comparison].squeeze(axis=0)["sample_species"]).capitalize().replace("_"," ") + " " + \
-            str( references.loc[comparisons.loc[wildcards.comparison].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["ensembl_build"] )  + " release " + \
-            str(references.loc[comparisons.loc[wildcards.comparison].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["ensembl_release"]) + \
+            str(experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]).capitalize().replace("_"," ") + " " + \
+            str( references.loc[experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["ensembl_build"] )  + " release " + \
+            str(references.loc[experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["ensembl_release"]) + \
             " genome with transcript support level " + \
             str(features.loc[wildcards.feature].squeeze(axis=0)["tsl"]) + \
             " or better" ),
