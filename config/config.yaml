@@ -100,9 +100,9 @@ differential_plots:
 metagene:
   plot_per_gene: TRUE
   plot_sum: TRUE
-  bin_number: 1000
+  bin_number: 1000 # main body bin number
   anamoly_trim: 0.05
-  before_after_ratio: 0.4 # Ratio of "plotbef" and "plotaft" regions 
+  before_after_ratio: 0.4 # Regions occupied by "plotbef" and "plotaft" in the plot as a ratio to main body 
   
 # Ensembl Tags of interest, hashtag out those that are not
 # Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line

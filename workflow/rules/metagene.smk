@@ -5,8 +5,8 @@ rule feature_metagene_annotations:
         ),
     output:
         main="{prefix}.plot-{md5}.{type}.{feature}.{sense}_main.bed",
-        before="{prefix}.plot-{md5}.{type}.{feature}.{sense}_before.bed",
-        after="{prefix}.plot-{md5}.{type}.{feature}.{sense}_after.bed",
+        before="{prefix}.plot-{md5}.{type}.{feature}.{sense}_plotbef.bed",
+        after="{prefix}.plot-{md5}.{type}.{feature}.{sense}_plotaft.bed",
     threads: 1 
     params:
         before=lambda w: features.loc[w.feature,"plotbef"],
@@ -63,7 +63,7 @@ rule compute_matrix:
     log:
         "logs/metagene/by_{normaliser}_{counts}_{splice}{prefix}/{biotype}_promptTSS/{sample}_{unit}.matrix.log",
     params:
-        bin_num= lambda wildcards: config["metagene"]["metagene"]["bin_number"] if ,
+        bin_num = lambda wildcards: get_part_number(wildcards)
     threads: 4
     resources:
         mem="10G",
@@ -72,14 +72,6 @@ rule compute_matrix:
         "../envs/deeptools.yaml",
     shell:
         """
-        computeMatrix scale-regions -S {input.bigwig} -R {input.bed} -p {threads} -b {params.before} -a {params.after} --unscaled5prime {params.start} --unscaled3prime {params.end} --binSize 1 --averageTypeBins mean --regionBodyLength {params.bin_num} --sortRegions descend --sortUsing region_length -o {output.matrix} &&
-        zcat {output[0]} |
-        awk -F'\\t' -v OFS='\\t' 'NF>1 && $0 !~ "nan" {{$2=sqrt(($3-$2)^2);print}}' - |
-        cut -f 1,2,4,7- - |
-        sed '1 i\\{wildcards.sample}' - > {output[1]} &&
-        awk -F'\t' -v OFS='\\t' '
-          FNR==NR&&FNR>1{{
-            for (i=(({params.before}/{params.bin_size})+4); i<=((({params.before}+{params.body_length})/{params.bin_size})+3) ; i++) sum[FNR]+=$i ;
-            size[FNR]=sum[FNR]*{params.bin_size}/{params.body_length};total+=(sum[FNR]/(FNR-1)) ; next}} FNR<NR&&FNR==1{{print $0;next}} FNR<NR&&FNR>1{{for(i=4;i<=NF;i++) $i=(size[FNR]>0?$i/size[FNR]*total:0);print}}' {output[1]} {output[1]} > {output[2]}
+        computeMatrix scale-regions -S {input.bigwig} -R {input.bed} -p {threads} --metagene --binSize 1 --averageTypeBins mean --regionBodyLength {params.bin_num} --sortRegions descend --sortUsing region_length -o {output.matrix}
         """
     

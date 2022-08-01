@@ -233,6 +233,14 @@ def get_meta_profiles():
     return pdf
 
 #Functions for processing
+def get_part_bin_number(wildcards):
+    bef_aft_sum = features.loc[wildcards.feature,"plotaft"] + features.loc[wildcards.feature,"plotbef"]
+    if wildcards.part == "main" :
+        return config["metagene"]["bin_number"]
+    else : 
+        part_bin = features.loc[wildcards.feature,wildcards.part] * config["metagene"]["bin_number"] / bef_aft_sum 
+        return part_bin
+
 def feature_descript(wildcards):
     descript = ( str(wildcards.feature) + " is based on " + "{v}"  + " " + str(wildcards.tag) + " {root}s" + "{ref}." ).format(
         v="annotated" if wildcards.valid=="annotated" else ( str( experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_lineage"] ) + "validated" ) if wildcards.valid=="validated" else "provided",
