@@ -9,15 +9,15 @@ rule non_overlap_feature_annotations:
     params:
         strand=lambda w: "-s" if w.strand == "stranded" else "",
         distinct= lambda w: "distinct" if w.strand == "stranded" else "collapse",
-        before=lambda w: features.loc[w.feature,"plot_bef"],
-        after=lambda w: features.loc[w.feature,"plot_aft"],
+        before=lambda w: features.loc[w.feature,"plotbef"],
+        after=lambda w: features.loc[w.feature,"plotaft"],
     conda:
         "../envs/bedtools.yaml"
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/metagene/{prefix}_{biotype}_genebody.annotations.log",
+        "logs/metagene/{prefix}_plot-{md5}.{type}.{feature}.{sense}.non-overlap.{strand}.log",
     shell:
         """
         awk -F'\\t' -v OFS='\\t' '

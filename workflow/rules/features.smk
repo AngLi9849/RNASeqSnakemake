@@ -164,8 +164,7 @@ rule custom_feature:
               print ; 
               print ("{params.sense}" == "-+")?$0:"" >> "{output.antisense}" ;
               print (("{params.sense}" ~ /^+/) || ("{params.sense}" == "nan") )?$0:"" >> "{output.sense}" ; 
-            }} ;
-            
+            }} ;            
             if ( ("{params.sense}" ~ "-") || ("{params.sense}" == "nan") ) {{
               $6 = "-" ; print ;
               print ("{params.sense}" ~ /^-/)?$0:"" >> "{output.sense}" ;
@@ -196,7 +195,7 @@ rule custom_feature:
             if ( ("{params.sense}" ~ "+") || ("{params.sense}" == "nan") ) {{
               print ;
               print ("{params.sense}" == "-+")?$0:"" >> "{output.antisense}" ;
-              print ("{params.sense}" ~ /^+/)?$0:"" >> "{output.sense}" ;
+              print (("{params.sense}" ~ /^+/) || ("{params.sense}" == "nan") )?$0:"" >> "{output.sense}" ;
             }} ;
             if ( ("{params.sense}" ~ "-") || ("{params.sense}" == "nan") ) {{
               $6 = "+" ; print ;
