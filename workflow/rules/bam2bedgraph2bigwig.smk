@@ -93,14 +93,14 @@ rule stranded_genomecov:
  
 rule scale_bedgraph2bigwig:
     input:
-       scale = lambda w: "deseq2/{{experiment}}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_scale_factors.tsv".format(
+       scale = lambda w: "deseq2/{{norm_group}}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
         ),
        bedgraph = "bedgraph/{sample}/{unit}/{reference}/{splice}{prefix}.{strand}.bedgraph",
        chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + ".fasta.chrom.sizes")
     output:
-       bg = "bedgraph/{experiment}/{reference}/{splice}{prefix}_normalised_by_{spikein}_{normaliser}ReadCount/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
-       bw = "results/{experiment}/{reference}/bigwigs/{splice}{prefix}_normalised_by_{spikein}_{normaliser}ReadCount/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
+       bg = "bedgraph/{norm_group}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
+       bw = "results/{norm_group}/{reference}/bigwigs/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
     conda:
        "../envs/bedgraphtobigwig.yaml"
     threads: 1
@@ -108,7 +108,7 @@ rule scale_bedgraph2bigwig:
         mem="12G",
         rmem="8G",
     log:
-       "logs/{experiment}/bg2bw/{sample}_{unit}/{reference}/{strand}_by_{spikein}_{normaliser}_{prefix}_{splice}_{strand}_bg2bw.log"
+       "logs/{norm_group}/bg2bw/{sample}_{unit}/{reference}/{strand}_by_{spikein}_{pair}_{normaliser}_{prefix}_{splice}_{strand}_bg2bw.log"
     shell:
        """
        awk -F'\\t' -v OFS='\\t' '

@@ -139,7 +139,7 @@ rule count_matrix:
     log:
         "logs/{norm_group}/{reference}/featurecounts/{prefix}_count_matrix.log",
     params:
-        names=lambda wildcards: "\t".join(map(str,get_experiment_samples(wildcards).sample_name.tolist())),
+        names=lambda wildcards: "\t".join(map(str,get_norm_group_samples(wildcards).sample_name.tolist())),
     resources:
         mem="8G",
         rmem="6G",

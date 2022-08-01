@@ -105,12 +105,14 @@ rule custom_feature:
         mem="4G",
         rmem="6G",
     output:
+        sense = "{prefix}.custom-{md5}.{type}.{feature}.sense.bed",
+        antisense = "{prefix}.custom-{md5}.{type}.{feature}.antisense.bed",
         bed="{prefix}.custom-{md5}.{type}.{feature}.bed"
     params:
         feat=lambda wildcards: features.loc[wildcards.feature,"feature"],
         group=lambda wildcards: features.loc[wildcards.feature,"group"],
         sect=lambda wildcards: features.loc[wildcards.feature,"section"],
-        sense=lambda wildcards: features.loc[wildcards.feature,"sense"],
+        sense=lambda wildcards: str(features.loc[wildcards.feature,"sense"]),
         no_first=lambda wildcards: features.loc[wildcards.feature,"no_frst"],
         no_last=lambda wildcards: features.loc[wildcards.feature,"no_last"],
         min_len=lambda wildcards: features.loc[wildcards.feature,"min_len"],
@@ -159,10 +161,15 @@ rule custom_feature:
             ) ;
             $5 = $3 - $2 ;
             if ( ("{params.sense}" ~ "+") || ("{params.sense}" == "nan") ) {{
-              print
+              print ; 
+              print ("{params.sense}" == "-+")?$0:"" >> "{output.antisense}" ;
+              print (("{params.sense}" ~ /^+/) || ("{params.sense}" == "nan") )?$0:"" >> "{output.sense}" ; 
             }} ;
+            
             if ( ("{params.sense}" ~ "-") || ("{params.sense}" == "nan") ) {{
-              $6 = "-" ; print
+              $6 = "-" ; print ;
+              print ("{params.sense}" ~ /^-/)?$0:"" >> "{output.sense}" ;
+              print ("{params.sense}" == "+-")?$0:"" >> "{output.antisense}" ;
             }} ;
           }} 
           else if ($6=="-") {{
@@ -187,10 +194,14 @@ rule custom_feature:
             ) ;
             $5 = $3 - $2 ;
             if ( ("{params.sense}" ~ "+") || ("{params.sense}" == "nan") ) {{
-              print
+              print ;
+              print ("{params.sense}" == "-+")?$0:"" >> "{output.antisense}" ;
+              print ("{params.sense}" ~ /^+/)?$0:"" >> "{output.sense}" ;
             }} ;
             if ( ("{params.sense}" ~ "-") || ("{params.sense}" == "nan") ) {{
-              $6 = "+" ; print
+              $6 = "+" ; print ;
+              print ("{params.sense}" ~ /^-/)?$0:"" >> "{output.sense}" ;
+              print ("{params.sense}" == "+-")?$0:"" >> "{output.antisense}" ;
             }} ;
           }}
         }}' - |

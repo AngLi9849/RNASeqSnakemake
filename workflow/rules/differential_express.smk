@@ -18,7 +18,7 @@ rule pca:
 
 rule deseq2_expression:
     input:
-        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_scale_factors.tsv".format(
+        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
@@ -46,9 +46,9 @@ rule deseq2_expression:
             c=str(config["differential_plots"]["word_docx"]["font_colour"]),
         ),
     output:
-        normcounts="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}ReadCount_normalised.{splice}{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.tsv",
-        docx="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}ReadCount_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
-        rpkm="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}ReadCount_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.tsv",
+        normcounts="results/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.tsv",
+        docx="results/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
+        rpkm="results/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.tsv",
     params:
         sample_table="config/samples.tsv",
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
@@ -62,7 +62,7 @@ rule deseq2_expression:
     conda:
         "../envs/differential.yaml"
     log:
-        "logs/{experiment}/{reference}/deseq2/{splice}ed{prefix}.{lineage}_{valid}.{type}.{tag}_{spikein}_{feature}_{normaliser}ReadCount.diffexp.log",
+        "logs/{experiment}/{reference}/deseq2/{splice}ed{prefix}.{lineage}_{valid}.{type}.{tag}_{spikein}_{feature}_{pair}_{normaliser}ReadCount.diffexp.log",
     threads: get_deseq2_threads()
     script:
         "../scripts/R/deseq2_express.R"

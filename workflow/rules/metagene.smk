@@ -1,14 +1,14 @@
 rule non_overlap_feature_annotations:
     input:
-        bed=lambda w: "{{prefix}}.custom-{id}.{{type}}.{{feature}}.bed".format(
+        bed=lambda w: "{{prefix}}.custom-{id}.{{type}}.{{feature}}.{{sense}}.bed".format(
             id = features.loc[w.feature,"prefix_md5"],
         ),
     output:
-        bed="{prefix}.plot-{md5}.{type}.{feature}.non-overlap.{strand}.bed",
+        bed="{prefix}.plot-{md5}.{type}.{feature}.{sense}.non-overlap.{strand}.bed",
     threads: 1 
     params:
         strand=lambda w: "-s" if w.strand == "stranded" else "",
-        distinct= lambda w: "distinc" if w.strand == "stranded" else "collapse",
+        distinct= lambda w: "distinct" if w.strand == "stranded" else "collapse",
         before=lambda w: features.loc[w.feature,"plot_bef"],
         after=lambda w: features.loc[w.feature,"plot_aft"],
     conda:
