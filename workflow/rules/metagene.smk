@@ -1,15 +1,14 @@
 rule feature_metagene_annotations:
     input:
-        bed=lambda w: "{{prefix}}.custom-{id}.{{type}}.{{feature}}.{{sense}}.main.bed".format(
+        bed=lambda w: "{{prefix}}.custom-{id}.{{type}}.{{feature}}.{{sense}}.bed".format(
             id = features.loc[w.feature,"prefix_md5"],
         ),
     output:
-        before="{prefix}.plot-{md5}.{type}.{feature}.{sense}.before.bed",
-        after="{prefix}.plot-{md5}.{type}.{feature}.{sense}.after.bed",
+        main="{prefix}.plot-{md5}.{type}.{feature}.{sense}_main.bed",
+        before="{prefix}.plot-{md5}.{type}.{feature}.{sense}_before.bed",
+        after="{prefix}.plot-{md5}.{type}.{feature}.{sense}_after.bed",
     threads: 1 
     params:
-        strand=lambda w: "-s" if w.strand == "stranded" else "",
-        distinct= lambda w: "distinct" if w.strand == "stranded" else "collapse",
         before=lambda w: features.loc[w.feature,"plotbef"],
         after=lambda w: features.loc[w.feature,"plotaft"],
     conda:
@@ -18,35 +17,36 @@ rule feature_metagene_annotations:
         mem="6G",
         rmem="4G",
     log:
-        "logs/metagene/{prefix}_plot-{md5}.{type}.{feature}.{sense}.non-overlap.{strand}.log",
+        "logs/metagene/{prefix}_plot-{md5}.{type}.{feature}.{sense}.plot.log",
     shell:
         """
-        sort -k6,6 -k1,1 -k8,8 -k2,2n -k3,3n {input.bed} 
+        sort -k6,6 -k1,1 -k8,8 -k2,2n -k3,3n {input.bed} | 
         awk -F'\\t' -v OFS='\\t' -v id='' '
           FNR==NR {{
-            length[$8] += $5 ; 
-            five[$8]=(five[$8]<=$2)?five[$8]:$2 ;
+            len[$8] += $5 ; 
+            five[$8]=(five[$8]<=1)?$2:((five[$8] <= $2)?five[$8]:$2) ;
             three[$8]=(three[$8]>=$3)?three[$8]:$3 ;
+            print $1, $2, $3, $8, $5, $6 >> "{output.main}" ;
           }}
           FNR < NR && $6=="+" {{
             if ( id != $8 ) {{
-              l=length[$8] ;
+              l=len[$8] ;
               bef=("{params.before}" ~ /\\..*[1-9]/)? int(l*{params.before}) : {params.before} ;
               aft=("{params.after}" ~ /\\..*[1-9]/)? int(l*{params.after}) : {params.after} ;
               if (($6=="+" && "{wildcards.sense}" == "sense") || ($6=="-" && "{wildcards.sense}" == "antisense")) {{ 
                 $2 = ( five[$8] >= bef ) ? ( five[$8] - bef ) : 0 ;
                 $3 = five[$8] ;
-                print >> "{output.before}" ;
+                print $1, $2, $3, $8, $5, $6 >> "{output.before}" ;
                 $2 = three[$8] ;
                 $3 = three[$8] + aft ;
-                print >> "{output.after}" ;
+                print $1, $2, $3, $8, $5, $6 >> "{output.after}" ;
               }} else {{
                 $2 = (five[$8] >= aft)? ( five[$8] - aft ) : 0   ;
                 $3 = five[$8] ;
-                print >> "{output.after}" ;
+                print $1, $2, $3, $8, $5, $6 >> "{output.after}" ;
                 $2 = three[$8] ; 
                 $3 = three[$8] + bef
-                print >> "{output.before}" ;
+                print $1, $2, $3, $8, $5, $6 >> "{output.before}" ;
               }} ;
               id = $8 ;
             }}
@@ -54,24 +54,16 @@ rule feature_metagene_annotations:
         """
 
 
-rule compute_matrix_promptTSS_stranded:
+rule compute_matrix:
     input:        
-        fwd_bed=lambda wildcards: (str(get_annotation(experiments.loc[wildcards.experiment,"sample_source"]) + ".{wildcards.biotype}_promptTSS.non_overlap.fwd.bed"),
-        bigwig=expand(
-            "results/{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.fwd_{splice}.bigwig",
+        bed=resources/annotations/{reference}_{lineage}.plot-{md5}.{type}.{feature}.{sense}_{part}.bed,
+        bigwig = "results/{norm_group}/{reference}/bigwigs/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
     output:
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.sense.fwd.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.sense.rev.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.antisense.fwd.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.antisense.rev.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}_sum.sense.matrix.tab",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}_per_gene.sense.matrix.tab",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}_sum.antisense.matrix.tab",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}_per_gene.antisense.matrix.tab",
+        matrix="compute_matrix/{norm_group}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}/{lineage}.{type}.{feature}.plot-{md5}.{sense}_{part}.matrix.gz",
     log:
         "logs/metagene/by_{normaliser}_{counts}_{splice}{prefix}/{biotype}_promptTSS/{sample}_{unit}.matrix.log",
     params:
-        bin_size=config["metagene"]["promptTSS"]["bin_size"],
+        bin_num= lambda wildcards: config["metagene"]["metagene"]["bin_number"] if ,
     threads: 4
     resources:
         mem="10G",
@@ -80,24 +72,15 @@ rule compute_matrix_promptTSS_stranded:
         "../envs/deeptools.yaml",
     shell:
         """
-        computeMatrix reference-point -S {input.fwd_bigwig} -R {input.fwd_bed} -p {threads} -b {params.prompt} -a {params.tss} --referencePoint TSS --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[0]} && 
-        computeMatrix reference-point -S {input.rev_bigwig} -R {input.rev_bed} -p {threads} -b {params.prompt} -a {params.tss} --referencePoint TSS --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[1]} &&
-        computeMatrix reference-point -S {input.rev_bigwig} -R {input.fwd_bed} -p {threads} -b {params.prompt} -a {params.tss} --referencePoint TSS --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[2]} &&
-        computeMatrix reference-point -S {input.fwd_bigwig} -R {input.rev_bed} -p {threads} -b {params.prompt} -a {params.tss} --referencePoint TSS --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[3]} &&
-        zcat {output[0]} {output[1]} | 
-        awk -F'\\t'   -v OFS='\\t' 'NF>1&& $0 !~ "nan" {{$2=sqrt(($3-$2)^2);print}}' - |
-        sort -rnk2,2 - |
-        cut -f 1,2,4,7- - |
-        sed '1 i\\{wildcards.sample}_sense' - > {output[4]} &&
-        zcat {output[2]} {output[3]} |
+        computeMatrix scale-regions -S {input.bigwig} -R {input.bed} -p {threads} -b {params.before} -a {params.after} --unscaled5prime {params.start} --unscaled3prime {params.end} --binSize 1 --averageTypeBins mean --regionBodyLength {params.bin_num} --sortRegions descend --sortUsing region_length -o {output{} &&
+        zcat {output[0]} |
         awk -F'\\t' -v OFS='\\t' 'NF>1&& $0 !~ "nan" {{$2=sqrt(($3-$2)^2);print}}' - |
-        sort -rnk2,2 - |
         cut -f 1,2,4,7- - |
-        sed '1 i\\{wildcards.sample}_antisense' - > {output[6]} &&
-        paste {output[4]} {output[6]} | 
-        awk -v OFS='\\t' 'FNR==NR&&FNR>1{{for (i=4; i<=NF; i++) sum[FNR]+=$i;size[FNR]=sum[FNR]/(NF-3);total+=(sum[FNR]/(FNR-1)); next}} FNR<NR&&FNR==1{{print $0;next}} FNR<NR&&FNR>1{{for(i=4;i<=NF;i++) $i=(size[FNR]>0?$i/size[FNR]*total:0);print}}' - {output[4]} > {output[5]} &&
-        paste {output[4]} {output[6]} |
-        awk -v OFS='\\t' 'FNR==NR&&FNR>1{{for (i=4; i<=NF; i++) sum[FNR]+=$i;size[FNR]=sum[FNR]/(NF-3);total+=(sum[FNR]/(FNR-1)); next}} FNR<NR&&FNR==1{{print $0;next}} FNR<NR&&FNR>1{{for(i=4;i<=NF;i++) $i=(size[FNR]>0?$i/size[FNR]*total:0);print}}' - {output[6]} > {output[7]}
+        sed '1 i\\{wildcards.sample}' - > {output[1]} &&
+        awk -F'\t' -v OFS='\\t' '
+          FNR==NR&&FNR>1{{
+            for (i=(({params.before}/{params.bin_size})+4); i<=((({params.before}+{params.body_length})/{params.bin_size})+3) ; i++) sum[FNR]+=$i ;
+            size[FNR]=sum[FNR]*{params.bin_size}/{params.body_length};total+=(sum[FNR]/(FNR-1)) ; next}} FNR<NR&&FNR==1{{print $0;next}} FNR<NR&&FNR>1{{for(i=4;i<=NF;i++) $i=(size[FNR]>0?$i/size[FNR]*total:0);print}}' {output[1]} {output[1]} > {output[2]}
         """
     
 

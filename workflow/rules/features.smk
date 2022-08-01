@@ -105,8 +105,8 @@ rule custom_feature:
         mem="4G",
         rmem="6G",
     output:
-        sense = "{prefix}.custom-{md5}.{type}.{feature}.sense.main.bed",
-        antisense = "{prefix}.custom-{md5}.{type}.{feature}.antisense.main.bed",
+        sense = "{prefix}.custom-{md5}.{type}.{feature}.sense.bed",
+        antisense = "{prefix}.custom-{md5}.{type}.{feature}.antisense.bed",
         bed="{prefix}.custom-{md5}.{type}.{feature}.bed"
     params:
         feat=lambda wildcards: features.loc[wildcards.feature,"feature"],
