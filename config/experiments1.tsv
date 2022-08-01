@@ -1,5 +1,0 @@
-experiment                    	sample_source                 	sample_lineage 	spliced_reads  	spiked_in      	spikein_source                	control_condition	paired_analysis     
-HCT_U-AID_Chromatin_RNA-Seq   	homo_sapiens                  	HCT116         	TRUE           	FALSE          	                              	HCT116_Chromatin	FALSE               
-HCT_U-AID_Nucleoplasm_RNA-Seq 	homo_sapiens                  	HCT116         	TRUE           	FALSE          	                              	HCT116_Nucleoplasm	FALSE               
-HCT_U-AID_Cytoplasm_RNA-Seq   	homo_sapiens                  	HCT116         	TRUE           	FALSE          	                              	HCT116_Cytoplasm	FALSE               
-#HCT_U_UL1-AID_TT-Seq         	homo_sapiens                  	HCT116         	TRUE           	TRUE           	saccharomyces_cerevisiae      	HCT116         		TRUE                
