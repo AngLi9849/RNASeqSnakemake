@@ -97,10 +97,10 @@ if (i =="") {
 mean_level_i <- mean_level[rownames(mean_level) %in% expr_i$featureID,]
 head(mean_level_i,5)
 
-total_i <- nrow(expr_i)
-insuf_i <- sum(expr_i$baseMean < min_mean)
+total_i <- nrow(mean_level_i)
+insuf_i <- sum(expr_i$baseMean < min_mean) + total_i - nrow(expr_i)
 
-expr_i <- expr_i[expr_i$baseMean < min_mean,]
+expr_i <- expr_i[expr_i$baseMean >= min_mean,]
 
 # Set file name and path
 feature_i <- ifelse(i=="", feature, paste(tolower(i),feature))
