@@ -49,7 +49,7 @@ pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
     segment.alpha=1,
     label.size = NA,
     fill = alpha(c("white"),0.8),
-    nudge_x=0.5,
+    nudge_x=0.7,
     force = 10,
   ) +
   theme(

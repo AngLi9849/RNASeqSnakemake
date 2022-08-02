@@ -41,7 +41,7 @@ violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +
     axis.title.y = element_text(size=9)
   )
 
-if (difference=="expression levels") {
+if (difference=="expression") {
 violin_ymin <- min(violin_data$value[!is.infinite(log10(violin_data$value))])
 violin <- violin + scale_y_log10(limits = c(1, violin_ymax))
 } else {

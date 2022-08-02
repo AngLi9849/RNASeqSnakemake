@@ -27,6 +27,8 @@ if (snakemake@threads > 1) {
 # Import lfc table and mean levels table
 expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+head(mean_level,10)
+
 
 # Import snakemake parameters and inputs
 # Identify analysis

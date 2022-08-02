@@ -131,17 +131,17 @@ expr$Length <- count_length$Length[match(rownames(expr),count_length$gene)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
 expr$rpkm <- expr$baseMean*1000000000/expr$Length
 
-write.table(data.frame("id"=rownames(rpkm),rpkm), file=snakemake@output[["rpkm"]], sep='\t', row.names=F,quote=F)
+write.table(data.frame("id"=rownames(rpkm),rpkm, check.names=FALSE), file=snakemake@output[["rpkm"]], sep='\t', row.names=F,quote=F,)
 
-write.table(data.frame("id"=rownames(norm_counts), norm_counts), file=snakemake@output[["normcounts"]], sep='\t', row.names=F,quote=F)
+write.table(data.frame("id"=rownames(norm_counts), norm_counts, check.names=FALSE), file=snakemake@output[["normcounts"]], sep='\t', row.names=F,quote=F)
 
-#write.table(data.frame(cts_genes[c(1,5)]),file=snakemake@output[["count_sums"]],sep='\t',row.names=F,quote=F)
+#write.table(data.frame(cts_genes[c(1,5)], check.names=FALSE),file=snakemake@output[["count_sums"]],sep='\t',row.names=F,quote=F)
 
-write.table(data.frame("id"=rownames(expr),expr),file=snakemake@output[["lfc"]],sep='\t',row.names=F,quote=F)
+write.table(data.frame("id"=rownames(expr),expr, check.names=FALSE),file=snakemake@output[["lfc"]],sep='\t',row.names=F,quote=F)
 
-write.table(data.frame(expr[c(1,2,5,6:9)]),file=snakemake@output[["toptable"]], sep='\t',row.names=F,quote=F)
+write.table(data.frame(expr[c(1,2,5,6:9)], check.names=FALSE),file=snakemake@output[["toptable"]], sep='\t',row.names=F,quote=F)
 
-write.table(data.frame("id"=rownames(mean_level),mean_level),file=snakemake@output[["levels"]],sep='\t',row.names=F,quote=F)
+write.table(data.frame("id"=rownames(mean_level),mean_level, check.names=FALSE),file=snakemake@output[["levels"]],sep='\t',row.names=F,quote=F)
 
 
 
