@@ -15,7 +15,6 @@ rule pca:
     script:
         "../scripts/R/plot-pca.R"
 
-
 rule deseq2_expression:
     input:
         size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
@@ -31,31 +30,23 @@ rule deseq2_expression:
         genetab=lambda w: "resources/annotations/{source}_genome.gtf.{{tag}}_gene_info.tab".format(
             source= str( get_sample_source(w.experiment) ),
         ),
-        bed=lambda w: "resources/annotations/{source}_{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
-            source=  str( get_sample_source(w.experiment) ),
-        ),
         nuc=lambda w: "resources/annotations/{source}_{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed.nuc.tab".format(
             source=  str( get_sample_source(w.experiment) ),
         ),
-        pptx="resources/templates/{w}cm_wide.{h}cm_tall.pptx".format(
-            w=str(config["differential_plots"]["powerpoint"]["width"]),
-            h=str(config["differential_plots"]["powerpoint"]["height"]),
-        ),
-        docx="resources/templates/{c}_{f}.docx".format(
-            f=str(config["differential_plots"]["word_docx"]["font_name"]),
-            c=str(config["differential_plots"]["word_docx"]["font_colour"]),
+        bed=lambda w: "resources/annotations/{source}_{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
+            source=  str( get_sample_source(w.experiment) ),
         ),
     output:
         normcounts="results/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.tsv",
-        docx="results/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
-        rpkm="results/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.tsv",
+        lfc="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
+        levels="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
+        rpkm="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.tsv",
+        toptable="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.toptable.tsv",
     params:
-        sample_table="config/samples.tsv",
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
         treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],
         paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
-        descript= lambda wildcards: feature_descript(wildcards),
-        dir="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}ReadCount_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}",        
+        dir="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}ReadCount_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}",
     resources:
         mem="16G",
         rmem="12G",
@@ -66,3 +57,4 @@ rule deseq2_expression:
     threads: get_deseq2_threads()
     script:
         "../scripts/R/deseq2_express.R"
+

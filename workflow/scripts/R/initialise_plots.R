@@ -10,10 +10,13 @@ volc_n <- as.numeric(snakemake@config[["differential_plots"]][["volcano_gene_nam
 up_col <- as.character(snakemake@config[["differential_plots"]][["up_colour"]])
 down_col <- as.character(snakemake@config[["differential_plots"]][["down_colour"]])
 insig_col <- as.character(snakemake@config[["differential_plots"]][["insignificant_colour"]])
-background <- "white"
+background_col <- "white"
+void_col <- "black"
 
 sig_p <- as.numeric(snakemake@config[["differential_analysis"]][["significant_p"]])
 undetect_p <- as.numeric(snakemake@config[["differential_analysis"]][["undetect_p"]]) 
+min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
+
 
 plot_dpi <- as.numeric(snakemake@config[["differential_plots"]][["dpi"]])
 tick_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]][["axis_ticks"]])

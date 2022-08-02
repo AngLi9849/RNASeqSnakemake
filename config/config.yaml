@@ -40,7 +40,7 @@ features:
 feature_validation:
   genes:
     minimum_reads: 5
-    rpkm_percentile: 99.99 # Only analyse genes with normalised rpkm in this top percentile, 100 will include all
+    rpkm_percentile: 99.99 # Only analyse genes with normalised rpkm in this top percentile after trimming by minimum reads, 100 will include all
   exons:
     minimum_splice_reads: 3  
   introns:
@@ -54,6 +54,7 @@ feature_validation:
 # Differential analysis statistical setting
 differential_analysis:
   # P-Value thresholds
+  minimum_mean_reads: 10 # minimum mean number of reads per sample to support a feature in differential analyses
   significant_p: 0.1 # Changes with p-value lower than this is considered significant
   undetect_p: 0.95 # Changes with p-value higher than this is considered undetected
 

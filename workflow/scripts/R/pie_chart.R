@@ -1,27 +1,29 @@
 sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0)
 sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0)
 insig <- sum(expr_i$padj[expr_i$padj < undetect_p] >= sig_p)
-undetect <- nrow(cts_genes_i) - insig - sig_up - sig_down
+undetect <- total_i - insuf_i - insig - sig_up - sig_down - insuf
+
 
 sig_up
 sig_down
 insig
 undetect
 
-sig_up_pc <- paste(signif(sig_up/nrow(cts_genes_i)*100,2), "%",sep="")
-sig_down_pc <- paste(signif(sig_down/nrow(cts_genes_i)*100,2), "%",sep="")
-insig_pc <- paste(signif(insig/nrow(cts_genes_i)*100,2), "%",sep="")
-undetect_pc <- paste(signif(undetect/nrow(cts_genes_i)*100,2), "%",sep="")
+sig_up_pc <- paste(signif(sig_up/total_i*100,2), "%",sep="")
+sig_down_pc <- paste(signif(sig_down/total_i*100,2), "%",sep="")
+insig_pc <- paste(signif(insig/total_i*100,2), "%",sep="")
+undetect_pc <- paste(signif(undetect/total_i*100,2), "%",sep="")
+insuf_pc <- paste(signif(insuf_i/total_i*100,2), "%",sep="")
 
 pie_data <- data.frame(
-  data1=c("Undetectable Change","Insignificant Change","Significant Increase","Significant Decrease"),
-  data2=c(undetect,insig,sig_up,sig_down),
-  data3=c(background,insig_col,up_col,down_col)
+  data1=c("Insufficient Reads", "Undetectable Change","Insignificant Change","Significant Increase","Significant Decrease"),
+  data2=c(insuf_i,undetect,insig,sig_up,sig_down),
+  data3=c(void_col,background_col,insig_col,up_col,down_col)
 )
 
 names(pie_data) <- c("Category","Numbers","Colours")
-pie_label <- paste(nrow(cts_genes_i),feature_i)
-pie_data$Percent <- paste(signif(pie_data$Numbers/nrow(cts_genes_i)*100,2), "%")
+pie_label <- paste(total_i,feature_i)
+pie_data$Percent <- paste(signif(pie_data$Numbers/total_i*100,2), "%")
 pie_data$Label <- paste(pie_data$Numbers,pie_data$Category)
 
 
@@ -63,11 +65,12 @@ pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
 
 
 pie_caption <- paste(
-  "In ", paste(nrow(cts_genes_i)), " ", feature_i, ", ", difference, " of ",
+  "In ", total_i, " ", feature_i, ", ", difference, " of ",
   sig_up, " significantly increased (", sig_up_pc, ", ", up_col, "), ", 
-  sig_down, " significantly decreased (", sig_down_pc, ", ", down_col, "), ",
-  insig, " changed insignificantly (", insig_pc, ", p >= ", sig_p, "), and ",
-  "changes were not detected in ", undetect, " (", undetect_pc, ", p >= ", undetect_p, ").", 
+  sig_down, " significantly decreased (", sig_down_pc, ", ", down_col, "), and ",
+  insig, " changed insignificantly (", insig_pc, ", p >= ", sig_p, "). ",
+  "Changes were not detected in ", undetect, " (", undetect_pc, ", p >= ", undetect_p, "), and ",
+  insuf_i, " were insufficiently evidenced (", insuf_pc ,", less than ", min_mean, " reads per sample). " 
   sep="")
 
 

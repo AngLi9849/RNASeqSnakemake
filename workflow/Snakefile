@@ -35,7 +35,7 @@ include: "rules/differential_express.smk"
 #include: "rules/differential_splice.smk"
 #include: "rules/differential_usage.smk"
 include: "rules/bam2bedgraph2bigwig.smk"
-include: "rules/metagene_test.smk"
+include: "rules/metagene.smk"
 #include: "rules/temp.smk"
 
 
@@ -57,8 +57,9 @@ rule all:
         #"resources/annotations/HCT116.star.splice_junctions.bed"
         #"resources/annotations/ensembl_homo_sapiens.HCT116.custom.annotated_basic.GeneBody.star_splice_sites.saf"
         #"HCT_U-AID_Chromatin_RNA-Seq/deseq2/AllAligned.GeneBodyReads.spikein_scale_factors.tsv"
-        #"results/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/differential_expression/unpaired.internal_mRNAReadCount_normalised/All_Aligned.genome_annotated.custom-137b0876fc9ef82c9b34f6e1f1a90898.basic.GeneBody.docx",
-        "resources/annotations/ensembl_homo_sapiens.GRCh38.104_genome.plot-095b4d96d6e4d066a112a711bfe0b4fb.annotated_basic.GeneBody.sense.before.bed"
+        "differential/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/differential_expression/unpaired.internal_mRNAReadCount_normalised/All_Aligned.genome_annotated.custom-137b0876fc9ef82c9b34f6e1f1a90898.basic.GeneBody.lfc.tab",
+        #"compute_matrix/{norm_group}/ensembl_homo_sapiens.GRCh38.104/unpaired.internal_mRNAReadCount_normalised/All_Aligned/{sample}_{unit}.{strand}_{splice}/{lineage}.{type}.{feature}.plot-{md5}.{sense}_{part}.matrix.gz"
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104_genome.plot-095b4d96d6e4d066a112a711bfe0b4fb.annotated_basic.GeneBody.sense.before.bed"
         #get_genebody_diffexp_docx()
         #"resources/templates/Arial.docx"
         #"test.tsv"

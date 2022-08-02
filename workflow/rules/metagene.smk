@@ -56,14 +56,14 @@ rule feature_metagene_annotations:
 
 rule compute_matrix:
     input:        
-        bed=resources/annotations/{reference}_{lineage}.plot-{md5}.{type}.{feature}.{sense}_{part}.bed,
+        bed= "resources/annotations/{reference}_{lineage}.plot-{md5}.{type}.{feature}.{sense}_{part}.bed",
         bigwig = "results/{norm_group}/{reference}/bigwigs/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
     output:
         matrix="compute_matrix/{norm_group}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}/{lineage}.{type}.{feature}.plot-{md5}.{sense}_{part}.matrix.gz",
     log:
-        "logs/metagene/by_{normaliser}_{counts}_{splice}{prefix}/{biotype}_promptTSS/{sample}_{unit}.matrix.log",
+        "logs/compute_matrix/{norm_group}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}/{lineage}.{type}.{feature}.plot-{md5}.{sense}_{part}.matrix.log",
     params:
-        bin_num = lambda wildcards: get_part_number(wildcards)
+        bin_num = lambda wildcards: get_part_number(wildcards),
     threads: 4
     resources:
         mem="10G",
@@ -72,6 +72,6 @@ rule compute_matrix:
         "../envs/deeptools.yaml",
     shell:
         """
-        computeMatrix scale-regions -S {input.bigwig} -R {input.bed} -p {threads} --metagene --binSize 1 --averageTypeBins mean --regionBodyLength {params.bin_num} --sortRegions descend --sortUsing region_length -o {output.matrix}
+        computeMatrix scale-regions -S {input.bigwig} -R stdin -p {threads} --skipZeros --metagene --binSize 1 --averageTypeBins mean --regionBodyLength {params.bin_num} --sortRegions descend --sortUsing region_length -o {output.matrix}
         """
     
