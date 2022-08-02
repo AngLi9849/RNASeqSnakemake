@@ -29,15 +29,9 @@ expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', chec
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 
 # Import snakemake parameters and inputs
-dir <- as.character(snakemake@params[["dir"]])
-dir.create(dir)
-
+# Identify analysis
 difference <- as.character(snakemake@wildcards[["difference"]])
 analysis <- paste("differential", difference, "analysis")
-
-# Import feature lengths and nucleotide content
-count_length <- read.table(snakemake@input[["length"]], sep='\t',header=TRUE, check.names=FALSE)
-nuc <- read.csv(snakemake@input[["nuc"]],header=T,row.names = 1, sep='\t')
 
 # Import wildcards as text
 prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
@@ -113,9 +107,6 @@ feature_i <- ifelse(i=="", feature, paste(tolower(i),feature))
 
 file_i <- gsub("_"," ",paste(experiment, feature_i, analysis ,sep=" "))
 
-dir_i <- paste(dir,"/",ifelse(i=="","All",i),sep="")
-dir.create(dir_i)
-
 # Write heading for this analysis group
 group_heading <- gsub("_"," ",toTitleCase(ifelse(i=="","Overview",i)))
 doc <- body_add(doc,fpar(ftext(group_heading, prop=heading_3)),style = "heading 3")
@@ -148,16 +139,8 @@ source(snakemake@config[["differential_plots"]][["scripts"]][["pie_chart"]])
 source(snakemake@config[["differential_plots"]][["scripts"]][["violin_plot"]])
 # MA plot ====================================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["ma_plot"]])
-
-ggsave(file=paste(file_i," MA Plot.pdf",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
-ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
-
 # Volcano Plot ===============================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["volcano_plot"]])
-
-ggsave(file=paste(file_i," MA Plot.pdf",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
-ggsave(file=paste(file_i," MA Plot.png",sep=""), path=dir_i,plot=ma_plot,height=9,width=12,dpi=plot_dpi)
-
 # Metagene ===================================================
 #source(snakemake@config[["differential_plots"]][["scripts"]][["metagene"]])
 

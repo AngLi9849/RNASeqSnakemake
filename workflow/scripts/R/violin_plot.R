@@ -11,7 +11,7 @@ violin_data <- data.frame(
 
 names(violin_data) <- c("value","condition")
 
-if (difference=="expression levels") {
+if (difference=="expression") {
 violin_ymax <- 10^(log10(abs(max(violin_data$value)))^1.2)
 violin_p_y <- log10(abs(max(violin_data$value)))^1.1
 } else {

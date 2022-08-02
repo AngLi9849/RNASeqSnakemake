@@ -1,7 +1,7 @@
 sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0)
 sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0)
 insig <- sum(expr_i$padj[expr_i$padj < undetect_p] >= sig_p)
-undetect <- total_i - insuf_i - insig - sig_up - sig_down - insuf
+undetect <- total_i - insuf_i - insig - sig_up - sig_down 
 
 
 sig_up
@@ -70,7 +70,7 @@ pie_caption <- paste(
   sig_down, " significantly decreased (", sig_down_pc, ", ", down_col, "), and ",
   insig, " changed insignificantly (", insig_pc, ", p >= ", sig_p, "). ",
   "Changes were not detected in ", undetect, " (", undetect_pc, ", p >= ", undetect_p, "), and ",
-  insuf_i, " were insufficiently evidenced (", insuf_pc ,", less than ", min_mean, " reads per sample). " 
+  insuf_i, " were insufficiently evidenced (", insuf_pc ,", less than ", min_mean, " reads per sample). ", 
   sep="")
 
 

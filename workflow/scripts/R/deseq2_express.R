@@ -99,6 +99,8 @@ if (rep_pair){
   dds <- DESeqDataSetFromMatrix(countData=cts,colData=coldata,design=~condition)
 }
 
+dds <- dds[rowSums(dds) >= (min_mean*length(samples)),]
+
 # Normalise according to supplied size factors
 dds <- estimateSizeFactors(dds)
 sizeFactors(dds) <- size_factors
@@ -112,7 +114,7 @@ norm_counts <- counts(dds, normalized=T)
 # Generate log2FoldChange shrunk results table for each experiment condition
 contrast <- c("condition", gsub("[-_]",".",treatment), gsub("[-_]",".",control_cond))
 res <- results(dds, contrast=contrast, parallel=parallel)
-res <- lfcShrink(dds, contrast=contrast, res=res, type="ashr")
+#res <- lfcShrink(dds, contrast=contrast, res=res, type="ashr")
 
 expr <- data.frame(res@listData)
 rownames(expr) <- res@rownames
@@ -124,7 +126,6 @@ expr$group <- toTitleCase(gsub("_"," ",paste(expr$exon,expr$biotype)))
 expr$group2<-paste(expr$change,expr$group)
 expr$log10P <- -log10(expr$padj)
 expr$featureID <- rownames(expr)
-expr$sum <- cts_genes$sum[match(expr$featureID,cts_genes$id)]
 
 expr$Length <- count_length$Length[match(rownames(expr),count_length$gene)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
@@ -134,9 +135,11 @@ write.table(data.frame("id"=rownames(rpkm),rpkm), file=snakemake@output[["rpkm"]
 
 write.table(data.frame("id"=rownames(norm_counts), norm_counts), file=snakemake@output[["normcounts"]], sep='\t', row.names=F,quote=F)
 
+write.table(data.frame(cts_genes[c(1,5)]),file=snakemake@output[["count_sums"]],sep='\t',row.names=F,quote=F)
+
 write.table(data.frame("id"=rownames(expr),expr),file=snakemake@output[["lfc"]],sep='\t',row.names=F,quote=F)
 
-write.table(data.frame(expr[c(1,2,5,6:9)]),file=snakemake@output[["toptable"]],sep=""), sep='\t',row.names=F,quote=F)
+write.table(data.frame(expr[c(1,2,5,6:9)]),file=snakemake@output[["toptable"]], sep='\t',row.names=F,quote=F)
 
 write.table(data.frame("id"=rownames(mean_level),mean_level),file=snakemake@output[["levels"]],sep='\t',row.names=F,quote=F)
 
