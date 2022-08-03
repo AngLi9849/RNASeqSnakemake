@@ -11,7 +11,7 @@ violin_data <- data.frame(
 
 names(violin_data) <- c("value","condition")
 
-if (difference=="expression") {
+if (difference=="expression levels") {
 violin_ymax <- 10^(log10(abs(max(violin_data$value)))^1.2)
 violin_p_y <- log10(abs(max(violin_data$value)))^1.1
 } else {
@@ -27,7 +27,7 @@ violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +
   geom_boxplot(width=0.1) +
   stat_pvalue_manual(data = test_p_i, label = "p.signif") +
   scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,treat)], labels = c(control,treat) ) +
-  ylab(paste("Normalised",toTitleCase(difference))) +
+  ylab(paste("Normalised",toTitleCase(difference_unit))) +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),
@@ -41,7 +41,7 @@ violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +
     axis.title.y = element_text(size=9)
   )
 
-if (difference=="expression") {
+if (difference=="expression levels") {
 violin_ymin <- min(violin_data$value[!is.infinite(log10(violin_data$value))])
 violin <- violin + scale_y_log10(limits = c(1, violin_ymax))
 } else {
@@ -51,5 +51,5 @@ violin <- violin + scale_y_continuous(limits = c(0, violin_ymax))
 test_p_i <- compare_means(formula=value ~ condition, data = violin_data, comparisons = compare, method="t.test", paired = TRUE)
 
 violin_caption <- paste(
-  "Distribution of normalised ", difference, " of ", total_i, " ",  feature_i, " presented as violin and bar plot. Indicated significance of comparison is computed with ", as.character(test_p_i$method[1]), " method. (p=", test_p_i$p.format[1] , ", ", test_p_i$p.signif[1],")", sep=""
+  "Distribution of normalised ", difference, " of ", nrow(mean_level_i), " expressed ",  feature_i, " presented as violin and bar plot. Indicated significance of comparison is computed with ", as.character(test_p_i$method[1]), " method. (p=", test_p_i$p.format[1] , ", ", test_p_i$p.signif[1],")", sep=""
   )

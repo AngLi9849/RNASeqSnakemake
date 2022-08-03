@@ -15,8 +15,14 @@ void_col <- "black"
 
 sig_p <- as.numeric(snakemake@config[["differential_analysis"]][["significant_p"]])
 undetect_p <- as.numeric(snakemake@config[["differential_analysis"]][["undetect_p"]]) 
-min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
 
+if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"]])) {
+  min_mean <- max(expr$baseMean[is.na(expr$padj)])
+} else {
+  min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
+}
+
+min_rpkm <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_rpkm"]])
 
 plot_dpi <- as.numeric(snakemake@config[["differential_plots"]][["dpi"]])
 tick_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]][["axis_ticks"]])

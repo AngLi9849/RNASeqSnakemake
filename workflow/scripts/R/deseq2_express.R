@@ -53,7 +53,7 @@ names(size_factors) <- size_table$sample_name
 
 # Calculate expression levels by rpkm
 rpkm <- data.frame(lapply(names(cts), function(x) {
-  cts[,paste(x)]*size_table$scale_factor[size_table$sample_name==x]
+  cts[,paste(x)]*size_table$scale_factor[size_table$sample_name==x]/sum(cts[,paste(x)])
 }))
 
 names(rpkm) <- names(cts)
@@ -114,22 +114,22 @@ norm_counts <- counts(dds, normalized=T)
 # Generate log2FoldChange shrunk results table for each experiment condition
 contrast <- c("condition", gsub("[-_]",".",treatment), gsub("[-_]",".",control_cond))
 res <- results(dds, contrast=contrast, parallel=parallel)
-res <- lfcShrink(dds, contrast=contrast, res=res, type="ashr")
-
+#res <- lfcShrink(dds, contrast=contrast, res=res, type="ashr") # Adaptive Shrinkage messes with padj so abandoned
 expr <- data.frame(res@listData)
+
 rownames(expr) <- res@rownames
-expr <- expr[!is.na(expr$padj),]
-expr[6:8] <- genes[match(rownames(expr),genes$gene_id),2:4]
+#expr <- expr[!is.na(expr$padj),]
+expr[7:9] <- genes[match(rownames(expr),genes$gene_id),2:4]
 expr$exon <- ifelse(expr$exon_count>1,"Multiexonic","Monoexonic")
 expr$change <- ifelse(expr$log2FoldChange>=0,"Increased","Decreased")
 expr$group <- toTitleCase(gsub("_"," ",paste(expr$exon,expr$biotype)))
 expr$group2<-paste(expr$change,expr$group)
-expr$log10P <- -log10(expr$padj)
+#expr$log10P <- -log10(expr$padj)
 expr$featureID <- rownames(expr)
 
 expr$Length <- count_length$Length[match(rownames(expr),count_length$gene)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
-expr$rpkm <- expr$baseMean*1000000000/expr$Length
+expr$rpkm <- expr$baseMean*1000000000/(expr$Length*sum(expr$baseMean))
 
 write.table(data.frame("id"=rownames(rpkm),rpkm, check.names=FALSE), file=snakemake@output[["rpkm"]], sep='\t', row.names=F,quote=F,)
 

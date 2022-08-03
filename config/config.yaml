@@ -53,8 +53,11 @@ feature_validation:
 
 # Differential analysis statistical setting
 differential_analysis:
-  # P-Value thresholds
+  # feature expression/abundance thresholds
+  minimum_rpkm: 0.2 
+  use_p_adj_min_mean: TRUE # Use p-value cut-off mean read count calculated by differential analysis tools, if FALSE use minimum mean reads set below
   minimum_mean_reads: 10 # minimum mean number of reads per sample to support a feature in differential analyses
+  # P-Value thresholds
   significant_p: 0.1 # Changes with p-value lower than this is considered significant
   undetect_p: 0.95 # Changes with p-value higher than this is considered undetected
 
@@ -78,7 +81,7 @@ differential_plots:
   # Colour Scheme
   up_colour: orange
   down_colour: blue
-  insignificant_colour: grey30
+  insignificant_colour: grey40
   font_sizes:
     axis_title: 12
     axis_ticks: 9

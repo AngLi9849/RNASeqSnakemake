@@ -27,13 +27,18 @@ if (snakemake@threads > 1) {
 # Import lfc table and mean levels table
 expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
-head(mean_level,10)
-
 
 # Import snakemake parameters and inputs
 # Identify analysis
 difference <- as.character(snakemake@wildcards[["difference"]])
 analysis <- paste("differential", difference, "analysis")
+
+if (difference == "expression") {
+  difference <- "expression levels"
+  difference_unit <- "expression levels (RPKM)"
+} else {
+  difference_unit <- gsub("_"," ",difference)
+}
 
 # Import wildcards as text
 prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
@@ -96,13 +101,17 @@ if (i =="") {
   expr_i <- expr[expr$group==i,]
 }
 
+total_i <- nrow(expr_i)
+
+insuf_i <- sum((expr_i$baseMean < min_mean) | (expr_i$rpkm < min_rpkm))
+
+expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$rpkm >= min_rpkm),]
+
+expr_i$padj <- ifelse(is.na(expr_i$padj),expr_i$pvalue,expr_i$padj)
+
+expr_i$log10P <- -log10(expr_i$padj)
+
 mean_level_i <- mean_level[rownames(mean_level) %in% expr_i$featureID,]
-head(mean_level_i,5)
-
-total_i <- nrow(mean_level_i)
-insuf_i <- sum(expr_i$baseMean < min_mean) + total_i - nrow(expr_i)
-
-expr_i <- expr_i[expr_i$baseMean >= min_mean,]
 
 # Set file name and path
 feature_i <- ifelse(i=="", feature, paste(tolower(i),feature))
