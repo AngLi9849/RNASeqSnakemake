@@ -53,20 +53,21 @@ rule base_coverage_scale_factors:
           }}' {output.summary} {output.summary}
         """  
 
-rule read_count_scale_factors:
+rule total_read_count_scale_factors:
     input:
         reads = lambda wildcards: expand(
-            "star/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.total_read_count.tab",sample=get_norm_group_samples(wildcards),
+            "star/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.total_read_count.tab",
+            sample=get_norm_group_samples(wildcards).itertuples(),
         ),
     output:
-        summary = "deseq2/{norm_group}/{reference}/{prefix}.TotalAlignedReadsCount.summary.tsv",
-        internal = "deseq2/{norm_group}/{reference}/{prefix}.TotalAlignedReadsCount.internal_scale_factors.tsv",
-        spikein = "deseq2/{norm_group}/{reference}/{prefix}.TotalAlignedReadsCount.spikein_scale_factors.tsv",
+        summary = "deseq2/{norm_group}/{reference}/{prefix}.gtf.TotalReadCount.{pair}.summary.tsv",
+        internal = "deseq2/{norm_group}/{reference}/{prefix}.gtf.TotalReadCount.internal_{pair}.scale_factors.tsv",
+        spikein = "deseq2/{norm_group}/{reference}/{prefix}.gtf.TotalReadCount.spikein_{pair}.scale_factors.tsv",
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/scale_factors/{norm_group}/{reference}/{prefix}_readcount_scale.log",
+        "logs/scale_factors/{norm_group}/{reference}/{prefix}_{pair}_totalreadcount_scale.log",
     shell:
         """
         cat {input} > {output.summary} &&
@@ -120,6 +121,8 @@ rule feature_count_scale_factors:
     resources:
         mem="8G",
         rmem="6G",
+    wildcard_constraints:
+       feature=r"((?!Total).)*"
     conda:
         "../envs/deseq2.yaml"
     log:

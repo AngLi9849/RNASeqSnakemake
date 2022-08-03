@@ -22,7 +22,7 @@ if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"
   min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
 }
 
-min_rpkm <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_rpkm"]])
+min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_rpkm_percentile"]])
 
 plot_dpi <- as.numeric(snakemake@config[["differential_plots"]][["dpi"]])
 tick_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]][["axis_ticks"]])
