@@ -63,6 +63,7 @@ pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
     axis.title.x = element_text(size=9)
   )
 
+rpkm_lim <- ifelse(round(min_rpkm,3)==0,").",paste(" or ",round(min_rpkm,3), " RPKM). ",sep=""))
 
 pie_caption <- paste(
   "In ", total_i, " ", feature_i, ", ", difference, " of ",
@@ -70,7 +71,7 @@ pie_caption <- paste(
   sig_down, " significantly decreased (", sig_down_pc, ", ", down_col, "), and ",
   insig, " changed insignificantly (", insig_pc, ", p >= ", sig_p, "). ",
   "Changes were not detected in ", undetect, " (", undetect_pc, ", p >= ", undetect_p, "), and ",
-  insuf_i, " were insufficiently evidenced (", insuf_pc ,", less than ", round(min_mean,2), " reads per sample or ", min_rpkm, " RPKM). ", 
+  insuf_i, " were insufficiently evidenced (", insuf_pc ,", counted less than", round(min_mean,2), " reads per sample", rpkm_lim, 
   sep="")
 
 

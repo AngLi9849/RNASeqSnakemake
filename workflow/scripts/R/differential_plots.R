@@ -88,7 +88,7 @@ expr$colour <- ifelse(expr$padj < sig_p, ifelse(expr$log2FoldChange < 0, down_co
 doc <- read_docx(snakemake@input[["docx"]])
 analysis_heading <- paste( "Differential", toTitleCase(difference))
 doc <- body_add(doc,fpar(ftext(analysis_heading, prop=heading_2)),style = "heading 2")
-
+min_mean
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(c(""),unique(expr$group[expr$biotype %in% biotypes]))
 #for (i in i_group) {
@@ -102,6 +102,8 @@ if (i =="") {
 }
 
 total_i <- nrow(expr_i)
+
+min_rpkm <- quantile(expr_i$rpkm[expr_i$baseMean > 0],min_rpkm_pc/100)
 
 insuf_i <- sum((expr_i$baseMean < min_mean) | (expr_i$rpkm < min_rpkm))
 
@@ -146,6 +148,8 @@ title_i <- gsub("_"," ",paste(experiment, feature_i, "Differential", toTitleCase
 
 # Pie Chart ===================================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["pie_chart"]])
+
+pie_caption
 # Violin Plot =================================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["violin_plot"]])
 # MA plot ====================================================
@@ -176,6 +180,8 @@ summary_caption <- paste("Overviews of changes in ", feature_i, " ", difference,
 summary_captions <- lapply(paste(sum_list,"_caption",sep=""),function(x) {get(x)})
 summary_captions <- paste( "(", LETTERS[1:length(summary_captions)], "). ", summary_captions, sep="")
 summary_caption <- unlist(list(summary_caption,summary_captions))
+
+summary_caption
 
 plots <- list("summary","bias","ma_plot","volcano_plot")
 plot_n <- 1

@@ -40,6 +40,12 @@ names(genes) <- c("gene_id","gene_name","biotype","exon_count")
 #  Import sample config, size factors and count table and conduct DESeq2 Differential Expression Analysis
 rep_pair <- as.logical(snakemake@params[["paired"]])
 
+# Import Total Read count summary
+total_sum <- read.table(snakemake@input[["total_sum"]], sep='\t', header=FALSE, row.names=1, check.names=FALSE)
+total_sum
+names(total_sum)=c("internal","spikein")
+
+
 # Import Counts table and extract sample names involved
 cts <- read.table(snakemake@input[["counts"]], sep='\t', header=TRUE, row.names="gene", check.names=FALSE, stringsAsFactors=FALSE)
 cts <- cts[ , order(names(cts))]
@@ -52,8 +58,14 @@ size_factors <- as.numeric(size_table$size_factor)
 names(size_factors) <- size_table$sample_name
 
 # Calculate expression levels by rpkm
+norm_sum <- total_sum[,c("internal")]*size_table$scale_factor[match(rownames(total_sum),size_table$sample_name)]
+
+norm_sum <- data.frame(internal=norm_sum)
+rownames(norm_sum) <- rownames(total_sum)
+norm_sum
+
 rpkm <- data.frame(lapply(names(cts), function(x) {
-  cts[,paste(x)]*size_table$scale_factor[size_table$sample_name==x]/sum(cts[,paste(x)])
+  cts[,paste(x)]*size_table$scale_factor[size_table$sample_name==x]/norm_sum[paste(x),"internal"]
 }))
 
 names(rpkm) <- names(cts)
@@ -129,7 +141,7 @@ expr$featureID <- rownames(expr)
 
 expr$Length <- count_length$Length[match(rownames(expr),count_length$gene)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
-expr$rpkm <- expr$baseMean*1000000000/(expr$Length*sum(expr$baseMean))
+expr$rpkm <- expr$baseMean*1000000000/(expr$Length*mean(norm_sum$internal))
 
 write.table(data.frame("id"=rownames(rpkm),rpkm, check.names=FALSE), file=snakemake@output[["rpkm"]], sep='\t', row.names=F,quote=F,)
 

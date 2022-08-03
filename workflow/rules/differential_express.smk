@@ -27,6 +27,9 @@ rule deseq2_expression:
         counts= lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}Reads.counts.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
+        total_sum = lambda w: "deseq2/{norm_group}/{{reference}}/{{splice}}{{prefix}}.gtf.TotalReadCount.{{pair}}.summary.tsv".format(
+            norm_group=experiments.loc[w.experiment,"group_name"],
+        ),
         genetab=lambda w: "resources/annotations/{source}_genome.gtf.{{tag}}_gene_info.tab".format(
             source= str( get_sample_source(w.experiment) ),
         ),
