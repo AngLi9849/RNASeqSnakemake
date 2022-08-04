@@ -20,8 +20,8 @@ rule stranded_bam:
         fwd="{prefix}.fwd.bam",
         rev="{prefix}.rev.bam",
     resources:
-        mem="6G",
-        rmem="4G",
+        mem="12G",
+        rmem="8G",
     conda:
         "../envs/samtools.yaml",
     shell:
@@ -38,57 +38,63 @@ rule stranded_bam:
 
 rule unstranded_genomecov:
     input:
-        bam="star/{prefix}.sortedByCoord.out.bam",
-        bai="star/{prefix}.sortedByCoord.out.bam.bai", 
+        bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
+        bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai", 
+        chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + ".fasta.chrom.sizes")
     output:
-        "bedgraph/{prefix}.unstranded.bedgraph",
-        "bedgraph/{prefix}.BaseCoverage.txt",
+        bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.unstranded.bedgraph",
+        txt="bedgraph/{sample}/{unit}/{reference}/{prefix}.BaseCoverage.txt",
+        bw="bigwigs/{sample}/{unit}/{reference}/{prefix}.unstranded.raw.bigwig",
     params:
         bin_size=config["bigwig_bin_size"]
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/deeptools/{prefix}_unstranded_bamcoverage.log",
+        "logs/deeptools/{sample}/{unit}/{reference}/{prefix}_unstranded_bamcoverage.log",
     conda:
         "../envs/bedtools.yaml",
     threads: 2
     shell:
         """
-        bedtools genomecov -ibam {input[0]} -bga -split > {output[0]} &&
+        bedtools genomecov -ibam {input.bam} -bga -split |
 
         awk -v OFS='\\t' -F'\\t' '
           BEGIN {{ i = 0 ; s = 0 }}
           $1 !~ "spikein_" {{i += $4 }}
           $1 ~  "spikein_" {{s += $4 }}
           END {{
-            print "{wildcards.sample}", i, s >> "{output[1]}"
-          }}' {output[0]}
+            print "{wildcards.sample}", i, s >> "{output.txt}"
+          }}' |
+        LC_COLLATE=C sort -k1,1 -k2,2n - > {output.bg} &&
+        bedGraphToBigWig {output.bg} {input.chr_size} {output.bw} ;
         """
         
 rule stranded_genomecov:
     input:
-        fwdbam="star/{prefix}.sortedByCoord.fwd.bam",
-        fwdbai="star/{prefix}.sortedByCoord.fwd.bam.bai",
-        revbam="star/{prefix}.sortedByCoord.rev.bam",
-        revbai="star/{prefix}.sortedByCoord.rev.bam.bai",
+        bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.{strand}.bam",
+        bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.{strand}.bam.bai",
+        chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + "_genome.fasta.chrom.sizes")
     output:
-        bg_fwd="bedgraph/{prefix}.fwd.bedgraph",
-        bg_rev="bedgraph/{prefix}.rev.bedgraph",
+        bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.{strand}.bedgraph",
+        bw="bigwigs/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
     params:
         bin_size=config["bigwig_bin_size"]
     resources:
         mem="6G",
         rmem="4G",
+    wildcard_constraints:
+        strand=r"((?!unstranded).)*"
     log:
-        "logs/deeptools/{prefix}_stranded_bamcoverage.log",
+        "logs/deeptools/{sample}/{unit}/{reference}/{prefix}.{strand}_bamcoverage.log",
     conda:
         "../envs/bedtools.yaml",
     threads: 2
     shell:
         """
-        bedtools genomecov -ibam {input[0]} -bga -split > {output[0]} &&
-        bedtools genomecov -ibam {input[2]} -bga -split > {output[1]}
+        bedtools genomecov -ibam {input.bam} -bga -split |
+        LC_COLLATE=C sort -k1,1 -k2,2n - > {output.bg} &&
+        bedGraphToBigWig {output.bg} {input.chr_size} {output.bw} ;
         """
  
 rule scale_bedgraph2bigwig:
@@ -97,12 +103,12 @@ rule scale_bedgraph2bigwig:
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
         ),
        bedgraph = "bedgraph/{sample}/{unit}/{reference}/{splice}{prefix}.{strand}.bedgraph",
-       chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + ".fasta.chrom.sizes")
+       chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + "_genome.fasta.chrom.sizes")
     output:
        bg = "bedgraph/{norm_group}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
        bw = "results/{norm_group}/{reference}/bigwigs/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
     conda:
-       "../envs/bedgraphtobigwig.yaml"
+       "../envs/bedtools.yaml"
     threads: 1
     resources:
         mem="12G",

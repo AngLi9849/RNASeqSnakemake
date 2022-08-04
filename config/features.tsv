@@ -13,6 +13,6 @@ Exon_3prime         	FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	exon	FALSE	0	3	end	
 Intron              	FALSE	TRUE	FALSE	TRUE	TRUE	gene		gene	intron	FALSE	10	3	body	+	1	1	0	0	300	300	0	0	
 Intron_5prime       	FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	intron	FALSE	0	3	start	+	1	1	500	500	100	100	0	0	
 Intron_3prime       	FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	intron	FALSE	0	3	end	+	1	1	500	500	100	100	0	0	
-5UTR_Intron         	TRUE	TRUE	TRUE	TRUE	TRUE	gene		5UTR	intron	FALSE	10	3	body	+	0	0	0	0	500	500	0	0
+5UTR_Intron         	TRUE	TRUE	TRUE	TRUE	TRUE	gene		5UTR	intron	FALSE	10	3	body	+	0	0	0	0	500	500	0	0	
 HCT_Enh            	FALSE	FALSE	FALSE	FALSE	FALSE					FALSE	0	0		+	0	0	0	0	0	0	0	0	config/additionals/HCT116_Enhancers.bed
-HCT116_Enhancer   	TRUE	FALSE	FALSE	FALSE	FALSE	chr		HCT_Enh	HCT_Enh	FALSE	10	0	body	+-	0	0	0	0	500	500	0	0
+HCT116_Enhancer   	TRUE	FALSE	FALSE	FALSE	FALSE	chr		HCT_Enh	HCT_Enh	FALSE	10	0	body	+-	0	0	0	0	500	500	0	0	

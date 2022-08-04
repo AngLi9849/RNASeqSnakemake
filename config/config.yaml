@@ -102,6 +102,7 @@ differential_plots:
       font_colour: black
 
 metagene:
+  minimum_mean_reads: 10 
   plot_per_gene: TRUE
   plot_sum: TRUE
   bin_number: 1000 # main body bin number

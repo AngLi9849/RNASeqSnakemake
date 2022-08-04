@@ -4,6 +4,7 @@ import glob
 
 import pandas as pd
 import hashlib as hashlib
+import re
 from snakemake.remote import FTP
 from snakemake.utils import validate
 
@@ -237,8 +238,11 @@ def get_part_bin_number(wildcards):
     bef_aft_sum = features.loc[wildcards.feature,"plotaft"] + features.loc[wildcards.feature,"plotbef"]
     if wildcards.part == "main" :
         return config["metagene"]["bin_number"]
-    else : 
-        part_bin = features.loc[wildcards.feature,wildcards.part] * config["metagene"]["bin_number"] / bef_aft_sum 
+    else :
+        if "x" in str(features.loc[wildcards.feature,wildcards.part]) :
+            part_bin = float(re.search(r".*(?<!x)",str(features.loc[wildcards.feature,wildcards.part])).group()) * config["metagene"]["bin_number"]
+        else : 
+            part_bin = float(features.loc[wildcards.feature,wildcards.part]) * config["metagene"]["bin_number"] * config["metagene"]["before_after_ratio"] / (float(features.loc[wildcards.feature,"plotaft"]) + float(features.loc[wildcards.feature,"plotbef"]))
         return part_bin
 
 def feature_descript(wildcards):
