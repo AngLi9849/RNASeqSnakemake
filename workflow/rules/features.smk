@@ -212,6 +212,38 @@ rule custom_feature:
         uniq > {output.bed}
         """ 
 
+
+rule feature_rpkm:
+    input:
+        counts = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.counts.tsv",
+        bed = "resources/annotations/{reference}_{lineage}.{type}.{valid}_{tag}.{feature}.bed",
+    output:
+        bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
+    threads: 1
+    conda:
+        "../envs/bedtools.yaml"
+    resources:
+        mem="6G",
+        rmem="4G",
+    shell:
+        """
+        awk -F'\\t' -v OFS='\\t' '
+          BEGIN {{
+            total=0
+          }}
+          FNR==NR && FNR > 1 {{
+            sum[$1]=0 ;
+            for (i=2 ; i <=NF ; i ++ ) {{
+              sum[$1] += $i ;
+              total += $i ;
+            }} 
+          }}
+          FNR < NR && mean[$4] >= {wildcards.min} {{
+            print $1, $2, $3, $4, sum[$4]*1000000000/($5*total), $6, $8
+          }}' {input.counts} {input.bed} > {output.bed}
+        """
+
+
 rule star_detected_splice_junctions:
     input:
         sj=lambda wildcards: expand(

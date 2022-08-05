@@ -7,10 +7,11 @@ rule feature_metagene_annotations:
         main="{prefix}.plot-{md5}.{type}.{feature}.{sense}_main.bed",
         before="{prefix}.plot-{md5}.{type}.{feature}.{sense}_plotbef.bed",
         after="{prefix}.plot-{md5}.{type}.{feature}.{sense}_plotaft.bed",
-    threads: 1 
+        range = "{prefix}.plot-{md5}.{type}.{feature}.{sense}_range.bed",
     params:
         before=lambda w: features.loc[w.feature,"plotbef"],
         after=lambda w: features.loc[w.feature,"plotaft"],
+    threads: 1
     conda:
         "../envs/bedtools.yaml"
     resources:
@@ -40,6 +41,9 @@ rule feature_metagene_annotations:
                 $2 = three[$8] ;
                 $3 = three[$8] + aft ;
                 print $1, $2, $3, $8, l, $6 >> "{output.after}" ;
+                $2 = ( five[$8] >= bef ) ? ( five[$8] - bef ) : 0 ;
+                $3 = three[$8] + aft ;
+                print $1, $2, $3, $8, l, $6 >> "{output.range}" ;
               }} else {{
                 $2 = (five[$8] >= aft)? ( five[$8] - aft ) : 0   ;
                 $3 = five[$8] ;
@@ -47,6 +51,9 @@ rule feature_metagene_annotations:
                 $2 = three[$8] ; 
                 $3 = three[$8] + bef
                 print $1, $2, $3, $8, l, $6 >> "{output.before}" ;
+                $2 = (five[$8] >= aft)? ( five[$8] - aft ) : 0   ;
+                $3 = three[$8] + bef
+                print $1, $2, $3, $8, l, $6 >> "{output.range}" ;
               }} ;
               id = $8 ;
             }}
@@ -82,18 +89,19 @@ rule compute_raw_matrix:
         rm {params.temp}
         """
 
-rule filter_expressed_feature:
+rule expressed_non_overlapping_feature:
     input:
-        counts = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.counts.tsv",
-        matrix = lambda wildcards : expand(
-          "matrices/{{sample}}/{unit.unit}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_{{part}}.{{bin}}bins.matrix.gz",
-          unit = samples.loc[wildcards.sample_name].itertuples(),
-          strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded"
+        bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
+        range = resources/annotations/{reference}_{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_range.bed",
+        genetab = "resources/annotations/{reference}_genome.gtf.{tag}_gene_info.tab",
+        base = lambda wildcards: "featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{valid}.{type}.{{tag}}.{base}.rpkm.bed".format(
+            type = get_feature_type(features.loc[wildcards.feature,"feature"]),
+            valid = get_feature_validity(features.loc[wildcards.feature,"feature"]),
+            base = features.loc[wildcards.feature,"feature"],
         ),
     output:
-        matrix = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.min{min}reads.matrix.gz",
-    log:
-        "logs/matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.min{min}reads.matrix.gz",
+        biotype_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.min{min}reads.{sense}.biotype_non_overlap.bed",
+        all_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.min{min}reads.{sense}.all_non_overlap.bed",
     threads: 1
     conda:
         "../envs/bedtools.yaml"
@@ -103,4 +111,46 @@ rule filter_expressed_feature:
     shell:
         """
         awk -F'\\t' -v OFS='\\t' '
-          {{
+          FNR==NR && FNR > 1 {{ 
+            sum[$1]=0 ;
+            for (i=2 ; i <=NF ; i ++ ) {{
+              sum[$1] += $i
+            }} ;
+            mean[$1] = sum[$1]/(NF-1)  
+          }} 
+          FNR < NR {{
+            print $1, $3, mean[$1]
+          }}' {input.counts} {input.genetab} |
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{
+            biotype[$1] = $2 ;
+            mean[$1] = $3 ;
+          }}
+          FNR < NR && mean[$4] >= {wildcards.min} {{
+            print $1, $2, $3, $8, mean[$4], $6, biotype[$4]
+          }}' - {input.bed} |
+        bedtools merge -s -i - -c 5,6,7 -o collapse,collapse,distinct |
+        """  
+
+rule sort_raw_matrices:         
+    input:
+        matrix = lambda wildcards : expand(
+          "matrices/{{sample}}/{unit.unit}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_{{part}}.{{bin}}bins.matrix.gz",
+          unit = samples.loc[wildcards.sample_name].itertuples(),
+          strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
+        ),
+    output:
+        matrix = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.gz",
+    log:
+        "logs/matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.gz",
+    threads: 1
+    conda:
+        "../envs/bedtools.yaml"
+    resources:
+        mem="6G",
+        rmem="4G",
+    shell:
+        """
+        awk -F'\\t' -v OFS='\\t' '
+          {{print}}
+        """  

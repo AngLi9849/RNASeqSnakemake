@@ -60,6 +60,12 @@ features['prefix_md5'] = [hashlib.md5(i.encode('utf-8')).hexdigest() for i in fe
 features['plot_md5'] = [hashlib.md5(i.encode('utf-8')).hexdigest() for i in features.plot_prefix.tolist()]
 
 # Helper functions for features
+def get_feature_type(feature):
+    if feature in features["feature_name"].tolist():
+        return "custom-" + str(features.loc[feature,"prefix_md5"])
+    else:
+        return "gtf"
+
 
 def get_feature_validity(feature):
     feat=features.loc[feature].squeeze(axis=0)["feature"]
