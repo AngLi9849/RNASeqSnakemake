@@ -31,6 +31,41 @@ rule get_ensembl_annotation:
     wrapper:
         "0.77.0/bio/reference/ensembl-annotation"
 
+rule get_refseq_genome:
+    output:
+        "resources/genomes/refseq_{species}.{build}.{release}_genome.fasta",
+    log:
+        "logs/{species}_{build}_{release}_genome.log",
+    params:
+        datatype="dna",
+        species=lambda wildcards: wildcards.species,
+        build=lambda wildcards: wildcards.build,
+        release=lambda wildcards: wildcards.release,
+    resources:
+        mem="6G",
+        rmem="4G",
+    conda:
+        "../envs/ncbi.yaml"
+    script:
+        "../scripts/py/refseq_fasta.py"
+
+rule get_refseq_annotation:
+    output:
+        "resources/annotations/refseq_{species}.{build}.{release}_genome.gtf",
+    params:
+        fmt="gtf",
+        species=lambda wildcards: wildcards.species,
+        build=lambda wildcards: wildcards.build,
+        release=lambda wildcards: wildcards.release,
+        flavor="",
+    resources:
+        mem="6G",
+        rmem="4G",
+    log:
+        "logs/{species}_{build}_{release}_annotation.log",
+    wrapper:
+        "../scripts/py/refseq_gtf.py"
+
 rule get_local_genome:
     input:
         lambda wildcards: str(references.loc[wildcards.species,"genome_dir"]),

@@ -127,18 +127,19 @@ rule custom_feature:
     shell:
         """
         bedtools subtract -s -a {input.region} -b {input.exclude} |
-        sort -k1,1 -k2,2n |
-        bedtools merge -s -i - -c 4,5,6 -o collapse,collapse,distinct |
-        bedtools intersect -s -a {input.group} -b - |
-        bedtools intersect -wb -s -a {input.feature} -b - |
+        sort -k1,1 -k2,2n > "intron_exclude.bed" &&
+        bedtools merge -s -i "intron_exclude.bed" -c 4,5,6 -o collapse,collapse,distinct |
+        bedtools intersect -s -a {input.group} -b - > "gene_region.bed" &&
+        bedtools intersect -wb -s -a {input.feature} -b "gene_region.bed" > "mRNA_range.bed" &&
         awk -F'\\t' -v OFS='\\t' '
           $4==$18 && $10 <= {params.tsl} && $5 >= {params.min_len} {{
             $11=$22; print 
-          }}' - |
+          }}' "mRNA_range.bed" |
         cut -f1-14 |
-        sort -k7,7 -k4,4 -k2,2n -k3,3n |
+        sort -k7,7 -k8,8 -k4,4 -k2,2n -k3,3n |
         uniq |
-        awk -F'\\t' -v OFS='\\t' '{{
+        awk -F'\\t' -v OFS='\\t' '
+        {{
           if ($6=="+") {{ 
             $7="{wildcards.feature}" ; a=$2 ; b=$3 ;
             $2 = ( \

@@ -91,17 +91,17 @@ rule compute_raw_matrix:
 
 rule expressed_non_overlapping_feature:
     input:
-        bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
-        range = resources/annotations/{reference}_{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_range.bed",
+        rpkm = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
+        range = "resources/annotations/{reference}_{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_range.bed",
         genetab = "resources/annotations/{reference}_genome.gtf.{tag}_gene_info.tab",
-        base = lambda wildcards: "featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{valid}.{type}.{{tag}}.{base}.rpkm.bed".format(
+        background = lambda wildcards: "featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{valid}.{type}.{{tag}}.{base}.rpkm.bed".format(
             type = get_feature_type(features.loc[wildcards.feature,"feature"]),
             valid = get_feature_validity(features.loc[wildcards.feature,"feature"]),
             base = features.loc[wildcards.feature,"feature"],
         ),
     output:
-        biotype_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.min{min}reads.{sense}.biotype_non_overlap.bed",
-        all_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.min{min}reads.{sense}.all_non_overlap.bed",
+        biotype_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.{sig}sig2noise.biotype_non_overlap.bed",
+        all_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.{sig}sig2noise.all_non_overlap.bed",
     threads: 1
     conda:
         "../envs/bedtools.yaml"
@@ -110,23 +110,35 @@ rule expressed_non_overlapping_feature:
         rmem="4G",
     shell:
         """
+        bedtools intersect -a {input.rpkm} -b {input.background} -s -wa -wb |
+        awk -F'\\t' -v OFS='\\t' '{{
+          if ($5 >= {wildcards.sig}*$13) {{
+            print $1, $2, $3, $4, $5, $6, $7, $8 
+
+
+
         awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && FNR > 1 {{ 
-            sum[$1]=0 ;
-            for (i=2 ; i <=NF ; i ++ ) {{
-              sum[$1] += $i
-            }} ;
-            mean[$1] = sum[$1]/(NF-1)  
-          }} 
+          FNR==NR {{
+            biotype[$1] = $3
+          }}
           FNR < NR {{
-            print $1, $3, mean[$1]
-          }}' {input.counts} {input.genetab} |
+            $9 = biotype[$4] ;
+            print
+          }}' {input.genetab} {input.rpkm} |
+        sort -k1,1 -k2,2n | 
+        bedtools merge -s -i - -c 4, 6,7,8,9 -o count, distinct,collapse,collapse,distinct |
+         
+        bedtools intersect -a {input.rpkm} -b {input.background} -s - 
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{ 
+            
+
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
             biotype[$1] = $2 ;
             mean[$1] = $3 ;
           }}
-          FNR < NR && mean[$4] >= {wildcards.min} {{
+          FNR < NR && mean[$4] >= 1 {{
             print $1, $2, $3, $8, mean[$4], $6, biotype[$4]
           }}' - {input.bed} |
         bedtools merge -s -i - -c 5,6,7 -o collapse,collapse,distinct |
