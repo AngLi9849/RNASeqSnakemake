@@ -32,6 +32,10 @@ splicing:
   detect_splice_sites: TRUE # Use lineage-specifc splice sites detected in provided samples only, otherwise uses all splice sites implied in genome annotation
   splice_site_overhang: 3 # Bases on each side of splice site to count reads from
 
+ensembl_annotations:
+  transcript_support_level_tolerance: 1 # How many levels below the highest tsl should a transcript be considered into the structure of a gene? recommend 0 or 1
+  
+
 features:
   minimum_intron_length: 6
   minimum_retained_intron_coverage: 0.1 #minimum fraction of a retained intron annotated as part of a bridging exon
@@ -112,8 +116,7 @@ metagene:
 # Ensembl Tags of interest, hashtag out those that are not
 # Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line
 ensembl_tags:
-  - basic
-#  - CCDS
+  - basic #CCDS is assigned into basic, considered as transcript support level 1
 #  - cds_end_NF
 #  - cds_start_NF
 #  - mRNA_end_NF

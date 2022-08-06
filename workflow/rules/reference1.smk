@@ -193,11 +193,9 @@ rule gtf_features:
         inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
         confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
         transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
-        features="resources/annotations/{prefix}.gtf.{tag}_annotated.bed",
-        feature_list="resources/annotations/{prefix}.gtf.{tag}_feature_list.tab",
-        long_intron="resources/annotations/{prefix}.gtf.{tag}_long_intron.bed",
-        long_exon="resources/annotations/{prefix}.gtf.{tag}_long_exon.bed",
+        biotyped="resources/annotations/{prefix}.gtf.{tag}_biotyped.bed",
     params:
+        tsl_tol=config["ensembl_annotations"]["transcript_support_level_tolerance"],
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         intron_min=config["features"]["minimum_intron_length"],
         feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
@@ -250,31 +248,31 @@ rule gtf_features:
               b[1]=a[1]
             }} ;
              if ($0 ~ "transcript_biotype") {{
-              match($0, /transcript_biotype "([^"]).*"/, tbt)
+              match($0, /transcript_biotype "([^"]*).*"/, tbt)
             }}
             else {{
               tbt[1]=biotype[$4]
             }} ;
+            if ($0 ~ "tag") {{
+              match($0,/tag "([^"]*)"/,tag)
+            }}
+            else {{
+               tag[1]="basic"
+            }};
+            tag[1]=(tag[1]=="")?"basic":tag[1] ;
             if ($0 ~ "transcript_support_level") {{
               match($0, /transcript_support_level "([^"]).*"/, tsl) 
             }}
             else {{ 
-              tsl[1]=6
+              tsl[1]=(tag[1]=="CCDS")?1:6
             }} ;
-            tsl[1]=((tsl[1]-0)>=1)?tsl[1]:6 ; 
+            tsl[1]=((tsl[1]-0)>=1)?tsl[1]:((tag[1]=="CCDS")?1:6) ; 
             if ($8=="five_prime_utr") {{
               $8="5UTR"
             }}
             else if ($8=="three_prime_utr") {{
               $8="3UTR"
             }} ;
-            if ($0 ~ "tag") {{
-              match($0,/tag "([^"]*)"/,tag)
-            }} 
-            else {{ 
-               tag[1]="basic" 
-            }}; 
-            tag[1]=(tag[1]=="")?"basic":tag[1] ;
             if ( ( tag[1] == "{wildcards.tag}" ) || ( $0 ~ "tag "{wildcards.tag}"" ) ) {{
             print $1, $2, $3, $4, $5, $6, $8, a[1], b[1], tsl[1], $4, tbt[1]
             }}
@@ -287,7 +285,8 @@ rule gtf_features:
         awk -F'\\t' -v OFS='\\t' '{{
           if (id != $8) {{
             n=$0 ; t=$8 ;
-            $0 = m ; $2 = a ; $3 = b ; print ;
+            $0 = m ; $2 = a ; $3 = b ; 
+            if (FNR>1) {{ print }} ;
             m=n ; $0=n ; a=$2 ; b=$3 ; id=t
           }}
           else if ($7 != "exon") {{
@@ -320,20 +319,18 @@ rule gtf_features:
             }} else {{
               print >> "{output.inconfident}"
             }}
-          }}' {output.gene_tab} {output.transcripts} |
+          }}' {output.gene_tab} {output.transcripts} > {output.biotyped} &&
 
-# Find highest tsl of the gene and filter out transcript features with less than top tsl of the gene
+# Find highest tsl of the gene and filter out transcript features with less tsl than tolerance of the gene
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR && $7=="transcript" {{
-            tsl[$4]= (tsl[$4]==0) ? $10 : ( \ 
-              (tsl[$4] <= $10) ? tsl[$4] : $10 \ 
-            ) ;
+            tsl[$4] = (tsl[$4]==0)?$10:((tsl[$4] <= $10)?tsl[$4]:$10) ;
           }} 
           FNR < NR {{ 
-            if ($10==tsl[$4]) {{
-              print
+            if ($10<=(tsl[$4]+{params.tsl_tol})) {{
+              print $0, tsl[$4]
             }} else {{
               print >> "{output.inconfident}"
             }}
-          }}' {output.gene_tab} - > {output.confident}
+          }}' {output.biotyped} {output.biotyped} > {output.confident}
         """ 
