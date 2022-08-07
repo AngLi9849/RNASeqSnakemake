@@ -1,7 +1,7 @@
 rule base_coverage_scale_factors:
     input:
         lambda wildcards: expand(
-            "bedgraph/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.BaseCoverage.txt",sample=get_norm_group_samples(wildcards),
+            "bedgraph/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.BaseCoverage.txt",sample=get_norm_group_samples(wildcards.norm_group),
         ),
     output:
         summary = "deseq2/{norm_group}/{reference}/{prefix}.BaseCoverage.summary.tsv",
@@ -57,7 +57,7 @@ rule total_read_count_scale_factors:
     input:
         reads = lambda wildcards: expand(
             "star/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.total_read_count.tab",
-            sample=get_norm_group_samples(wildcards).itertuples(),
+            sample=get_norm_group_samples(wildcards.norm_group).itertuples(),
         ),
     output:
         summary = "deseq2/{norm_group}/{reference}/{prefix}.gtf.TotalReadCount.{pair}.summary.tsv",

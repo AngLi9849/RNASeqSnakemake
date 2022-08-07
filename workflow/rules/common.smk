@@ -143,26 +143,33 @@ samples = samples.mask(samples == '')
 
 # Helper functions for samples
 
-def get_experiment_samples(wildcards):
-    exp = experiments.loc[wildcards.experiment].squeeze()
+def get_experiment_samples(experiment):
+    exp = experiments.loc[experiment].squeeze()
     cond = [exp.control,exp.treatment]
     sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
     return sample
 
-def get_norm_group_samples(wildcards):
-    exp = experiments[experiments.group_name==wildcards.norm_group]
+def get_norm_group_samples(norm_group):
+    exp = experiments[experiments.group_name==norm_group]
     cond = exp.norm_group[0]
     protocol = exp.protocol[0]
     sample = samples[samples.protocol == protocol][samples.condition.isin(cond)]
     return sample
 
-def get_lineage_sj_samples(wildcards):
-    exp = experiments[ (experiments.sample_lineage==wildcards.lineage).tolist() & experiments.splice & (experiments.sample_species == wildcards.species).tolist() ]
-    cond = [exp.control,exp.treatment]
-    sample=samples[(samples.condition + "_" + samples.protocol).isin(
-        (exp["control"] + "_" + exp["protocol"]).tolist() + (exp["treatment"] + "_" + exp["protocol"]).tolist()
-    )]
-    return sample
+# Create a summary data frame to assign samples to lineages
+lineage=[]
+
+for i in range(0,len(experiments)):
+    samps = get_experiment_samples(experiments.experiment[i])[["sample_name","unit_name"]]
+#    samps["experiment"] = experiments.experiment[i]
+    samps["reference"] = get_source(experiments.experiment[i])
+    samps["lineage"] = experiments.sample_lineage[i]
+    samps["species"] = experiments.sample_species[i]
+    samps["group"] = experiments.group_name[i]
+    lineage.append(samps)
+
+lineage = pd.concat(lineage).drop_duplicates()
+lineage=lineage.set_index(["species","lineage"], drop=False).sort_index()
 
 #Set variables for result filenames
 DEMULTI=['Demultimapped',''] if config["remove_multimappers"]=='BOTH' else 'Demultimapped' if config["remove_multimappers"] else ''

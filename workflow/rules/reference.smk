@@ -184,26 +184,15 @@ rule bwa_index:
     wrapper:
         "0.77.0/bio/bwa/index"
 
-rule gtf_features:
+rule gtf_transcripts:
     input:
         bed="resources/annotations/{prefix}.gtf.bed",
         chr="resources/genomes/{prefix}.fasta.chrom.sizes",
     output:
         gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
-        inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
-        confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
         transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
-        biotyped="resources/annotations/{prefix}.gtf.{tag}_biotyped.bed",
-        features="resources/annotations/{prefix}.gtf.{tag}_annotated.bed",
-        feature_list="resources/annotations/{prefix}.gtf.{tag}_feature_list.tab",
-        long_intron="resources/annotations/{prefix}.gtf.{tag}_long_intron.bed",
-        long_exon="resources/annotations/{prefix}.gtf.{tag}_long_exon.bed",
     params:
-        tsl_tol=config["ensembl_annotations"]["transcript_support_level_tolerance"],
-        min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         intron_min=config["features"]["minimum_intron_length"],
-        feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
-        feature_rev="workflow/scripts/awk/feature_index_rev.awk",
     threads: 1
     resources:
         mem="16G",
@@ -310,8 +299,38 @@ rule gtf_features:
           }}
         }} END {{
           $0=m ; $2=a ; $3=b ; print ;
-        }}' - > {output.transcripts} &&
+        }}' - > {output.transcripts}
+        """
 
+rule annotated_features:
+    input:
+        bed="resources/annotations/{prefix}.gtf.bed",
+        chr="resources/genomes/{prefix}.fasta.chrom.sizes",
+        transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
+        gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
+    output:
+        inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
+        confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
+        biotyped="resources/annotations/{prefix}.gtf.{tag}_biotyped.bed",
+        features="resources/annotations/{prefix}.gtf.{tag}_annotated.bed",
+        feature_list="resources/annotations/{prefix}.gtf.{tag}_feature_list.tab",
+        long_intron="resources/annotations/{prefix}.gtf.{tag}_long_intron.bed",
+        long_exon="resources/annotations/{prefix}.gtf.{tag}_long_exon.bed",
+    params:
+        tsl_tol=config["ensembl_annotations"]["transcript_support_level_tolerance"],
+        min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
+        feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
+        feature_rev="workflow/scripts/awk/feature_index_rev.awk",
+    threads: 1
+    resources:
+        mem="16G",
+        rmem="12G",
+    conda:
+        "../envs/bedtools.yaml",
+    log:
+        "logs/awk/{prefix}/gtf_{tag}_features.log",
+    shell:
+        """
 # Filter out transcript features with biotypes mismatching the parental gene biotype to inconfident entries
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
@@ -323,7 +342,7 @@ rule gtf_features:
             }} else {{
               print >> "{output.inconfident}"
             }}
-          }}' {output.gene_tab} {output.transcripts} > {output.biotyped} &&
+          }}' {output.gene_tab} {input.transcripts} > {output.biotyped} &&
 
 # Find highest tsl of the gene and filter out transcript features with less tsl than tolerance of the gene
         awk -F'\\t' -v OFS='\\t' '
@@ -388,7 +407,7 @@ rule gtf_features:
 
         sort -k7,7 -k4,4 -k2,2n -k3,3n - |
         uniq - |
-        awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {output.gene_tab} - |
+        awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
         sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
         sort -k7,7 -k4,4 -k2,2n -k3,3n - > {output.features} &&

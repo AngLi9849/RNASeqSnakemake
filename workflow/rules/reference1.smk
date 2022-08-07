@@ -264,9 +264,9 @@ rule gtf_features:
               match($0, /transcript_support_level "([^"]).*"/, tsl) 
             }}
             else {{ 
-              tsl[1]=(tag[1]=="CCDS")?1:6
+              tsl[1]=6
             }} ;
-            tsl[1]=((tsl[1]-0)>=1)?tsl[1]:((tag[1]=="CCDS")?1:6) ; 
+            tsl[1]=(tag[1]=="CCDS")?1:((tsl[1]-0)>=1)?tsl[1]:6 ; 
             if ($8=="five_prime_utr") {{
               $8="5UTR"
             }}

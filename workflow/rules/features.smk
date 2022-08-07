@@ -267,8 +267,8 @@ rule feature_rpkm:
 rule star_detected_splice_junctions:
     input:
         sj=lambda wildcards: expand(
-                "star/{sample.sample_name}/{sample.unit_name}/{reference}/SJ.out.tab",
-                sample=get_lineage_sj_samples(wildcards).itertuples(),
+                "star/{sample.sample_name}/{sample.unit_name}/{sample.reference}/SJ.out.tab",
+                sample=lineage.loc[wildcards.species].loc[wildcards.lineage].itertuples(),
         ),
     output:
         sj="resources/annotations/{species}.{lineage}.star.splice_junctions.bed",

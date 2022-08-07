@@ -131,7 +131,7 @@ rule count_matrix:
     input:
         featurecounts=lambda wildcards: expand(
             "featurecounts/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{prefix}}.featurecounts.tab",
-            sample= get_norm_group_samples(wildcards).itertuples(),
+            sample= get_norm_group_samples(wildcards.norm_group).itertuples(),
         ),
     output:
         counts="featurecounts/{norm_group}/{reference}/{prefix}.counts.tsv",
@@ -139,7 +139,7 @@ rule count_matrix:
     log:
         "logs/{norm_group}/{reference}/featurecounts/{prefix}_count_matrix.log",
     params:
-        names=lambda wildcards: "\t".join(map(str,get_norm_group_samples(wildcards).sample_name.tolist())),
+        names=lambda wildcards: "\t".join(map(str,get_norm_group_samples(wildcards.norm_group).sample_name.tolist())),
     resources:
         mem="8G",
         rmem="6G",
