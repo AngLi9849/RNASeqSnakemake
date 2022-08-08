@@ -14,6 +14,19 @@ rule get_ensembl_genome:
     wrapper:
         "0.77.0/bio/reference/ensembl-sequence"
 
+rule mane_genome:
+    input:
+        "resources/genomes/ensembl_{prefix}.fasta",
+    output:
+        "resources/genomes/MANE_{prefix}.fasta",
+    resources:
+        mem="6G",
+        rmem="4G",
+    shell:
+        """
+        cat {input} > {output}
+        """
+
 rule get_ensembl_annotation:
     output:
         "resources/annotations/ensembl_{species}.{build}.{release}_genome.gtf",
@@ -31,40 +44,28 @@ rule get_ensembl_annotation:
     wrapper:
         "0.77.0/bio/reference/ensembl-annotation"
 
-rule get_refseq_genome:
+rule incorporate_MANE_annotations:
+    input:
+        ensembl="resources/annotations/ensembl_{prefix}.gtf",
+        mane=config["MANE_curated_genes"],
     output:
-        "resources/genomes/refseq_{species}.{build}.{release}_genome.fasta",
-    log:
-        "logs/{species}_{build}_{release}_genome.log",
+        mane_gtf="resources/annotations/MANE_{prefix}.gtf",
     params:
-        datatype="dna",
-        species=lambda wildcards: wildcards.species,
-        build=lambda wildcards: wildcards.build,
-        release=lambda wildcards: wildcards.release,
-    resources:
-        mem="6G",
-        rmem="4G",
-    conda:
-        "../envs/ncbi.yaml"
-    script:
-        "../scripts/py/refseq_fasta.py"
-
-rule get_refseq_annotation:
-    output:
-        "resources/annotations/refseq_{species}.{build}.{release}_genome.gtf",
-    params:
-        fmt="gtf",
-        species=lambda wildcards: wildcards.species,
-        build=lambda wildcards: wildcards.build,
-        release=lambda wildcards: wildcards.release,
-        flavor="",
+    threads: 1
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/{species}_{build}_{release}_annotation.log",
-    wrapper:
-        "../scripts/py/refseq_gtf.py"
+        "logs/awk/{prefix}_MANE_gtf.log",
+    shell:
+        """
+        awk -F'\\t' -v OFS='\\t' '{{
+          $2="MANE" ; 
+          print ;
+        }}' {input.mane} |
+        cat - {input.ensembl} |
+        sort -k1,1 -k4,4n > {output.mane_gtf}
+        """
 
 rule get_local_genome:
     input:
@@ -191,8 +192,12 @@ rule gtf_transcripts:
     output:
         gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
         transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
+        inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
+        confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
+        biotyped="resources/annotations/{prefix}.gtf.{tag}_biotyped.bed",
     params:
         intron_min=config["features"]["minimum_intron_length"],
+        tsl_tol=config["ensembl_annotations"]["transcript_support_level_tolerance"],
     threads: 1
     resources:
         mem="16G",
@@ -240,7 +245,7 @@ rule gtf_transcripts:
             else {{
               b[1]=a[1]
             }} ;
-             if ($0 ~ "transcript_biotype") {{
+            if ($0 ~ "transcript_biotype") {{
               match($0, /transcript_biotype "([^"]*).*"/, tbt)
             }}
             else {{
@@ -266,6 +271,13 @@ rule gtf_transcripts:
             else if ($8=="three_prime_utr") {{
               $8="3UTR"
             }} ;
+            if ($7 == "MANE") {{
+              match($4,/([^\.]*)\..*/,g) ;
+              $4 = g[1] ;
+              tag[1]="basic" ;
+              tsl[1]=-1 ;
+              tbt[1]=biotype[$4] ;
+            }} ; 
             if ( ( tag[1] == "{wildcards.tag}" ) || ( $0 ~ "tag "{wildcards.tag}"" ) ) {{
             print $1, $2, $3, $4, $5, $6, $8, a[1], b[1], tsl[1], $4, tbt[1]
             }}
@@ -299,7 +311,33 @@ rule gtf_transcripts:
           }}
         }} END {{
           $0=m ; $2=a ; $3=b ; print ;
-        }}' - > {output.transcripts}
+        }}' - > {output.transcripts} &&
+
+# Filter out transcript features with biotypes mismatching the parental gene biotype to inconfident entries
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{
+            biotype[$1] = $3 ;
+          }}
+          FNR < NR {{
+            if ($12==biotype[$4]) {{
+              print
+            }} else {{
+              print >> "{output.inconfident}"
+            }}
+          }}' {output.gene_tab} {output.transcripts} > {output.biotyped} &&
+
+# Find highest tsl of the gene and filter out transcript features with less tsl than tolerance of the gene
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR && $7=="transcript" {{
+            tsl[$4] = (tsl[$4]==0)?$10:( ( (tsl[$4]<=$10) && (tsl[$4]>0) )?tsl[$4]:$10) ;
+          }}
+          FNR < NR {{
+            if ($10<=(tsl[$4]+{params.tsl_tol})) {{
+              print $0, tsl[$4]
+            }} else {{
+              print >> "{output.inconfident}"
+            }}
+          }}' {output.biotyped} {output.biotyped} > {output.confident}
         """
 
 rule annotated_features:
@@ -308,16 +346,14 @@ rule annotated_features:
         chr="resources/genomes/{prefix}.fasta.chrom.sizes",
         transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
         gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
-    output:
         inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
         confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
-        biotyped="resources/annotations/{prefix}.gtf.{tag}_biotyped.bed",
+    output:
         features="resources/annotations/{prefix}.gtf.{tag}_annotated.bed",
         feature_list="resources/annotations/{prefix}.gtf.{tag}_feature_list.tab",
         long_intron="resources/annotations/{prefix}.gtf.{tag}_long_intron.bed",
         long_exon="resources/annotations/{prefix}.gtf.{tag}_long_exon.bed",
     params:
-        tsl_tol=config["ensembl_annotations"]["transcript_support_level_tolerance"],
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
         feature_rev="workflow/scripts/awk/feature_index_rev.awk",
@@ -331,34 +367,8 @@ rule annotated_features:
         "logs/awk/{prefix}/gtf_{tag}_features.log",
     shell:
         """
-# Filter out transcript features with biotypes mismatching the parental gene biotype to inconfident entries
-        awk -F'\\t' -v OFS='\\t' '
-          FNR==NR {{
-            biotype[$1] = $3 ;
-          }}
-          FNR < NR {{
-            if ($12==biotype[$4]) {{
-              print
-            }} else {{
-              print >> "{output.inconfident}"
-            }}
-          }}' {output.gene_tab} {input.transcripts} > {output.biotyped} &&
-
-# Find highest tsl of the gene and filter out transcript features with less tsl than tolerance of the gene
-        awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && $7=="transcript" {{
-            tsl[$4] = (tsl[$4]==0)?$10:((tsl[$4] <= $10)?tsl[$4]:$10) ;
-          }} 
-          FNR < NR {{ 
-            if ($10<=(tsl[$4]+{params.tsl_tol})) {{
-              print $0, tsl[$4]
-            }} else {{
-              print >> "{output.inconfident}"
-            }}
-          }}' {output.biotyped} {output.biotyped} > {output.confident}
-
-# Assign
-
+# Assign each confident transcript features a index
+        
         sort -k7,7 -k4,4 -k2,2n -k3,3n - |
         uniq - |
 

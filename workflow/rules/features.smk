@@ -276,9 +276,6 @@ rule star_detected_splice_junctions:
     resources:
         mem="16G",
         rmem="12G",
-    params:
-        min_overhang = config["feature_validation"]["introns"]["minimum_overhang"],
-        min_unique = config["feature_validation"]["introns"]["minimum_unique_splice_reads"],
     conda:
         "../envs/bedtools.yaml",
     log:
@@ -294,7 +291,7 @@ rule star_detected_splice_junctions:
           FNR==NR && $6>=1 {{
             s=$4 ;
             $2=$2-1 ; 
-            $4=($4=1)?"+":(($4=2)?"-":"") ;
+            $4=($4==1)?"+":(($4==2)?"-":"") ;
             name=$1":"$2"-"$3":"$4 ;
             motif=m[($5+1)] ;
             print $1, $2, $3, name, motif, $4, $7, $8, $9
@@ -315,24 +312,22 @@ rule star_detected_splice_junctions:
           }}
           END {{
             $0=load ; $7=n ; $8=m ; $9=o ; print
-          }}' - | 
-
-        awk -F'\\t' -v OFS='\\t' '
-          $9 >= {params.min_overhang} && $7 >= {params.min_unique} {{ 
-            print $1, $2, $3, $4, $5, $6
-          }}
-        ' - > {output.sj}
+          }}' - > {output.sj}
         """
 
 rule validate_features:
     input:
-        bed="resources/annotations/{prefix}_genome.gtf.{tag}_annotated.bed",
+        transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
+        gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
+        inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
+        confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
         sj="resources/annotations/{lineage}.star.splice_junctions.bed",
     output:
         valid_features="resources/annotations/{prefix}_{lineage}.gtf.{tag}_validated.bed"
     params:
         min_overhang=config["feature_validation"]["introns"]["minimum_overhang"],
         min_int_uniq=config["feature_validation"]["introns"]["minimum_unique_splice_reads"],
+        min_splice = config["feature_validation"]["introns"]["minimum_splice_reads"],
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         intron_min=config["features"]["minimum_intron_length"],
         feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",

@@ -31,40 +31,27 @@ rule get_ensembl_annotation:
     wrapper:
         "0.77.0/bio/reference/ensembl-annotation"
 
-rule get_refseq_genome:
+rule integrate_MANE_annotations:
+    input:
+        ensembl="resources/annotations/ensembl_{prefix}.gtf",
+        mane=config["MANE_curated_genes"],
     output:
-        "resources/genomes/refseq_{species}.{build}.{release}_genome.fasta",
-    log:
-        "logs/{species}_{build}_{release}_genome.log",
+        mane_gtf="resources/annotations/MANE_{prefix}.gtf",
     params:
-        datatype="dna",
-        species=lambda wildcards: wildcards.species,
-        build=lambda wildcards: wildcards.build,
-        release=lambda wildcards: wildcards.release,
-    resources:
-        mem="6G",
-        rmem="4G",
-    conda:
-        "../envs/ncbi.yaml"
-    script:
-        "../scripts/py/refseq_fasta.py"
-
-rule get_refseq_annotation:
-    output:
-        "resources/annotations/refseq_{species}.{build}.{release}_genome.gtf",
-    params:
-        fmt="gtf",
-        species=lambda wildcards: wildcards.species,
-        build=lambda wildcards: wildcards.build,
-        release=lambda wildcards: wildcards.release,
-        flavor="",
+    threads: 1
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/{species}_{build}_{release}_annotation.log",
-    wrapper:
-        "../scripts/py/refseq_gtf.py"
+        "logs/awk/{prefix}/gtf_{tag}_features.log",
+    shell:
+        """
+        awk -F'\\t' -v OFS='\\t' '{{
+          $2="MANE" ; print
+        }}' {input.mane} |
+        cat - {input.ensembl} |
+        sort -k1,1 -k4,4n > {output.mane_gtf}
+        """
 
 rule get_local_genome:
     input:
@@ -184,22 +171,18 @@ rule bwa_index:
     wrapper:
         "0.77.0/bio/bwa/index"
 
-rule gtf_features:
+rule gtf_transcripts:
     input:
         bed="resources/annotations/{prefix}.gtf.bed",
         chr="resources/genomes/{prefix}.fasta.chrom.sizes",
     output:
         gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
+        transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
         inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
         confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
-        transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
         biotyped="resources/annotations/{prefix}.gtf.{tag}_biotyped.bed",
     params:
-        tsl_tol=config["ensembl_annotations"]["transcript_support_level_tolerance"],
-        min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         intron_min=config["features"]["minimum_intron_length"],
-        feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
-        feature_rev="workflow/scripts/awk/feature_index_rev.awk",
     threads: 1
     resources:
         mem="16G",
@@ -306,7 +289,7 @@ rule gtf_features:
           }}
         }} END {{
           $0=m ; $2=a ; $3=b ; print ;
-        }}' - > {output.transcripts} &&
+        }}' - > {output.transcripts}
 
 # Filter out transcript features with biotypes mismatching the parental gene biotype to inconfident entries
         awk -F'\\t' -v OFS='\\t' '
@@ -325,12 +308,161 @@ rule gtf_features:
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR && $7=="transcript" {{
             tsl[$4] = (tsl[$4]==0)?$10:((tsl[$4] <= $10)?tsl[$4]:$10) ;
-          }} 
-          FNR < NR {{ 
+          }}
+          FNR < NR {{
             if ($10<=(tsl[$4]+{params.tsl_tol})) {{
               print $0, tsl[$4]
             }} else {{
               print >> "{output.inconfident}"
             }}
           }}' {output.biotyped} {output.biotyped} > {output.confident}
+        """
+
+rule annotated_features:
+    input:
+        bed="resources/annotations/{prefix}.gtf.bed",
+        chr="resources/genomes/{prefix}.fasta.chrom.sizes",
+        transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
+        gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
+        inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
+        confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
+    output:
+        features="resources/annotations/{prefix}.gtf.{tag}_annotated.bed",
+        feature_list="resources/annotations/{prefix}.gtf.{tag}_feature_list.tab",
+        long_intron="resources/annotations/{prefix}.gtf.{tag}_long_intron.bed",
+        long_exon="resources/annotations/{prefix}.gtf.{tag}_long_exon.bed",
+    params:
+        tsl_tol=config["ensembl_annotations"]["transcript_support_level_tolerance"],
+        min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
+        feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
+        feature_rev="workflow/scripts/awk/feature_index_rev.awk",
+    threads: 1
+    resources:
+        mem="16G",
+        rmem="12G",
+    conda:
+        "../envs/bedtools.yaml",
+    log:
+        "logs/awk/{prefix}/gtf_{tag}_features.log",
+    shell:
+        """
+# Assign each confident transcript features a index
+
+        sort -k7,7 -k4,4 -k2,2n -k3,3n - |
+        uniq - |
+
+
+
+        awk -F'\\t' -v OFS='\\t' '
+#          FNR==NR && $8=="gene" {{
+#            if ($0~"gene_name") {{
+#              match($0,/gene_name "([^"]*)".*/,a)
+#            }}
+#            else {{
+#              a[1]=$4
+#            }} ;
+#            name[$4]=a[1] ;
+#            print $1, $2, $3, $4, $3-$2, $6, "gene", $4, name[$4], 0, $4
+#          }}
+          FNR < NR && $7!="transcript" {{
+            $5=$3-$2 ; 
+            if ($7=="exon") {{ 
+              $7="trscrpt" ; print ;
+              $7="exon" ; $8="" ; $9="" ; print ;  
+            }} 
+            else {{
+              $8="" ; $9="" ; print ;
+            }}
+          }}
+        ' {input.bed} - |
+
+        sort -k7,7 -k4,4 -k2,2n -k3,3n - |
+
+        awk -F'\\t' -v OFS='\\t' '
+          {{
+            name[FNR]=$1":"$2"-"$3":"$7;
+            if (n != name[FNR]) {{
+              print s ;
+              t=$10 ; n = name[FNR] ; s=$0
+            }} 
+            else {{
+              t = ($10<=t)? $10 : t ; $10=t ; s=$0
+            }} ;
+          }}
+          END {{
+            print s
+          }}
+        ' - |
+
+        sort -k7,7 -k4,4 -k2,2n -k3,3n - |
+        uniq - |
+        awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
+        sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
+        awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
+        sort -k7,7 -k4,4 -k2,2n -k3,3n - > {output.features} &&
+
+#        awk -F'\\t' -v OFS='\\t' '
+#          FNR==NR {{ 
+#            v[$8]=(v[$8]>$12)?v[$8]:$12 
+#          }}
+#          FNR < NR {{
+#            if (($7!="gene" || $7!="trscrpt") && (v[$8]>1)) {{
+#              print ; $9=($9" var "$12) ; $8=($8"var"$12) ; $7=$7"_var";
+#              print
+#            }}
+#            else {{ 
+#             print
+#            }}
+#          }}' {output.features} {output.features} |
+#
+#        sort -k7,7 -k4,4 -k2,2n -k3,3n -o {output.features} - &&      
+
+        awk -F'\\t' -v OFS='\\t' '
+          $7=="long_intron"{{print}}
+        ' {output.features} > {output.long_intron} &&
+
+        awk -F'\\t' -v OFS='\\t' '
+          $7=="exon"{{print}}
+        ' {output.features} |
+
+        bedtools intersect -s -f 1 -wa -a stdin -b {output.long_intron} |
+
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{ $7="skip_ex" ; print }}
+          FNR< NR {{ print }}
+        ' - {output.features} | 
+
+        sort -o {output.features} -k1,1 -k2,2n - &&
+
+        awk -F'\\t' -v OFS='\\t' '
+          $7=="long_exon"{{print}}
+        ' {output.features} > {output.long_exon} &&
+
+        awk -F'\\t' -v OFS='\\t' '
+          $7=="intron"{{print}}
+        ' {output.features} |
+
+        bedtools intersect -s -f {params.min_ret_cov} -wa -a stdin -b {output.long_exon} |
+
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{ $7="ret_int" ; print }}
+          FNR< NR {{ print }}
+        ' - {output.features} |
+        
+        sort  -k7,7 -k4,4 -k2,2n -k3,3n - |
+        uniq - |
+        
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{
+            print $1, 0, $2, $1, $2, "+", "chr", $1, $1, 0, $1, 1, 1, 1 ;
+            print $1, 0, $2, $1, $2, "-", "chr", $1, $1, 0, $1, 1, 1, 1 ;
+            print $1, 0, $2, "{wildcards.prefix}", $2, "+", "genome", "{wildcards.prefix}", "{wildcards.prefix}", 0, "{wildcards.prefix}", 1, 1, 1 ;
+            print $1, 0, $2, "{wildcards.prefix}", $2, "+", "genome", "{wildcards.prefix}", "{wildcards.prefix}", 0, "{wildcards.prefix}", 1, 1, 1 ;
+          }}
+          FNR < NR {{ print }}' {input.chr} - |
+
+        sort -o {output.features} -k1,1 -k2,2n -  &&
+        cut -f7 {output.features} |
+        sort - |
+        uniq - > {output.feature_list}
         """ 
