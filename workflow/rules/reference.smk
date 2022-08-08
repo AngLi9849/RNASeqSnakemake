@@ -47,9 +47,10 @@ rule get_ensembl_annotation:
 rule incorporate_MANE_annotations:
     input:
         ensembl="resources/annotations/ensembl_{prefix}.gtf",
-        mane=config["MANE_curated_genes"],
+        mane=config["MANE_annotation"],
     output:
-        mane_gtf="resources/annotations/MANE_{prefix}.gtf",
+        mane = "resources/annotations/MANE.gtf"
+        gtf="resources/annotations/MANE_{prefix}.gtf",
     params:
     threads: 1
     resources:
@@ -59,12 +60,13 @@ rule incorporate_MANE_annotations:
         "logs/awk/{prefix}_MANE_gtf.log",
     shell:
         """
+        curl {input.mane} -o {output.mane} &&
         awk -F'\\t' -v OFS='\\t' '{{
           $2="MANE" ; 
           print ;
-        }}' {input.mane} |
+        }}' {output.mane} |
         cat - {input.ensembl} |
-        sort -k1,1 -k4,4n > {output.mane_gtf}
+        sort -k1,1 -k4,4n > {output.gtf}
         """
 
 rule get_local_genome:
