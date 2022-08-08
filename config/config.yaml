@@ -6,7 +6,7 @@ experiments: config/experiments.tsv
 feature_parameters: config/features.tsv
 references_info: config/references.tsv
 
-MANE_curated_genes: "workflow/resources/MANE_GRCh38_v1.0_ensembl.gtf" # Curated disease-related protein coding gene structures from MANE project for human GRCh38 genome, see https://www.ncbi.nlm.nih.gov/refseq/MANE/ 
+MANE_curated_genes: "resources/annotations/MANE_GRCh38_v1.0_ensembl.gtf" # Curated disease-related protein coding gene structures from MANE project for human GRCh38 genome, see https://www.ncbi.nlm.nih.gov/refseq/MANE/ 
 
 # Alignment Processing options (TRUE, FALSE or BOTH)
 remove_multimappers: FALSE
