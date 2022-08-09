@@ -2,7 +2,7 @@ rule differential_plots:
     input:
         lfc="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
         levels="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
-        bed=lambda w: "resources/annotations/{source}_{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
+        bed=lambda w: "resources/annotations/{source}/{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
             source=  str( get_sample_source(w.experiment) ),
         ),
         pptx="resources/templates/{w}cm_wide.{h}cm_tall.pptx".format(

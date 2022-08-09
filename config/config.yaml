@@ -6,6 +6,7 @@ experiments: config/experiments.tsv
 feature_parameters: config/features.tsv
 references_info: config/references.tsv
 
+MANE_gene_range: TRUE # Determine GRCh38 gene ranges and principal structures using MANE project annotated transcripts, if validating features, validated transcripts may take priority
 MANE_annotation: "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.0/MANE.GRCh38.v1.0.ensembl_genomic.gtf.gz" # Curated disease-related protein coding gene structures from MANE project for human GRCh38 genome, see https://www.ncbi.nlm.nih.gov/refseq/MANE/ 
 
 # Alignment Processing options (TRUE, FALSE or BOTH)

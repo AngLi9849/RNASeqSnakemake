@@ -107,7 +107,7 @@ rule featurecounts:
     input:
         bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
         bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai",
-        saf=lambda w: "resources/annotations/{reference}_{lineage}.{type}.{valid}_{tag}.{feature}.bed.saf" 
+        saf=lambda w: "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.bed.saf" 
     output:
         tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.featurecounts.tab",
     threads: 6

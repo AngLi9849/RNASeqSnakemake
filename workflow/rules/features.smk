@@ -1,10 +1,10 @@
 rule extract_annotated_feature:
     input:
-        "resources/annotations/{prefix}_{lineage}.gtf.{tag}_{valid}.bed",
+        "resources/annotations/{prefix}/{lineage}.gtf.{tag}_{valid}.bed",
     output:
-        "resources/annotations/{prefix}_{lineage}.gtf.{valid}_{tag}.{feature}.bed"
+        "resources/annotations/{prefix}/{lineage}.gtf.{valid}_{tag}.{feature}.bed"
     log:
-        "logs/features/extract_{prefix}_{lineage}_{valid}_{tag}_{feature}.log"
+        "logs/features/extract_{prefix}/{lineage}_{valid}_{tag}_{feature}.log"
     threads: 1
     resources:
         mem="4G",
@@ -59,7 +59,7 @@ rule provided_feature:
 rule feature_nuc_info:
     input:
         fasta="resources/genomes/{source}_genome.fasta",
-        bed="resources/annotations/{source}_{lineage}.{type}.{valid}_{tag}.{feature}.bed",
+        bed="resources/annotations/{source}/{lineage}.{type}.{valid}_{tag}.{feature}.bed",
     output:
         info="resources/annotations/{source}_{lineage}.{type}.{valid}_{tag}.{feature}.bed.nuc.tab",
     log:
@@ -216,7 +216,7 @@ rule custom_feature:
 rule feature_rpkm:
     input:
         counts = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.counts.tsv",
-        bed = "resources/annotations/{reference}_{lineage}.{type}.{valid}_{tag}.{feature}.bed",
+        bed = "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.bed",
     output:
         bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
     threads: 1
@@ -315,6 +315,7 @@ rule star_detected_splice_junctions:
           }}' - > {output.sj}
         """
 
+
 rule validate_features:
     input:
         transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
@@ -327,7 +328,7 @@ rule validate_features:
     params:
         min_overhang=config["feature_validation"]["introns"]["minimum_overhang"],
         min_int_uniq=config["feature_validation"]["introns"]["minimum_unique_splice_reads"],
-        min_splice = config["feature_validation"]["introns"]["minimum_splice_reads"],
+        min_splice = config["feature_validation"]["introns"]["minimum_multimap_splice_reads"],
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         intron_min=config["features"]["minimum_intron_length"],
         feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
@@ -342,6 +343,10 @@ rule validate_features:
         "logs/awk/{prefix}_{lineage}/validate_{tag}_features.log",
     shell:
         """
+# Define genebody range using confident (MANE entries or correct biotype and top tsl transcripts) transcript ranges
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR && $10=={{ 
+            
         cat {input.sj} |
 
         """ 

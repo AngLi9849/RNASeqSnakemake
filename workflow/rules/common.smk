@@ -70,19 +70,6 @@ def get_feature_type(feature):
         return "gtf"
 
 
-def get_feature_validity(feature):
-    feat=features.loc[feature].squeeze(axis=0)["feature"]
-    if not pd.isna(features.loc[feature].squeeze(axis=0)["annotation_bed"]):
-        return "provided"
-    else:
-        if feat in features["feature_name"].tolist():
-            return get_feature_validity(feat)
-        else: 
-            if config["features"]["validate_features"]:
-                return "validated"
-            else:
-                return "annotated"
-
 def get_root_feature(feature):
     base=features.loc[feature].squeeze(axis=0)["feature"]
     if not pd.isna(features.loc[feature].squeeze(axis=0)["annotation_bed"]):
@@ -175,6 +162,19 @@ for i in range(0,len(experiments)):
 
 lineage = pd.concat(lineage).drop_duplicates()
 lineage=lineage.set_index(["species","lineage"], drop=False).sort_index()
+
+def get_feature_validity(feature):
+    feat=features.loc[feature].squeeze(axis=0)["feature"]
+    if not pd.isna(features.loc[feature].squeeze(axis=0)["annotation_bed"]):
+        return "provided"
+    else:
+        if feat in features["feature_name"].tolist():
+            return get_feature_validity(feat)
+        else:
+            if not config["features"]["validate_features"]:
+                return "annotated"
+            else:
+                return "validated"
 
 #Set variables for result filenames
 DEMULTI=['Demultimapped',''] if config["remove_multimappers"]=='BOTH' else 'Demultimapped' if config["remove_multimappers"] else ''

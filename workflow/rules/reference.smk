@@ -29,7 +29,7 @@ rule mane_genome:
 
 rule get_ensembl_annotation:
     output:
-        "resources/annotations/ensembl_{species}.{build}.{release}_genome.gtf",
+        "resources/annotations/ensembl_{species}.{build}.{release}/genome.gtf",
     params:
         fmt="gtf",
         species=lambda wildcards: wildcards.species,
@@ -49,9 +49,9 @@ rule incorporate_MANE_annotations:
         ensembl="resources/annotations/ensembl_{prefix}.gtf",
         mane=config["MANE_annotation"],
     output:
-        mane = "resources/annotations/MANE.gtf"
         gtf="resources/annotations/MANE_{prefix}.gtf",
     params:
+        mane = "resources/annotations/MANE.gtf",
     threads: 1
     resources:
         mem="6G",
@@ -64,7 +64,7 @@ rule incorporate_MANE_annotations:
         awk -F'\\t' -v OFS='\\t' '{{
           $2="MANE" ; 
           print ;
-        }}' {output.mane} |
+        }}' {params.mane} |
         cat - {input.ensembl} |
         sort -k1,1 -k4,4n > {output.gtf}
         """
@@ -86,7 +86,7 @@ rule get_local_annotation:
     input:
         lambda wildcards: str(references.loc[wildcards.species,"annotation_dir"]),
     output:
-        "resources/annotations/local_{species}_annotations.gtf",
+        "resources/annotations/local_{species}_genome.gtf",
     resources:
         mem="6G",
         rmem="4G",
@@ -112,7 +112,7 @@ rule prefix_spikein_annotation:
     input:
         gtf="resources/annotations/{species}_genome.gtf",
     output:
-        gtf="resources/annotations/spikein_{species}_genome.gtf",
+        gtf="resources/annotations/spikein_{species}/genome.gtf",
     resources:
         mem="6G",
         rmem="4G",
@@ -143,11 +143,11 @@ rule combine_genome_and_annotation:
     input:
         sample_genome=lambda wildcards: "resources/genomes/{species}_genome.fasta",
         spikein_genome="resources/genomes/spikein_{spikein}_genome.fasta",
-        sample_gtf=lambda wildcards: "resources/annotations/{species}_genome.gtf",
-        spikein_gtf="resources/annotations/spikein_{spikein}_genome.gtf",
+        sample_gtf=lambda wildcards: "resources/annotations/{species}/genome.gtf",
+        spikein_gtf="resources/annotations/spikein_{spikein}/genome.gtf",
     output:
        fasta="resources/genomes/combined_{species}_and_{spikein}_genome.fasta",
-       gtf="resources/annotations/combined_{species}_and_{spikein}_genome.gtf",
+       gtf="resources/annotations/combined_{species}_and_{spikein}/genome.gtf",
     resources:
         mem="6G",
         rmem="4G",
@@ -330,8 +330,8 @@ rule gtf_transcripts:
 
 # Find highest tsl of the gene and filter out transcript features with less tsl than tolerance of the gene
         awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && $7=="transcript" {{
-            tsl[$4] = (tsl[$4]==0)?$10:( ( (tsl[$4]<=$10) && (tsl[$4]>0) )?tsl[$4]:$10) ;
+          FNR==NR && $7=="transcript" && $10 > 0{{
+            tsl[$4] = (tsl[$4]==0 || tsl[$4] > $10)?$10:tsl[$4] ;
           }}
           FNR < NR {{
             if ($10<=(tsl[$4]+{params.tsl_tol})) {{

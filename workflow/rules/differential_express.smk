@@ -30,13 +30,13 @@ rule deseq2_expression:
         total_sum = lambda w: "deseq2/{norm_group}/{{reference}}/{{splice}}{{prefix}}.gtf.TotalReadCount.{{pair}}.summary.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
-        genetab=lambda w: "resources/annotations/{source}_genome.gtf.{{tag}}_gene_info.tab".format(
+        genetab=lambda w: "resources/annotations/{source}/genome.gtf.{{tag}}_gene_info.tab".format(
             source= str( get_sample_source(w.experiment) ),
         ),
-        nuc=lambda w: "resources/annotations/{source}_{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed.nuc.tab".format(
+        nuc=lambda w: "resources/annotations/{source}/{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed.nuc.tab".format(
             source=  str( get_sample_source(w.experiment) ),
         ),
-        bed=lambda w: "resources/annotations/{source}_{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
+        bed=lambda w: "resources/annotations/{source}/{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
             source=  str( get_sample_source(w.experiment) ),
         ),
     output:

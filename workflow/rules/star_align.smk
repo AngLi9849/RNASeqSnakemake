@@ -1,7 +1,7 @@
 rule star_index:
     input:
-        fasta="resources/genomes/{prefix}.fasta",
-        gtf="resources/annotations/{prefix}.gtf",
+        fasta="resources/genomes/{prefix}_genome.fasta",
+        gtf="resources/annotations/{prefix}/genome.gtf",
     output:
         directory("resources/star/{prefix}"),
     threads: 4
@@ -20,7 +20,7 @@ rule star_align:
     input:
         unpack(get_fq),
         index=lambda wildcards:  ("resources/star/" + str(wildcards.reference) + "_genome" ),
-        gtf= lambda wildcards: ("resources/annotations/" + str(wildcards.reference) + "_genome.gtf"),
+        gtf= lambda wildcards: ("resources/annotations/" + str(wildcards.reference) + "/genome.gtf"),
     output:
         "star/{sample}/{unit}/{reference}/Aligned.sortedByCoord.out.bam",
         "star/{sample}/{unit}/{reference}/ReadsPerGene.out.tab",
