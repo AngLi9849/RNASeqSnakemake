@@ -68,17 +68,25 @@ rule transcript_bed2fasta:
 
 rule salmon_lineage_transcriptome_quant:
     input:
-        bam=lambda wildcards: expand(
-            "star/{sample.sample_name}/{sample.unit_name}/{sample.reference}/Aligned.toTranscriptome.out.bam",
-            sample=lineage[lineage.loc[wildcards.species].loc[wildcards.lineage,"ret_int"].tolist()],
-        ),
+        bam="star/{sample}/{unit}/{reference}/Aligned.toTranscriptome.out.bam",
+        fasta="resources/annotations/{reference}/transcriptome.fasta",
     output:
-        tab="{species}.{lineage}.salmon.tab"
+        quant="salmon/{sample}/{unit}/{reference}/quant.sf"
+    params: 
+        libtype="A",
+        outdir=lambda wildcards, output: dirname(output.quant),
+    threads: 2
+    resources:
+        mem="8G",
+        rmem="6G",
+    conda:
+        "../envs/salmon.yaml"
     shell:
         """
+        salmon quant -t {input.fasta} -l {params.libtype} -a {input.bam} -o {params.outdir}
         """
 
-rule validate_features:
+rule validate_transcripts:
     input:
         transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
         gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",

@@ -5,6 +5,7 @@ import glob
 import pandas as pd
 import hashlib as hashlib
 import re
+from os.path import dirname
 from snakemake.remote import FTP
 from snakemake.utils import validate
 
