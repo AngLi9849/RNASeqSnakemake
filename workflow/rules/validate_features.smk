@@ -49,8 +49,34 @@ rule star_detected_splice_junctions:
           }}' - > {output.sj}
         """
 
-rule salmon_transcr
+rule transcript_bed2fasta:
+    input:
+        bed = "resources/annotations/{reference}/genome.gtf.bed12",
+        fasta = "resources/genomes/{reference}_genome.fasta",
+    output:
+        fasta = "resources/annotations/{reference}/transcriptome.fasta",
+    threads: 1
+    resources:
+        mem="6G",
+        rmem="4G",
+    conda:
+        "../envs/bedtools.yaml"    
+    shell:
+        """
+        bedtools getfasta -split -nameOnly -fi {input.fasta} -bed {input.bed} > {output.fasta}
+        """
 
+rule salmon_lineage_transcriptome_quant:
+    input:
+        bam=lambda wildcards: expand(
+            "star/{sample.sample_name}/{sample.unit_name}/{sample.reference}/Aligned.toTranscriptome.out.bam",
+            sample=lineage[lineage.loc[wildcards.species].loc[wildcards.lineage,"ret_int"].tolist()],
+        ),
+    output:
+        tab="{species}.{lineage}.salmon.tab"
+    shell:
+        """
+        """
 
 rule validate_features:
     input:

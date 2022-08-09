@@ -28,7 +28,38 @@ rule fasta2bed:
         ' {intput} > {output}
         """
  
-        
+rule gtfbed2bed12:
+    input:
+        bed="{prefix}.gtf.bed",
+    output:
+        bed12="{prefix}.gtf.bed12",
+    log:
+        "logs/bed12/{prefix}_gtfbed2bed12.log",
+    params:
+        temp = "{prefix}.gtf.temp",
+    resources:
+        mem="6G",
+        rmem="4G",
+    shell:
+        """
+        awk -F'\\t' -v OFS='\\t' '
+          ($8=="transcript" || $8=="exon") && match($0,/transcript_id "([^"]*)"/,t) {{
+            print $1, $2, $3, t[1], $3-$2, $6, $8;
+          }}' {input.bed} |
+        sort -k7,7 -k1,1 -k4,4 -k2,2n > {params.temp} &&
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR && $7=="exon" {{
+            a=(l[$4]=="")?$2:a ;
+            l[$4] = (l[$4]=="")?$5:(l[$4]","$5) ;
+            s[$4] = (s[$4]=="")?0:(s[$4]","($2-a)) ;
+            n[$4] +=1 ;
+          }}
+          FNR < NR && $7=="transcript" {{ 
+            $7=$2 ; 
+            print $0,$3 , 0, n[$4], l[$4], s[$4]
+          }}' {params.temp} {params.temp} > {output.bed12} 
+        """
+          
 
 rule gtf2bed:
     input:

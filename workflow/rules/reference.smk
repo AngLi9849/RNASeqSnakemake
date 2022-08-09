@@ -47,10 +47,10 @@ rule get_ensembl_annotation:
 rule incorporate_MANE_annotations:
     input:
         ensembl="resources/annotations/ensembl_{prefix}.gtf",
-        mane=config["MANE_annotation"],
     output:
         gtf="resources/annotations/MANE_{prefix}.gtf",
     params:
+        mane_link=config["MANE_annotation"],
         mane = "resources/annotations/MANE.gtf",
     threads: 1
     resources:
@@ -60,7 +60,7 @@ rule incorporate_MANE_annotations:
         "logs/awk/{prefix}_MANE_gtf.log",
     shell:
         """
-        curl {input.mane} -o {output.mane} &&
+        curl {params.mane_link} -o {params.mane} &&
         awk -F'\\t' -v OFS='\\t' '{{
           $2="MANE" ; 
           print ;
