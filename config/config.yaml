@@ -6,7 +6,7 @@ experiments: config/experiments.tsv
 feature_parameters: config/features.tsv
 references_info: config/references.tsv
 
-MANE_gene_range: TRUE # Determine GRCh38 gene ranges and principal structures using MANE project annotated transcripts, if validating features, validated transcripts may take priority
+MANE_gene_range: FALSE # Determine GRCh38 gene ranges and principal structures using MANE project annotated transcripts, if validating features, validated transcripts may take priority
 MANE_annotation: "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.0/MANE.GRCh38.v1.0.ensembl_genomic.gtf.gz" # Curated disease-related protein coding gene structures from MANE project for human GRCh38 genome, see https://www.ncbi.nlm.nih.gov/refseq/MANE/ 
 
 # Alignment Processing options (TRUE, FALSE or BOTH)
@@ -43,9 +43,10 @@ features:
   minimum_retained_intron_coverage: 0.1 #minimum fraction of a retained intron annotated as part of a bridging exon
   validate_features: FALSE
 
-feature_validation:
+lineage_feature_validation:
   genes:
-    minimum_reads: 5
+    principle_transcripts_threshold: 0.5 # Top transcripts accumulate to this proportion of reads mapped to a gene will be used to annotate the range and major structures (introns, exons, UTRs) of the gene expression/splicing in a lineage, higher the more transcript variant included. Quantified using Salmon.
+    minimum_reads: 5 # Genes with less than this amount of reads detected will be ignored from a lineage
     min_rpkm_percentile: 0.5 # Only analyse genes with normalised rpkm above this percentile after trimming by minimum reads, 0 will include all
   exons:
     minimum_splice_reads: 3  

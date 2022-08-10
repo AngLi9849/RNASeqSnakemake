@@ -83,22 +83,28 @@ rule salmon_lineage_transcriptome_quant:
         "../envs/salmon.yaml"
     shell:
         """
-        salmon quant -t {input.fasta} -l {params.libtype} -a {input.bam} -o {params.outdir}
+        salmon quant -t {input.fasta} -l {params.libtype} -a {input.bam} -o {params.outdir} --seqBias --gcBias
         """
 
 rule validate_transcripts:
     input:
-        transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
-        gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
-        inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
-        confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
+        transcripts="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.bed",
+        salmon_quant = lambda wildcards: expand(
+            "salmon/{sample.sample_name}/{sample.unit_name}/{sample.reference}/quant.sf",
+            sample=lineage.loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage][lineage.trs_val.tolist()].itertuples(),
+        ),
+        gene_tab="resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
         sj="resources/annotations/{lineage}.star.splice_junctions.bed",
     output:
-        valid_features="resources/annotations/{prefix}_{lineage}.gtf.{tag}_validated.bed"
+        expressed="resources/annotations/{reference}/{lineage}.gtf.{tag}_expressed.bed",
+        rpk_ratio="resources/annotations/{reference}/{lineage}.gtf.{tag}_rpk-ratio.bed",
+#        principal="resources/annotations/{reference}/{lineage}.gtf.{tag}_principal.bed",
+#        alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
+#        valid_features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed"
     params:
-        min_overhang=config["feature_validation"]["introns"]["minimum_overhang"],
-        min_int_uniq=config["feature_validation"]["introns"]["minimum_unique_splice_reads"],
-        min_splice = config["feature_validation"]["introns"]["minimum_multimap_splice_reads"],
+        min_overhang=config["lineage_feature_validation"]["introns"]["minimum_overhang"],
+        min_int_uniq=config["lineage_feature_validation"]["introns"]["minimum_unique_splice_reads"],
+        min_splice = config["lineage_feature_validation"]["introns"]["minimum_multimap_splice_reads"],
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         intron_min=config["features"]["minimum_intron_length"],
         feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
@@ -110,14 +116,49 @@ rule validate_transcripts:
     conda:
         "../envs/bedtools.yaml",
     log:
-        "logs/awk/{prefix}_{lineage}/validate_{tag}_features.log",
+        "logs/awk/{reference}/{lineage}/validate_{tag}_features.log",
     shell:
         """
-# Define genebody range using confident (MANE entries or correct biotype and top tsl transcripts) transcript ranges
+# Take all salmon quant files and calculate accumulative reads, effective rpk and effective tpm of each transcript
+# Print only transcripts with  more than 1 reads into 'expressed' bed
+        cat {input.salmon_quant} |
+  
         awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && $10=={{ 
-            
-        cat {input.sj} |
+          BEGIN {{
+            transcripts[0]=="" ;
+          }}
+          FNR==NR && $1!="Name" {{
+            if (seen[$1]==0) {{
+              transcripts[length(transcripts)+1]=$1 ;
+              seen[$1]=1 ;
+            }};
+            rpk[$1]+=($5/$3) ;
+            nreads[$1]+=$5 ;
+            rpksum+=($5/$3) ; 
+          }}
+          FNR < NR && $7=="transcript" {{
+            if (nreads[$8]>0) {{
+              tpm[$8] = rpk[$8]*1000000/rpksum ;
+              print $0, nreads[$8], rpk[$8], tpm[$8]  ;
+            }} 
+          }}' - {input.transcripts} |
+          
+          sort -k4,4 -k8,8 -k14,14nr > {output.expressed} &&
+         
+          awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{
+            rpk[$4] += $14   
+          }}
+          FNR < NR {{
+            acum[$4]+=$14/rpk[$4] ;
+            print $0, $14/rpk[$4], acum[$4];
+          }}' {output.expressed} {output.expressed}  > {output.rpk_ratio}
+
+# Define genebody range using confident (MANE entries or correct biotype and top tsl transcripts) transcript ranges
+#        awk -F'\\t' -v OFS='\\t' '
+#          FNR==NR && $10=={{ 
+#            
+#        cat {input.sj} |
 
         """ 
 

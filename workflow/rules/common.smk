@@ -26,7 +26,7 @@ def get_ref_source(species):
     if not pd.isna(references.loc[species,"genome_dir"]):
         return str("local_" + species)
     else: 
-        if (species=="homo_sapiens") & (references.loc[species,"ensembl_build"]=="GRCh38") :
+        if (species=="homo_sapiens") & (references.loc[species,"ensembl_build"]=="GRCh38") & (config["MANE_gene_range"]):
             return "MANE_{S}.{B}.{R}".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
         else:
             return "ensembl_{S}.{B}.{R}".format(S=species,B=references.loc[species,"ensembl_build"],R=references.loc[species,"ensembl_release"])
@@ -157,12 +157,16 @@ for i in range(0,len(experiments)):
     samps["lineage"] = experiments.sample_lineage[i]
     samps["species"] = experiments.sample_species[i]
     samps["group"] = experiments.group_name[i]
-    samps["int_ret"] = experiments.int_ret[i]
+    samps["trs_val"] = experiments.trs_val[i]
     samps["splice"] = experiments.splice[i]
     lineage.append(samps)
 
 lineage = pd.concat(lineage).drop_duplicates()
 lineage=lineage.set_index(["species","lineage"], drop=False).sort_index()
+
+def get_reference_species(reference):
+    species=lineage[lineage.reference==reference].species[0]
+    return species
 
 def get_feature_validity(feature):
     feat=features.loc[feature].squeeze(axis=0)["feature"]
