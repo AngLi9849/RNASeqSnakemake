@@ -104,8 +104,7 @@ rule validate_transcripts:
         principal="resources/annotations/{reference}/{lineage}.gtf.{tag}_principal.bed",
         alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
-        
-#        valid_features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed"
+#        features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
     params:
         min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
         min_int_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
@@ -144,7 +143,7 @@ rule validate_transcripts:
           
           sort -k4,4 -k14,14nr > {output.expressed} &&
          
-          awk -F'\\t' -v OFS='\\t' '
+        awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
             rpk[$4] += $14   
           }}
@@ -155,18 +154,93 @@ rule validate_transcripts:
           }} ;       
             acum[$4]+=$14/rpk[$4] ;
           if (alt==1) {{
-            print $1, $2, $3, $4, $3-$2, $6, $8, $14/rpk[$4] >> "{output.alternative}" ;
+            print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "alternative"  >> "{output.alternative}" ;
           }} else if (alt==0) {{
-            print $1, $2, $3, $4, $3-$2, $6, $8, $14/rpk[$4] >> "{output.principal}" ;
+            print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "principal" >> "{output.principal}" ;
           }} ;
             alt=(acum[$4] >= {params.alt_cut})?1:0 ;
             print $0, $14/rpk[$4], acum[$4];
           }}' {output.expressed} {output.expressed}  > {output.rpk_ratio} &&
-          
-          awk -F'\\t' -v OFS='\\t' '
-          FNR==NR {{
-                 
 
+# Determine principal transcription/genebody start and end site based on largest span of principal transcripts        
+# If a gene does not have detected transcript, use annotated confident structure 
+# If neither expressed nor confident structure exists, use genebody annotation
+ 
+        cat {output.principal} {input.confident} |
+        cut -f1-12 |
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR && $12=="principal" {{
+            princ[$4]+=1 ;
+            principal[$8] += 1 ;
+            p_start[$4]=(p_start[$4]=="" || p_start[$4]>$2)?$2:p_start[$4] ;
+            p_end[$4]=(p_end[$4]=="" || p_end[$4]<$3)?$3:p_end[$4] ;
+          }}
+          FNR==NR && $12 !="principal" {{
+            conf[$4] += 1 ;
+            confident[$8] += 1 ;
+            c_start[$4]=(c_start[$4]=="" || c_start[$4]>$2)?$2:c_start[$4] ;
+            c_end[$4]=(c_end[$4]=="" || c_end[$4]<$3)?$3:c_end[$4] ;
+          }}      
+          FNR < NR && $8=="gene" {{
+            if ($0~"gene_name") {{
+              match($0,/gene_name "([^"]*)".*/,a)
+            }}
+            else {{
+              a[1]=$4
+            }} ;
+            name[$4]=a[1] ;
+            if (princ[$4] >= 1 ) {{
+              print $1, p_start[$4], p_end[$4], $4, p_end[$4] - p_start[$4], $6, "gene", $4, name[$4], 0, $4 ;
+            }} else if (conf[$4] >= 1) {{
+              print $1, c_start[$4], c_end[$4], $4, c_end[$4] - c_start[$4], $6, "gene", $4, name[$4], 0, $4 ;
+            }} else {{ 
+              print $1, $2, $3, $4, $3-$2, $6, "gene", $4, name[$4], 0, $4 ;
+            }}
+          }}
+          FNR < NR && $7!="transcript" {{
+          if ( (principal[$12] >= 1) || (princ[$4] < 1 && confident[$12] >= 1 ) {{ 
+            $10=(principal[$12] >= 1)?1:$10 ;
+            $5=$3-$2 ;
+            if ($7=="exon") {{
+              $7="trscrpt" ; print ;
+              $7="exon" ; $8="" ; $9="" ; print ;
+            }}
+            else {{
+              $8="" ; $9="" ; print ;
+            }}
+          }}
+        ' - {input.transcripts} |
+
+        sort -k7,7 -k4,4 -k2,2n -k3,3n |
+
+        awk -F'\\t' -v OFS='\\t' '
+          {{
+            name=$1":"$2"-"$3":"$7;
+            if (n != name) {{
+              print s ;
+              t=$10 ; n = name ; s=$0
+            }}
+            else {{
+              t = ($10<=t)? $10 : t ; $10=t ; s=$0
+            }} ;
+          }}
+          END {{
+            print s
+          }}
+        ' - > {output.main} &&
+
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{
+            u[$4]==i
+
+        sort -k7,7 -k4,4 -k2,2n -k3,3n - |
+        uniq - |
+        awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
+        sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
+        awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
+        sort -k7,7 -k4,4 -k2,2n -k3,3n - > {output.features}
+
+        
 
 # Define genebody range using confident (MANE entries or correct biotype and top tsl transcripts) transcript ranges
 #        awk -F'\\t' -v OFS='\\t' '
