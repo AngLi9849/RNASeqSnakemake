@@ -94,18 +94,24 @@ rule validate_transcripts:
             sample=lineage.loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage][lineage.trs_val.tolist()].itertuples(),
         ),
         gene_tab="resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
-        sj="resources/annotations/{lineage}.star.splice_junctions.bed",
+        sj=lambda wildcards: "resources/annotations/{species}.{{lineage}}.star.splice_junctions.bed".format(
+            species=get_reference_species(wildcards.reference),
+        ),
+        confident="resources/annotations/{reference}/genome.gtf.{tag}_confident.bed",
     output:
         expressed="resources/annotations/{reference}/{lineage}.gtf.{tag}_expressed.bed",
         rpk_ratio="resources/annotations/{reference}/{lineage}.gtf.{tag}_rpk-ratio.bed",
-#        principal="resources/annotations/{reference}/{lineage}.gtf.{tag}_principal.bed",
-#        alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
+        principal="resources/annotations/{reference}/{lineage}.gtf.{tag}_principal.bed",
+        alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
+        main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
+        
 #        valid_features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed"
     params:
-        min_overhang=config["lineage_feature_validation"]["introns"]["minimum_overhang"],
-        min_int_uniq=config["lineage_feature_validation"]["introns"]["minimum_unique_splice_reads"],
-        min_splice = config["lineage_feature_validation"]["introns"]["minimum_multimap_splice_reads"],
+        min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
+        min_int_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
+        min_splice = config["lineage_feature_validation"]["splicing"]["minimum_multimap_splice_reads"],
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
+        alt_cut=config["lineage_feature_validation"]["genes"]["principal_transcripts_threshold"], 
         intron_min=config["features"]["minimum_intron_length"],
         feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
         feature_rev="workflow/scripts/awk/feature_index_rev.awk",
@@ -124,14 +130,7 @@ rule validate_transcripts:
         cat {input.salmon_quant} |
   
         awk -F'\\t' -v OFS='\\t' '
-          BEGIN {{
-            transcripts[0]=="" ;
-          }}
           FNR==NR && $1!="Name" {{
-            if (seen[$1]==0) {{
-              transcripts[length(transcripts)+1]=$1 ;
-              seen[$1]=1 ;
-            }};
             rpk[$1]+=($5/$3) ;
             nreads[$1]+=$5 ;
             rpksum+=($5/$3) ; 
@@ -143,16 +142,31 @@ rule validate_transcripts:
             }} 
           }}' - {input.transcripts} |
           
-          sort -k4,4 -k8,8 -k14,14nr > {output.expressed} &&
+          sort -k4,4 -k14,14nr > {output.expressed} &&
          
           awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
             rpk[$4] += $14   
           }}
           FNR < NR {{
+          if (gene!=$4) {{
+            alt=0;
+            gene=$4;
+          }} ;       
             acum[$4]+=$14/rpk[$4] ;
+          if (alt==1) {{
+            print $1, $2, $3, $4, $3-$2, $6, $8, $14/rpk[$4] >> "{output.alternative}" ;
+          }} else if (alt==0) {{
+            print $1, $2, $3, $4, $3-$2, $6, $8, $14/rpk[$4] >> "{output.principal}" ;
+          }} ;
+            alt=(acum[$4] >= {params.alt_cut})?1:0 ;
             print $0, $14/rpk[$4], acum[$4];
-          }}' {output.expressed} {output.expressed}  > {output.rpk_ratio}
+          }}' {output.expressed} {output.expressed}  > {output.rpk_ratio} &&
+          
+          awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{
+                 
+
 
 # Define genebody range using confident (MANE entries or correct biotype and top tsl transcripts) transcript ranges
 #        awk -F'\\t' -v OFS='\\t' '
