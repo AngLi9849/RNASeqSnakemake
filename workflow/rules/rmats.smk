@@ -49,10 +49,10 @@ rule rmats_post:
         control="rmats/post/{experiment}/{reference}/temp/control.txt",
         treat="rmats/post/{experiment}/{reference}/temp/treat.txt",
         temp=directory("rmats/post/{experiment}/{reference}/temp/"),
-#        post=directory("rmats/prep/{experiment}/{reference}/")
+        post=directory("rmats/post/{experiment}/{reference}/")
     params:
-#        read_length=lambda wildcards: samples.loc[wildcards.sample].loc[wildcards.unit,"readlen"],
-#        read_paired=lambda wildcards: "paired" if is_paired_end(wildcards.sample) else "single",
+        read_length=lambda wildcards: get_experiment_readlen(wildcards.experiment),
+        read_paired=lambda wildcards: "paired" if is_experiment_readpaired(wildcards.experiment) else "single",
         temp="rmats/post/{experiment}/{reference}/temp",
     threads: 6
     resources:
@@ -68,10 +68,23 @@ rule rmats_post:
           do for f in "$i"/* ; 
              do cp "$f" {params.temp}/$(awk -v f="$f" 'BEGIN{{ match(f,/rmats\/prep\/([^\/]*)\/([^\/]*)\//,a) ; print a[1]"_"a[2] }}')_$(awk -v f="$f" 'BEGIN{{ match(f,/([^\/]*)$/,a) ; print a[1] }}') ;
           done ;
-        done    
+        done &&   
+
 #        do python $(conda info | awk 'match($0,/active env location : ([^ ]*)/, a) {{print a[1]"/rMATS/cp_with_prefix.py" }}') \
 #         $(awk -v i="$i" 'BEGIN{{ match(i,/rmats\/prep\/([^\/]*)\/([^\/]*)\//,a) ; print a[1]"_"a[2] }}') \
 #         $(pwd)/{params.temp} \
 #         $(ls -d "$i"/*) \
-#        ; done
+#        ; done &&
+
+        python $(conda info | awk 'match($0,/active env location : ([^ ]*)/, a) {{print a[1]"/rMATS/rmats.py" }}') \
+          --b1 {output.control} \
+          --b2 {output.treat} \
+          --gtf {input.gtf} \
+          -t {params.read_paired} \
+          --readLength {params.read_length} \
+          --variable-read-length \
+          --nthread {threads} \
+          --od {output.post} \
+          --tmp {params.temp} \
+          --task post        
         """

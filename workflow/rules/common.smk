@@ -166,6 +166,16 @@ def get_experiment_treatments(experiment):
     sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
     return sample
 
+def get_experiment_readlen(experiment):
+    sample = get_experiment_samples(experiment)
+    readlen=sample.readlen.mean()
+    return readlen
+
+def is_experiment_readpaired(experiment):
+    sample = get_experiment_samples(experiment)
+    paired=sample.apply(lambda row: is_paired_end(row.sample_name), axis=1).all()
+    return paired
+
 def get_norm_group_samples(norm_group):
     exp = experiments[experiments.group_name==norm_group]
     cond = exp.norm_group[0]
