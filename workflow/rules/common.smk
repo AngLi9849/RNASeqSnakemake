@@ -134,9 +134,35 @@ samples = samples.mask(samples == '')
 
 # Helper functions for samples
 
+def is_paired_end(sample):
+    sample_units = samples.loc[sample]
+    fq2_null = sample_units["fq2"].isnull()
+    sra_null = sample_units["sra"].isnull()
+    paired = ~fq2_null | ~sra_null
+    all_paired = paired.all()
+    all_single = (~paired).all()
+    assert (
+        all_single or all_paired
+    ), "invalid read files for sample {}, must be all paired end or all single end".format(
+        sample
+    )
+    return all_paired
+
 def get_experiment_samples(experiment):
     exp = experiments.loc[experiment].squeeze()
     cond = [exp.control,exp.treatment]
+    sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
+    return sample
+
+def get_experiment_controls(experiment):
+    exp = experiments.loc[experiment].squeeze()
+    cond = [exp.control]
+    sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
+    return sample
+
+def get_experiment_treatments(experiment):
+    exp = experiments.loc[experiment].squeeze()
+    cond = [exp.treatment]
     sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
     return sample
 
@@ -343,20 +369,6 @@ def get_raw_fastqc_input(wildcards):
                 S=sample.sample_name, U=sample.unit_name, E=ending, fq=wildcards.fq,
         )
 
-
-def is_paired_end(sample):
-    sample_units = samples.loc[sample]
-    fq2_null = sample_units["fq2"].isnull()
-    sra_null = sample_units["sra"].isnull()
-    paired = ~fq2_null | ~sra_null
-    all_paired = paired.all()
-    all_single = (~paired).all()
-    assert (
-        all_single or all_paired
-    ), "invalid read files for sample {}, must be all paired end or all single end".format(
-        sample
-    )
-    return all_paired
 
 
 def get_fq(wildcards):

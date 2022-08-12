@@ -88,6 +88,7 @@ rule salmon_lineage_transcriptome_quant:
 
 rule validate_transcripts:
     input:
+        bed="resources/annotations/{reference}/genome.gtf.bed",
         transcripts="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.bed",
         salmon_quant = lambda wildcards: expand(
             "salmon/{sample.sample_name}/{sample.unit_name}/{sample.reference}/quant.sf",
@@ -163,8 +164,8 @@ rule validate_transcripts:
           }}' {output.expressed} {output.expressed}  > {output.rpk_ratio} &&
 
 # Determine principal transcription/genebody start and end site based on largest span of principal transcripts        
-# If a gene does not have detected transcript, use annotated confident structure 
-# If neither expressed nor confident structure exists, use genebody annotation
+# If a gene does not have detected transcript, use annotated confident transcripts 
+# If neither expressed nor confident transcripts exists, use genebody annotation
  
         cat {output.principal} {input.confident} |
         cut -f1-12 |
@@ -196,20 +197,22 @@ rule validate_transcripts:
             }} else {{ 
               print $1, $2, $3, $4, $3-$2, $6, "gene", $4, name[$4], 0, $4 ;
             }}
-          }}
-          FNR < NR && $7!="transcript" {{
-          if ( (principal[$12] >= 1) || (princ[$4] < 1 && confident[$12] >= 1 ) {{ 
-            $10=(principal[$12] >= 1)?1:$10 ;
-            $5=$3-$2 ;
-            if ($7=="exon") {{
-              $7="trscrpt" ; print ;
-              $7="exon" ; $8="" ; $9="" ; print ;
-            }}
-            else {{
-              $8="" ; $9="" ; print ;
-            }}
-          }}
-        ' - {input.transcripts} |
+          }}' - {input.bed} |
+#          FNR < NR && $7!="transcript" {{
+#          if ( (principal[$12] >= 1) || (princ[$4] < 1 && confident[$12] >= 1 ) {{ 
+#            $10=(principal[$12] >= 1)?1:$10 ;
+#            $5=$3-$2 ;
+#            if ($7=="exon") {{
+#              $7="trscrpt" ; print ;
+#              $7="exon" ; $8="" ; $9="" ; print ;
+#            }}
+#            else {{
+#              $8="" ; $9="" ; print ;
+#            }}
+#          }}
+#        ' - {input.transcripts} |
+
+        
 
         sort -k7,7 -k4,4 -k2,2n -k3,3n |
 
