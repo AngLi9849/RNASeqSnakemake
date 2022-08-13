@@ -422,6 +422,11 @@ rule annotated_features:
         awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
         sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
+        awk -F'\\t' -v OFS='\\t' '
+          $7=="long_intron"{{print >> "{output.long_intron}"}}
+          $7=="long_exon" {{ print >> "{output.long_exon}"}}
+          $7!~/^long_/ {{ print }}
+        ' - |
         sort -k7,7 -k4,4 -k2,2n -k3,3n - > {output.features} &&
 
 #        awk -F'\\t' -v OFS='\\t' '
@@ -441,21 +446,18 @@ rule annotated_features:
 #        sort -k7,7 -k4,4 -k2,2n -k3,3n -o {output.features} - &&      
 
         awk -F'\\t' -v OFS='\\t' '
-          $7=="long_intron"{{print}}
-        ' {output.features} > {output.long_intron} &&
-
-        awk -F'\\t' -v OFS='\\t' '
-          $7=="exon"{{print}}
+          $7=="exon" || $7=="intron" {{print}}
         ' {output.features} |
 
-        bedtools intersect -s -f 1 -wa -a stdin -b {output.long_intron} |
+        bedtools intersect -s -f 1 -wa -wb -a stdin -b {output.long_intron} |
 
         awk -F'\\t' -v OFS='\\t' '
-          FNR==NR {{ $7="skip_ex" ; print }}
-          FNR< NR {{ print }}
-        ' - {output.features} | 
+          FNR==NR && $7=="exon" {{ $7="skip_ex" ; print >> "{output.features}" }}
+          FNR==NR && $7=="intron" {{
+            
+        ' && 
 
-        sort -o {output.features} -k1,1 -k2,2n - &&
+
 
         awk -F'\\t' -v OFS='\\t' '
           $7=="long_exon"{{print}}

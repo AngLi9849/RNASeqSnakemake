@@ -352,6 +352,18 @@ def get_cutadapt_input(wildcards):
             read=["fq1", "fq2"],
         )
 
+def get_rmats_sample_libtype(sample,unit):
+    strand=samples.loc[sample].loc[unit,"strandedness"]
+    lib="fr-secondstrand" if strand=="reverse" else "fr-firststrand" if strand=="yes" else "fr-unstranded"
+    return lib
+
+def get_rmats_exp_libtype(experiment):
+    sample=get_experiment_samples(experiment)
+    strands=pd.unique(sample.strandedness.tolist())
+    strand=strands.item() if len(strands)==1 else "no"
+    lib="fr-secondstrand" if strand=="reverse" else "fr-firststrand" if strand=="yes" else "fr-unstranded"
+    return lib
+
 
 def sort_raw_reads(wildcards):
     files = list(

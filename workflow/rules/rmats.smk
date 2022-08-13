@@ -9,6 +9,7 @@ rule rmats_prep:
         read_length=lambda wildcards: samples.loc[wildcards.sample].loc[wildcards.unit,"readlen"],
         read_paired=lambda wildcards: "paired" if is_paired_end(wildcards.sample) else "single",
         temp="rmats/prep/{sample}/{unit}/{reference}/temp",
+        libtype=lambda wildcards: get_rmats_sample_libtype(wildcards.sample,wildcards.unit), 
     threads: 2
     resources:
         mem=lambda wildcards, input: (str((input.size//1500000000)+4) + "G"),
@@ -23,6 +24,7 @@ rule rmats_prep:
           --gtf {input.gtf} \
           -t {params.read_paired} \
           --readLength {params.read_length} \
+          --libType {params.libtype} \
           --variable-read-length \
           --nthread {threads} \
           --od {output.prep} \
@@ -55,6 +57,7 @@ rule rmats_post:
         read_paired=lambda wildcards: "paired" if is_experiment_readpaired(wildcards.experiment) else "single",
         temp="rmats/post/{experiment}/{reference}/temp",
         rep_paired=lambda wildcards: "--paired-stats" if experiments.loc[wildcards.experiment,"pairRep"] else "",
+        libtype=lambda wildcards: get_rmats_exp_libtype(wildcards.experiment),
     threads: 6
     resources:
         mem=lambda wildcards, input: (str((input.size//6000000000)+4) + "G"),
@@ -63,8 +66,10 @@ rule rmats_post:
         "../envs/rmats.yaml"
     shell:
         """
-        for i in {input.control_bam} ; do readlink -f "$i" >> {output.control}; done &&
-        for i in {input.treat_bam} ; do readlink -f "$i" >> {output.treat}; done &&
+        for i in {input.control_bam} ; do readlink -f "$i" ; done |
+        awk '{{printf ("%s,", $0) >> "{output.control}" }}' && 
+        for i in {input.treat_bam} ; do readlink -f "$i" ; done |
+        awk '{{printf ("%s,", $0) >> "{output.treat}" }}' &&
         for i in {input.prep} ;
           do for f in "$i"/temp/* ; 
              do cp "$f" {params.temp}/$(awk -v f="$f" 'BEGIN{{ match(f,/rmats\/prep\/([^\/]*)\/([^\/]*)\//,a) ; print a[1]"_"a[2] }}')_$(awk -v f="$f" 'BEGIN{{ match(f,/([^\/]*)$/,a) ; print a[1] }}') ;
@@ -84,6 +89,7 @@ rule rmats_post:
           -t {params.read_paired} {params.rep_paired} \
           --readLength {params.read_length} \
           --variable-read-length \
+          --libType {params.libtype} \
           --nthread {threads} \
           --od {output.post} \
           --tmp {params.temp} \
