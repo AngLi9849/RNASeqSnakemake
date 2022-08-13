@@ -169,6 +169,7 @@ rule validate_transcripts:
  
         cat {output.principal} {input.confident} |
         cut -f1-12 |
+        cat - {input.bed} |
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR && $12=="principal" {{
             princ[$4]+=1 ;
@@ -182,7 +183,7 @@ rule validate_transcripts:
             c_start[$4]=(c_start[$4]=="" || c_start[$4]>$2)?$2:c_start[$4] ;
             c_end[$4]=(c_end[$4]=="" || c_end[$4]<$3)?$3:c_end[$4] ;
           }}      
-          FNR < NR && $8=="gene" {{
+          FNR == NR && $8=="gene" {{
             if ($0~"gene_name") {{
               match($0,/gene_name "([^"]*)".*/,a)
             }}
@@ -197,22 +198,20 @@ rule validate_transcripts:
             }} else {{ 
               print $1, $2, $3, $4, $3-$2, $6, "gene", $4, name[$4], 0, $4 ;
             }}
-          }}' - {input.bed} |
-#          FNR < NR && $7!="transcript" {{
-#          if ( (principal[$12] >= 1) || (princ[$4] < 1 && confident[$12] >= 1 ) {{ 
-#            $10=(principal[$12] >= 1)?1:$10 ;
-#            $5=$3-$2 ;
-#            if ($7=="exon") {{
-#              $7="trscrpt" ; print ;
-#              $7="exon" ; $8="" ; $9="" ; print ;
-#            }}
-#            else {{
-#              $8="" ; $9="" ; print ;
-#            }}
-#          }}
-#        ' - {input.transcripts} |
-
-        
+          }}
+          FNR < NR && $7!="transcript" {{
+          if ( (principal[$12] >= 1) || (princ[$4] < 1 && confident[$12] >= 1 ) {{ 
+            $10=(principal[$12] >= 1)?1:$10 ;
+            $5=$3-$2 ;
+            if ($7=="exon") {{
+              $7="trscrpt" ; print ;
+              $7="exon" ; $8="" ; $9="" ; print ;
+            }}
+            else {{
+              $8="" ; $9="" ; print ;
+            }}
+          }}
+        ' - {input.transcripts} |
 
         sort -k7,7 -k4,4 -k2,2n -k3,3n |
 
@@ -232,11 +231,7 @@ rule validate_transcripts:
           }}
         ' - > {output.main} &&
 
-        awk -F'\\t' -v OFS='\\t' '
-          FNR==NR {{
-            u[$4]==i
-
-        sort -k7,7 -k4,4 -k2,2n -k3,3n - |
+        sort -k7,7 -k4,4 -k2,2n -k3,3n {output.main} |
         uniq - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
         sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |

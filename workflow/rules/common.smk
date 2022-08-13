@@ -168,7 +168,7 @@ def get_experiment_treatments(experiment):
 
 def get_experiment_readlen(experiment):
     sample = get_experiment_samples(experiment)
-    readlen=sample.readlen.mean()
+    readlen=int(sample.readlen.mean())
     return readlen
 
 def is_experiment_readpaired(experiment):
