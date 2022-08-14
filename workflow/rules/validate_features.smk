@@ -104,8 +104,10 @@ rule validate_transcripts:
         rpk_ratio="resources/annotations/{reference}/{lineage}.gtf.{tag}_rpk-ratio.bed",
         principal="resources/annotations/{reference}/{lineage}.gtf.{tag}_principal.bed",
         alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
+        long_intron="resources/annotations/{prefix}.gtf.{tag}_long_intron.bed",
+        long_exon="resources/annotations/{prefix}.gtf.{tag}_long_exon.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
-#        features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
+        features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
     params:
         min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
         min_int_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
@@ -142,7 +144,7 @@ rule validate_transcripts:
             }} 
           }}' - {input.transcripts} |
           
-          sort -k4,4 -k14,14nr > {output.expressed} &&
+        sort -k4,4 -k14,14nr > {output.expressed} &&
          
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
@@ -200,8 +202,8 @@ rule validate_transcripts:
             }}
           }}
           FNR < NR && $7!="transcript" {{
-          if ( (principal[$12] >= 1) || (princ[$4] < 1 && confident[$12] >= 1 ) {{ 
-            $10=(principal[$12] >= 1)?1:$10 ;
+          if ( (principal[$8] >= 1) || (princ[$4] < 1 && confident[$8] >= 1 )) {{ 
+            e10=(principal[$8] >= 1)?1:$10 ;
             $5=$3-$2 ;
             if ($7=="exon") {{
               $7="trscrpt" ; print ;
@@ -211,7 +213,7 @@ rule validate_transcripts:
               $8="" ; $9="" ; print ;
             }}
           }}
-        ' - {input.transcripts} |
+        }}' - {input.transcripts} |
 
         sort -k7,7 -k4,4 -k2,2n -k3,3n |
 
@@ -236,6 +238,11 @@ rule validate_transcripts:
         awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
         sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
+        awk -F'\\t' -v OFS='\\t' '
+          $7=="long_intron"{{print >> "{output.long_intron}"}}
+          $7=="long_exon" {{ print >> "{output.long_exon}"}}
+          $7!~/^long_/ {{ print }}
+        ' - |
         sort -k7,7 -k4,4 -k2,2n -k3,3n - > {output.features}
 
         
