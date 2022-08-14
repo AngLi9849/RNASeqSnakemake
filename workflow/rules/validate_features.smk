@@ -203,7 +203,7 @@ rule validate_transcripts:
           }}
           FNR < NR && $7!="transcript" {{
           if ( (principal[$8] >= 1) || (princ[$4] < 1 && confident[$8] >= 1 )) {{ 
-            e10=(principal[$8] >= 1)?1:$10 ;
+            $10=(principal[$8] >= 1)?1:$10 ;
             $5=$3-$2 ;
             if ($7=="exon") {{
               $7="trscrpt" ; print ;
@@ -215,6 +215,7 @@ rule validate_transcripts:
           }}
         }}' - {input.transcripts} |
 
+        cut -f1-11 |
         sort -k7,7 -k4,4 -k2,2n -k3,3n |
 
         awk -F'\\t' -v OFS='\\t' '
@@ -243,8 +244,29 @@ rule validate_transcripts:
           $7=="long_exon" {{ print >> "{output.long_exon}"}}
           $7!~/^long_/ {{ print }}
         ' - |
-        sort -k7,7 -k4,4 -k2,2n -k3,3n - > {output.features}
+        sort -k8,8 - > {output.features} &&
 
+        
+        
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{
+            v[$8]=(v[$8]>$12)?v[$8]:$12
+          }}
+          FNR < NR {{
+            if (($7!="gene" || $7!="trscrpt") && (v[$8]>1)) {{
+              if (id != $8) {{ 
+                $0=save ; 
+                print  ; 
+              $9=($9" var "$12) ; $8=($8"var"$12) ; $7=$7"_var"; print ;
+              start[$8]=(start[$8]==0 || start[$8]>$2)?$2:start[$8] ;
+              end[$8]=(end[$8]==0 || end[$8]<$3)?$3:end[$8] ;	      
+            }}
+            else {{
+              print
+            }}
+          }}' {output.features} {output.features} |
+
+        
         
 
 # Define genebody range using confident (MANE entries or correct biotype and top tsl transcripts) transcript ranges

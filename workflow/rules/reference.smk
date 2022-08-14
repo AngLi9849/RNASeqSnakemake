@@ -429,21 +429,22 @@ rule annotated_features:
         ' - |
         sort -k7,7 -k4,4 -k2,2n -k3,3n - > {output.features} &&
 
-#        awk -F'\\t' -v OFS='\\t' '
-#          FNR==NR {{ 
-#            v[$8]=(v[$8]>$12)?v[$8]:$12 
-#          }}
-#          FNR < NR {{
-#            if (($7!="gene" || $7!="trscrpt") && (v[$8]>1)) {{
-#              print ; $9=($9" var "$12) ; $8=($8"var"$12) ; $7=$7"_var";
-#              print
-#            }}
-#            else {{ 
-#             print
-#            }}
-#          }}' {output.features} {output.features} |
-#
-#        sort -k7,7 -k4,4 -k2,2n -k3,3n -o {output.features} - &&      
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{ 
+            v[$8]=(v[$8]>$12)?v[$8]:$12 
+          }}
+          FNR < NR {{
+            if (($7!="gene" || $7!="trscrpt") && (v[$8]>1)) {{
+              print ; $9=($9" var "$12) ; $8=($8"var"$12) ; $7=$7"_var";
+              start[$8]=(start[$8]==0 || start[$8]>$2)?$2:start[$8] ;
+              end[$8]=(end[$8]==0 || end[$8]<$3)?$3:end[$8] ;
+            }}
+            else {{ 
+             print
+            }}
+          }}' {output.features} {output.features} |
+
+        sort -k7,7 -k4,4 -k2,2n -k3,3n -o {output.features} - &&      
 
         awk -F'\\t' -v OFS='\\t' '
           $7=="exon" || $7=="intron" {{print}}
