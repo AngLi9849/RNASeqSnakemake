@@ -104,8 +104,8 @@ rule validate_transcripts:
         rpk_ratio="resources/annotations/{reference}/{lineage}.gtf.{tag}_rpk-ratio.bed",
         principal="resources/annotations/{reference}/{lineage}.gtf.{tag}_principal.bed",
         alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
-        long_intron="resources/annotations/{prefix}.gtf.{tag}_long_intron.bed",
-        long_exon="resources/annotations/{prefix}.gtf.{tag}_long_exon.bed",
+        long_intron="resources/annotations/{reference}/{lineage}..gtf.{tag}_long_intron.bed",
+        long_exon="resources/annotations/{reference}/{lineage}..gtf.{tag}_long_exon.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
         features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
     params:
@@ -248,23 +248,23 @@ rule validate_transcripts:
 
         
         
-        awk -F'\\t' -v OFS='\\t' '
-          FNR==NR {{
-            v[$8]=(v[$8]>$12)?v[$8]:$12
-          }}
-          FNR < NR {{
-            if (($7!="gene" || $7!="trscrpt") && (v[$8]>1)) {{
-              if (id != $8) {{ 
-                $0=save ; 
-                print  ; 
-              $9=($9" var "$12) ; $8=($8"var"$12) ; $7=$7"_var"; print ;
-              start[$8]=(start[$8]==0 || start[$8]>$2)?$2:start[$8] ;
-              end[$8]=(end[$8]==0 || end[$8]<$3)?$3:end[$8] ;	      
-            }}
-            else {{
-              print
-            }}
-          }}' {output.features} {output.features} |
+#        awk -F'\\t' -v OFS='\\t' '
+#          FNR==NR {{
+#            v[$8]=(v[$8]>$12)?v[$8]:$12
+#          }}
+#          FNR < NR {{
+#            if (($7!="gene" || $7!="trscrpt") && (v[$8]>1)) {{
+#              if (id != $8) {{ 
+#                $0=save ; 
+#                print  ; 
+#              $9=($9" var "$12) ; $8=($8"var"$12) ; $7=$7"_var"; print ;
+#              start[$8]=(start[$8]==0 || start[$8]>$2)?$2:start[$8] ;
+#              end[$8]=(end[$8]==0 || end[$8]<$3)?$3:end[$8] ;	      
+#            }}
+#            else {{
+#              print
+#            }}
+#          }}' {output.features} {output.features} |
 
         
         
