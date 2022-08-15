@@ -244,29 +244,52 @@ rule validate_transcripts:
           $7=="long_exon" {{ print >> "{output.long_exon}"}}
           $7!~/^long_/ {{ print }}
         ' - |
-        sort -k8,8 - > {output.features} &&
+        sort -o {output.main} -k8,8 - &&
 
+         
         
-        
-#        awk -F'\\t' -v OFS='\\t' '
-#          FNR==NR {{
-#            v[$8]=(v[$8]>$12)?v[$8]:$12
-#          }}
-#          FNR < NR {{
-#            if (($7!="gene" || $7!="trscrpt") && (v[$8]>1)) {{
-#              if (id != $8) {{ 
-#                $0=save ; 
-#                print  ; 
-#              $9=($9" var "$12) ; $8=($8"var"$12) ; $7=$7"_var"; print ;
-#              start[$8]=(start[$8]==0 || start[$8]>$2)?$2:start[$8] ;
-#              end[$8]=(end[$8]==0 || end[$8]<$3)?$3:end[$8] ;	      
-#            }}
-#            else {{
-#              print
-#            }}
-#          }}' {output.features} {output.features} |
+        awk -F'\\t' -v OFS='\\t' '
+          BEGIN{{
+            id[0]=""
+          }}
+          FNR==NR {{
+            v[$8]=(v[$8]>$14)?v[$8]:$14
+          }}
+          FNR < NR {{
+            if (($7!="gene" || $7!="trscrpt") && (v[$8]>1)) {{
+              if (seen[$8]==0) {{ 
+                id[length(id)]=$8 ; 
+                seen[$8]=1  ;
+                entry[$8]=$0 ;
+              }} ; 
+              $9=($9" var "$14) ; $8=($8"var"$14) ; $7=$7"_var"; print ;
+              start[$8]=(start[$8]==0 || start[$8]>$2)?$2:start[$8] ;
+              end[$8]=(end[$8]==0 || end[$8]<$3)?$3:end[$8] ;	      
+            }}
+            else {{
+              print
+            }}
+          }}
+          END {{
+            for (i in id) {{
+              if id[i]!="" {{
+                $0=entry[id[i]] ; 
+                $2=start[id[i]] ;
+                $3=end[id[i]] ;
+                $14=1 ;
+                print $0 ;
+              }}
+            }}
+          }}' {output.main} {output.main} |
 
+        sort -o {output.main} -k8,8 - &&
+        cat {output.main} {input.sj}
         
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR && $7=="intron" {{
+            print $1":"$2"-"$3":"$6
+          }}
+                
         
 
 # Define genebody range using confident (MANE entries or correct biotype and top tsl transcripts) transcript ranges

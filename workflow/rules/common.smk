@@ -217,6 +217,32 @@ def get_feature_validity(feature):
             else:
                 return "validated"
 
+# Define keywords for obtaining sample-specific bigwigs
+bw_samples=[]
+
+for i in range(0,len(experiments)):
+    samps = get_experiment_samples(experiments.experiment[i])[["sample_name","unit_name","strandedness"]]
+    samps["reference"] = get_source(experiments.experiment[i])
+    samps["lineage"] = experiments.sample_lineage[i]
+    samps["group"] = experiments.group_name[i]
+    samps["spikein"]=experiments.normaliser[i]
+    samps["norm_feat"]=experiments.norm_feat[i]
+    samps["pairRep"]="paired" if experiments.pairRep[i] else "unpaired"
+    samps["stranded"]=samps.apply(lambda row: "unstranded" if (row.strandedness=="no" or pd.isna(row.strandedness))  else "stranded", axis=1)
+    unstrand=samps[samps.stranded=="unstranded"]
+    unstrand["strand"]="unstranded"
+    fwd=samps[samps.stranded=="stranded"]
+    fwd["strand"]="fwd"
+    rev=fwd.copy(deep=True)
+    rev["strand"]="rev"
+    bw_samples.append(unstrand)
+    bw_samples.append(fwd)
+    bw_samples.append(rev)
+
+bw_samples = pd.concat(bw_samples).drop_duplicates()
+bw_samples=bw_samples.set_index(["sample_name","unit_name"], drop=False).sort_index()
+
+
 #Set variables for result filenames
 DEMULTI=['Demultimapped',''] if config["remove_multimappers"]=='BOTH' else 'Demultimapped' if config["remove_multimappers"] else ''
 DEDUP=['Deduplicated',''] if config["remove_duplicate_reads"]=='BOTH' else 'Deduplicated' if config["remove_duplicate_reads"] else ''
@@ -245,8 +271,8 @@ def get_bams():
 
 def get_bigwigs():
     bigwigs = expand(
-        "results/{sample.experiment}/bigwig/{splice}Aligned{demulti}{dedup}_normalised_by_{sample.normaliser}_{normaliser}/{sample.sample_name}_{sample.unit_name}.{strand}_{splice}.bigwig",
-        sample=samples.itertuples(), demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICING
+        "results/{sample.group}/{sample.reference}/bigwigs/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}ReadCount_normalised/{splice}Aligned{demulti}{dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{splice}.coverage.bigwig",
+        sample=bw_samples.itertuples(), demulti=DEMULTI, dedup=DEDUP, splice=SPLICE
     )
     return bigwigs
 

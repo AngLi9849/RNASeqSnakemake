@@ -91,7 +91,22 @@ rule rmats_post:
           --variable-read-length \
           --libType {params.libtype} \
           --nthread {threads} \
+          --od {params.temp} \
+          --statoff \
+          --tmp {params.temp} \
+          --task post &&       
+
+        python $(conda info | awk 'match($0,/active env location : ([^ ]*)/, a) {{print a[1]"/rMATS/rmats.py" }}') \
+          --b1 {output.control} \
+          --b2 {output.treat} \
+          --gtf {input.gtf} \
+          -t {params.read_paired} {params.rep_paired} \
+          --readLength {params.read_length} \
+          --variable-read-length \
+          --libType {params.libtype} \
+          --nthread {threads} \
           --od {output.post} \
           --tmp {params.temp} \
-          --task post        
+          --fixed-event-set {params.temp} \
+          --task post
         """

@@ -112,7 +112,7 @@ rule total_read_count_scale_factors:
 rule feature_count_scale_factors:
     input:
         counts="featurecounts/{norm_group}/{reference}/{prefix}.genome_annotated.{type}.basic.{feature}Reads.counts.tsv",
-        bed="resources/annotations/{reference}_genome.{type}.annotated_basic.{feature}.bed"
+        bed="resources/annotations/{reference}/genome.{type}.annotated_basic.{feature}.bed"
     output:
         paired = "deseq2/{norm_group}/{reference}/{prefix}.{type}.{feature}ReadCount.{spikein}_paired.scale_factors.tsv",
         unpaired = "deseq2/{norm_group}/{reference}/{prefix}.{type}.{feature}ReadCount.{spikein}_unpaired.scale_factors.tsv",

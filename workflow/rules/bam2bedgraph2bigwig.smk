@@ -124,6 +124,6 @@ rule scale_bedgraph2bigwig:
          }}' {input.scale} {input.bedgraph} |
 
        LC_COLLATE=C sort -k1,1 -k2,2n - > {output.bg} &&
-       bedGraphToBigWig {output.bw} {input.chr_size} {output.bg}
+       bedGraphToBigWig {output.bg} {input.chr_size} {output.bw}
        """
 
