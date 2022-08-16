@@ -112,8 +112,8 @@ rule featurecounts:
         tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.featurecounts.tab",
     threads: 6
     resources:
-        mem=lambda wildcards, input: (str((input.size//3000000000)+4) + "G"),
-        rmem=lambda wildcards, input: (str((input.size//6000000000)+4) + "G"),
+        mem=lambda wildcards, input: (str((input.size//2500000000)+6) + "G"),
+        rmem=lambda wildcards, input: (str((input.size//5000000000)+6) + "G"),
     log:
         "logs/featurecounts/{sample}/{unit}/{reference}/{prefix}_{lineage}_{valid}.{type}.{tag}_{feature}Reads.log"
     conda:
