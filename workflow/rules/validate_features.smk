@@ -86,6 +86,16 @@ rule salmon_lineage_transcriptome_quant:
         salmon quant -t {input.fasta} -l {params.libtype} -a {input.bam} -o {params.outdir} --seqBias --gcBias
         """
 
+rule rmats_lineage_events:
+    input:
+        prep=lambda wildcards: expand(
+          "rmats/prep/{sample.sample_name}/{sample.unit_name}/{{reference}}/post",
+          sample=get_lineage_samples(wildcards.species, wildcards.lineage).itertuples(),
+        ),
+    output:
+       ret_int= 
+
+
 rule validate_transcripts:
     input:
         bed="resources/annotations/{reference}/genome.gtf.bed",
@@ -104,14 +114,15 @@ rule validate_transcripts:
         rpk_ratio="resources/annotations/{reference}/{lineage}.gtf.{tag}_rpk-ratio.bed",
         principal="resources/annotations/{reference}/{lineage}.gtf.{tag}_principal.bed",
         alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
-        long_intron="resources/annotations/{reference}/{lineage}..gtf.{tag}_long_intron.bed",
-        long_exon="resources/annotations/{reference}/{lineage}..gtf.{tag}_long_exon.bed",
+        long_intron="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_intron.bed",
+        sj_int="resources/annotations/{reference}/{lineage}.gtf.{tag}_sj_intron.bed",
+        long_exon="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_exon.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
         features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
     params:
         min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
-        min_int_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
-        min_splice = config["lineage_feature_validation"]["splicing"]["minimum_multimap_splice_reads"],
+        min_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
+        min_mult = config["lineage_feature_validation"]["splicing"]["minimum_multimap_splice_reads"],
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         alt_cut=config["lineage_feature_validation"]["genes"]["principal_transcripts_threshold"], 
         intron_min=config["features"]["minimum_intron_length"],
@@ -240,14 +251,12 @@ rule validate_transcripts:
         sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
         awk -F'\\t' -v OFS='\\t' '
-          $7=="long_intron"{{print >> "{output.long_intron}"}}
+#          $7=="long_intron"{{print >> "{output.long_intron}"}}
           $7=="long_exon" {{ print >> "{output.long_exon}"}}
           $7!~/^long_/ {{ print }}
         ' - |
         sort -o {output.main} -k8,8 - &&
 
-         
-        
         awk -F'\\t' -v OFS='\\t' '
           BEGIN{{
             id[0]=""
@@ -282,21 +291,89 @@ rule validate_transcripts:
             }}
           }}' {output.main} {output.main} |
 
-        sort -o {output.main} -k8,8 - &&
-        cat {output.main} {input.sj}
-        
+        sort -o {output.main} -k1,1 -k2,2n - &&
+     
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR && $7=="intron" {{
-            print $1":"$2"-"$3":"$6
+            id=$1":"$2"-"$3":"$6 ;
+            seen[id]=1 ;             
           }}
-                
-        
+          FNR<NR && $9>{params.min_overhang} && ($7>{params.min_uniq} || $8 > {params.min_mult}) {{
+            if (seen[$4]==0) {{
+              print $1, $2, $3, "intron", ".", $6
+            }}
+          }} ' {output.main} {input.sj} > {output.sj_int} &&
 
-# Define genebody range using confident (MANE entries or correct biotype and top tsl transcripts) transcript ranges
-#        awk -F'\\t' -v OFS='\\t' '
-#          FNR==NR && $10=={{ 
-#            
-#        cat {input.sj} |
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR && $7=="intron" {{
+            print
+          }}' {output.main} |
+ 
+        bedtools intersect -a {output.sj_int} -b - -wa -c -F 1 |
+ 
+        awk -F'\\t' -v OFS='\\t' '
+          $7 ==1 {{ print >> "{output.alt_int}" }} 
+          $7 >=2 {{ print >> "{output.long_intron}" }}
+        ' - &&
+
+        awk -F'\\t' -v OFS='\\t' '
+          {{print $1,$2,$3, $1":"$2"-"$3":"$6, ".", $6 }}
+        ' {output.long_intron} |
+
+        sort | 
+        uniq |
+        sort -o {output.long_intron} -k1,1 -k2,2n - &&      
+
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{
+            n_ex[$1]=$4
+          }}
+          FNR < NR && ($7=="intron" || $7=="exon") {{
+            if (n_ex[$4] >= 2) {{
+              print
+            }}
+          }}' {output.main} |
+
+        bedtools intersect -a {output.long_intron} -b - -wa -wb -F 1 |
+
+        sort -k13,13 -k10,10 -k4,4 -k18,18n |
+
+        awk -F'\\t' -v OFS='\\t' '
+          $13=="intron" {{
+            if ( id=="" || (id!=$4 && id!="")) {{
+              if (id!=$4 && id!="") {{
+                  part[id]=first[id] ; 
+                  for (i=first[id]+1 ; i <= last[id] ; i++) {{
+                    part[id]=part[id]"+"i
+                  }} ;
+                print chr[id], start[id], end[id], gene[id], end[id]-start[id], strand[id], "big_int", gene[id]":intron:"part[id], gname[id]" "intron" "part[id], 1, gene[id], first[id], last_rev[id], 1,
+              }} ;
+              id=$4 ; 
+              chr[$4]=$1 ;
+              gene[$4]=$10 ;
+              strand[$4]=$6 ; 
+              match($15,/^([^ ]*) /,n) ;
+              gname[$4]=n[1] ;
+            }} ;
+            start[$4]=(start[$4]==0 || start[$4] >= $8)? $8 : start[$4] ; 
+            end[$4]=(end[$4]==0 || end[$4] <= $8)? $8 : end[$4] ;
+            first[$4]=(first[$4]==0 || first[$4] >= $18)?$18:first[$4] ;
+            last[$4]=(last[$4]==0 || last[$4] <= $19)?$19:last[$4] ;
+            last_rev[$4]=(last_rev[$4]==0 || last_rev[$4] >= $19)? $19 : last_rev[$4] ;
+          }}
+          $13=="exon" {{
+            print $7,$8,$9,$10, $11, $12, "skip_ex", $14, $15, $16, $17, $18, $19 ,$20
+          }}
+          END {{
+            part[id]=first[id] ;
+            for (i=first[id]+1 ; i <= last[id] ; i++) {{
+              part[id]=part[id]"+"i
+            }} ;
+            print chr[id], start[id], end[id], gene[id], end[id]-start[id], strand[id], "big_int", gene[id]":intron:"part[id], gname[id]" "intron" "part[id], 1, gene[id], first[id], last_rev[id], 1,
+          }} 
+        ' - >> {output.main} && 
+
+        awk -F'\\t'
 
         """ 
 

@@ -5,6 +5,7 @@ rule rmats_prep:
     output:
         sample="rmats/prep/{sample}/{unit}/{reference}/sample.txt",
         prep=directory("rmats/prep/{sample}/{unit}/{reference}/")
+        post=directory("rmats/prep/{sample}/{unit}/{reference}/post")
     params:
         read_length=lambda wildcards: samples.loc[wildcards.sample].loc[wildcards.unit,"readlen"],
         read_paired=lambda wildcards: "paired" if is_paired_end(wildcards.sample) else "single",
@@ -30,6 +31,19 @@ rule rmats_prep:
           --od {output.prep} \
           --tmp {params.temp} \
           --task prep
+
+        python $(conda info | awk 'match($0,/active env location : ([^ ]*)/, a) {{print a[1]"/rMATS/rmats.py" }}') \
+          --b1 {output.sample} \
+          --gtf {input.gtf} \
+          -t {params.read_paired} \
+          --readLength {params.read_length} \
+          --libType {params.libtype} \
+          --variable-read-length \
+          --nthread {threads} \
+          --od {output.post} \
+          --tmp {params.temp} \
+          --statoff \
+          --task post
         """ 
 
 rule rmats_post:
@@ -83,8 +97,8 @@ rule rmats_post:
 #        ; done &&
 
         python $(conda info | awk 'match($0,/active env location : ([^ ]*)/, a) {{print a[1]"/rMATS/rmats.py" }}') \
-          --b1 {output.control} \
-          --b2 {output.treat} \
+          --b1 {output.treat} \
+          --b2 {output.control} \
           --gtf {input.gtf} \
           -t {params.read_paired} {params.rep_paired} \
           --readLength {params.read_length} \
@@ -97,8 +111,8 @@ rule rmats_post:
           --task post &&       
 
         python $(conda info | awk 'match($0,/active env location : ([^ ]*)/, a) {{print a[1]"/rMATS/rmats.py" }}') \
-          --b1 {output.control} \
-          --b2 {output.treat} \
+          --b1 {output.treat} \
+          --b2 {output.control} \
           --gtf {input.gtf} \
           -t {params.read_paired} {params.rep_paired} \
           --readLength {params.read_length} \
