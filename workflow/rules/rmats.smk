@@ -4,8 +4,8 @@ rule rmats_prep:
         gtf="resources/annotations/{reference}/genome.gtf",
     output:
         sample="rmats/prep/{sample}/{unit}/{reference}/sample.txt",
-        prep=directory("rmats/prep/{sample}/{unit}/{reference}/")
-        post=directory("rmats/prep/{sample}/{unit}/{reference}/post")
+        prep=directory("rmats/prep/{sample}/{unit}/{reference}/"),
+        post=directory("rmats/prep/{sample}/{unit}/{reference}/post"),
     params:
         read_length=lambda wildcards: samples.loc[wildcards.sample].loc[wildcards.unit,"readlen"],
         read_paired=lambda wildcards: "paired" if is_paired_end(wildcards.sample) else "single",

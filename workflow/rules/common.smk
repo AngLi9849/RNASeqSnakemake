@@ -251,8 +251,8 @@ SPLICE=['All','Spliced','Unspliced'] if config['seperate_spliced_reads'] else 'A
 VALID=['validated'] if config['features']['validate_features'] else ['annotated']
 TAG=list(config['ensembl_tags'])
 
-STRAND_BIGWIG=['unstranded','fwd','rev'] if config['strand_specific_bigwigs'] else ['unstranded']
-STRAND_META=['stranded']
+#STRAND_BIGWIG=['unstranded','fwd','rev'] if config['strand_specific_bigwigs'] else ['unstranded']
+#STRAND_META=['stranded']
 
 USAGE=[""] 
 #USAGE=["Exon","Intron","ExonVariants"]

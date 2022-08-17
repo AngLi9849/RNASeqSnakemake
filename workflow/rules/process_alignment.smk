@@ -110,21 +110,21 @@ rule featurecounts:
         saf=lambda w: "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.bed.saf" 
     output:
         tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.featurecounts.tab",
-    threads: 6
+    threads: lambda wildcards, input: ((input.size//10000000000)+2)
     resources:
-        mem=lambda wildcards, input: (str((input.size//2500000000)+6) + "G"),
-        rmem=lambda wildcards, input: (str((input.size//5000000000)+6) + "G"),
+        mem="16G",
+        rmem="12G",
     log:
         "logs/featurecounts/{sample}/{unit}/{reference}/{prefix}_{lineage}_{valid}.{type}.{tag}_{feature}Reads.log"
     conda:
         "../envs/subread.yaml",
     params:
         strand=get_sample_strandedness,
-        paired=lambda wildcards:("" if not is_paired_end(wildcards.sample) else "-p"),
+        paired=lambda wildcards:("-p" if is_paired_end(wildcards.sample) else ""),
         overlap="-O" if config["counting"]["count_every_overlap"] else "",
     shell:
         """
-        featureCounts -s {params.strand} {params.paired} -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
+        featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
         """
 
 rule count_matrix:
