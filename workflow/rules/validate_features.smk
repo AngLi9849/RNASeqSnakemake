@@ -86,23 +86,21 @@ rule salmon_lineage_transcriptome_quant:
         salmon quant -t {input.fasta} -l {params.libtype} -a {input.bam} -o {params.outdir} --seqBias --gcBias
         """
 
-rule rmats_lineage_events:
+rule rmats_lineage_intron_retention_exon_skip:
     input:
         prep=lambda wildcards: expand(
-            "rmats/prep/{sample.sample_name}/{sample.unit_name}/{reference}/post",
+            "rmats/prep/{sample.sample_name}/{sample.unit_name}/{sample.reference}/post",
             sample=lineage[lineage.trs_val.tolist()].loc[wildcards.species].loc[wildcards.lineage].itertuples(),
         ),
     output:
        ret_int="resources/annotations/{species}.{lineage}.rmats.ret_int.bed",
        skip_ex="resources/annotations/{species}.{lineage}.rmats.skip_ex.bed",
-       long_in="resources/annotations/{species}.{lineage}.rmats.skip_in.bed",
-       long_ex="resources/annotations/{species}.{lineage}.rmats.ret_ex.bed",
+       skip_in="resources/annotations/{species}.{lineage}.rmats.skip_in.bed",
+       ret_ex="resources/annotations/{species}.{lineage}.rmats.ret_ex.bed",
     threads: 2
     resources:
         mem="8G",
         rmem="6G",
-    conda:
-        "../envs/rmats.yaml"
     shell:
         """    
         for i in {input.prep} ; do cat $i/RI.MATS.JCEC.txt ; done |
@@ -126,14 +124,14 @@ rule rmats_lineage_events:
           }}        
           FNR>1 && $1!="ID" {{
             if ($incl > 0 || $skip > 0 ) {{
-              match($chr,/chr(.*)/,chr) ;
-              id=chr[1]":"$rx_start"-"$rx_end":"$ri_start"-"$ri_end":"$strand ;
-              if seen[id] ==0 {{ 
+              match($chr,/chr(.*)/,c) ;
+              id=c[1]":"$rx_start"-"$rx_end":"$ri_start"-"$ri_end":"$strand ;
+              if (seen[id]==0) {{ 
                 list[length(ri_list)]=id;
                 seen[id]=1 ;
               }} ;
-              inc_rpk[id]+=$incl / $inclen;
-              skip_rpk[id]+=$skip / $skiplen;
+              inc_rpk[id]+= ($incl/($inclen+1)) ;
+              skip_rpk[id]+= ($skip/($skiplen+1)) ;
             }} ;
           }}
           END {{
@@ -142,9 +140,9 @@ rule rmats_lineage_events:
                 match(list[i], /^([^:]*):([^-]*)-([^:]*):([^-]*)-([^:]*):(.*)/,x) ;
                 print x[1], x[4],x[5],list[i],x[5] - x[4],x[6],inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.ret_int}" ; 
                 print x[1], x[2], x[3], list[i],x[3] - x[2],x[6],inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.ret_ex}" ;   
-              }}
-            }}
-          }}'- ;
+              }} ;
+            }} ;
+          }}' - ;
     
         for i in {input.prep} ; do cat $i/SE.MATS.JCEC.txt ; done |
         awk -F'\\t' -v OFS='\\t' '
@@ -167,14 +165,14 @@ rule rmats_lineage_events:
           }}
           FNR>1 && $1!="ID" {{
             if ($incl > 0 || $skip > 0 ) {{
-              match($chr,/chr(.*)/,chr) ;
-              id=chr[1]":"$sx_start"-"$sx_end":"$si_start"-"$si_end":"$strand ;
-              if seen[id] ==0 {{
+              match($chr,/chr(.*)/,c) ;
+              id=c[1]":"$sx_start"-"$sx_end":"$si_start"-"$si_end":"$strand ;
+              if (seen[id]==0) {{
                 list[length(si_list)]=id;
                 seen[id]=1 ;
               }} ;
-              inc_rpk[id]+=$incl / $inclen;
-              skip_rpk[id]+=$skip / $skiplen;
+              inc_rpk[id]+= ($incl/($inclen+1)) ;
+              skip_rpk[id]+= ($skip/($skiplen+1)) ;
             }} ;
           }}
           END {{
@@ -183,9 +181,9 @@ rule rmats_lineage_events:
                 match(list[i], /^([^:]*):([^-]*)-([^:]*):([^-]*)-([^:]*):(.*)/,x) ;
                 print x[1], x[4],x[5],list[i],x[5] - x[4],x[6],inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.skip_in}" ;
                 print x[1], x[2], x[3], list[i],x[3] - x[2],x[6],inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.skip_ex}" ;
-              }}
-            }}
-          }}'-
+              }} ;
+            }} ;
+          }}' -
         """  
 
 rule validate_transcripts:

@@ -77,7 +77,7 @@ rule stranded_genomecov:
         chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + "_genome.fasta.chrom.sizes")
     output:
         bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.{strand}.bedgraph",
-        bw="bigwigs/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
+        bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
     params:
         bin_size=config["bigwig_bin_size"]
     resources:
@@ -106,7 +106,7 @@ rule scale_bedgraph2bigwig:
        chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + "_genome.fasta.chrom.sizes")
     output:
        bg = "bedgraph/{norm_group}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
-       bw = "results/{norm_group}/{reference}/bigwigs/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.coverage.bigwig",
+       bw = "norm_bw/{norm_group}/{reference}/bigwigs/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.normalised.bigwig",
     conda:
        "../envs/bedtools.yaml"
     threads: 1

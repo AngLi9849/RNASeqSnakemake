@@ -269,9 +269,9 @@ def get_bams():
     )
     return bams
 
-def get_bigwigs():
+def get_norm_bigwigs():
     bigwigs = expand(
-        "results/{sample.group}/{sample.reference}/bigwigs/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}ReadCount_normalised/{splice}Aligned{demulti}{dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{splice}.coverage.bigwig",
+        "norm_bw/{sample.group}/{sample.reference}/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}ReadCount_normalised/{splice}Aligned{demulti}{dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{splice}.normalised.bigwig",
         sample=bw_samples.itertuples(), demulti=DEMULTI, dedup=DEDUP, splice=SPLICE
     )
     return bigwigs
