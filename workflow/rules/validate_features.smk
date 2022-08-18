@@ -109,9 +109,9 @@ rule rmats_lineage_intron_retention_exon_skip:
             list[0]==""
           }}
           FNR==1 {{ 
-            for (i=1 ; i<= NR ; i++) {{
-              if ($i=="riExonStart_0Base") {{ rx_start=i }} ;
-              if ($i=="riExonStart_0Base") {{ rx_end=i }} ;
+            for (i=1 ; i<= NF ; i++) {{
+              if ($i=="riExonStart_0base") {{ rx_start=i }} ;
+              if ($i=="riExonEnd") {{ rx_end=i }} ;
               if ($i=="upstreamEE") {{ ri_start=i }} ;
               if ($i=="downstreamES") {{ ri_end=i }} ;
               if ($i=="chr") {{ chr=i }} ;
@@ -127,9 +127,11 @@ rule rmats_lineage_intron_retention_exon_skip:
               match($chr,/chr(.*)/,c) ;
               id=c[1]":"$rx_start"-"$rx_end":"$ri_start"-"$ri_end":"$strand ;
               if (seen[id]==0) {{ 
-                list[length(ri_list)]=id;
+                list[length(list)]=id;
                 seen[id]=1 ;
               }} ;
+              include[id] += $incl ;
+              skipping[id] += $skip ;
               inc_rpk[id]+= ($incl/($inclen+1)) ;
               skip_rpk[id]+= ($skip/($skiplen+1)) ;
             }} ;
@@ -138,8 +140,8 @@ rule rmats_lineage_intron_retention_exon_skip:
             for ( i in list ) {{
               if ( i != 0 ) {{
                 match(list[i], /^([^:]*):([^-]*)-([^:]*):([^-]*)-([^:]*):(.*)/,x) ;
-                print x[1], x[4],x[5],list[i],x[5] - x[4],x[6],inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.ret_int}" ; 
-                print x[1], x[2], x[3], list[i],x[3] - x[2],x[6],inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.ret_ex}" ;   
+                print x[1], x[4],x[5],list[i],x[5] - x[4],x[6],include[list[i]], skipping[list[i]], inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.ret_int}" ; 
+                print x[1], x[2], x[3], list[i],x[3] - x[2],x[6],include[list[i]], skipping[list[i]], inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.ret_ex}" ;   
               }} ;
             }} ;
           }}' - ;
@@ -150,9 +152,9 @@ rule rmats_lineage_intron_retention_exon_skip:
             list[0]==""
           }}
           FNR==1 {{
-            for (i=1 ; i<= NR ; i++) {{
-              if ($i=="ExonStart_0Base") {{ sx_start=i }} ;
-              if ($i=="ExonStart_0Base") {{ sx_end=i }} ;
+            for (i=1 ; i<= NF ; i++) {{
+              if ($i=="exonStart_0base") {{ sx_start=i }} ;
+              if ($i=="exonEnd") {{ sx_end=i }} ;
               if ($i=="upstreamEE") {{ si_start=i }} ;
               if ($i=="downstreamES") {{ si_end=i }} ;
               if ($i=="chr") {{ chr=i }} ;
@@ -168,19 +170,21 @@ rule rmats_lineage_intron_retention_exon_skip:
               match($chr,/chr(.*)/,c) ;
               id=c[1]":"$sx_start"-"$sx_end":"$si_start"-"$si_end":"$strand ;
               if (seen[id]==0) {{
-                list[length(si_list)]=id;
+                list[length(list)]=id;
                 seen[id]=1 ;
               }} ;
-              inc_rpk[id]+= ($incl/($inclen+1)) ;
-              skip_rpk[id]+= ($skip/($skiplen+1)) ;
+              include[id] += $incl ;
+              skipping[id] += $skip ;
+              inc_rpk[id]+= ($incl/($inclen)) ;
+              skip_rpk[id]+= ($skip/($skiplen)) ;
             }} ;
           }}
           END {{
             for ( i in list ) {{
               if ( i != 0 ) {{
                 match(list[i], /^([^:]*):([^-]*)-([^:]*):([^-]*)-([^:]*):(.*)/,x) ;
-                print x[1], x[4],x[5],list[i],x[5] - x[4],x[6],inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.skip_in}" ;
-                print x[1], x[2], x[3], list[i],x[3] - x[2],x[6],inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.skip_ex}" ;
+                print x[1], x[4],x[5],list[i],x[5] - x[4],x[6],include[list[i]], skipping[list[i]], inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.skip_in}" ;
+                print x[1], x[2], x[3], list[i],x[3] - x[2],x[6],include[list[i]], skipping[list[i]], inc_rpk[list[i]],skip_rpk[list[i]],inc_rpk[list[i]]/(skip_rpk[list[i]] + inc_rpk[list[i]]) >> "{output.skip_ex}" ;
               }} ;
             }} ;
           }}' -
