@@ -190,7 +190,7 @@ rule rmats_lineage_intron_retention_exon_skip:
           }}' -
         """  
 
-rule validate_transcripts:
+rule validate_main_transcripts:
     input:
         bed="resources/annotations/{reference}/genome.gtf.bed",
         transcripts="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.bed",
@@ -209,16 +209,23 @@ rule validate_transcripts:
         principal="resources/annotations/{reference}/{lineage}.gtf.{tag}_principal.bed",
         alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
         long_intron="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_intron.bed",
-        sj_int="resources/annotations/{reference}/{lineage}.gtf.{tag}_sj_intron.bed",
-        long_exon="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_exon.bed",
+#        sj_int="resources/annotations/{reference}/{lineage}.gtf.{tag}_sj_intron.bed",
+#        long_exon="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_exon.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
-        features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
+#        features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
+#        rmats_se="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.SE.txt",
+        rmats_three="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A3SS.txt",
+        rmats_five="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A5SS.txt",
+#        rmats_ri="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.RI.txt",
+#        rmats_mxe="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.MXE.txt",
     params:
         min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
         min_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
         min_mult = config["lineage_feature_validation"]["splicing"]["minimum_multimap_splice_reads"],
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         alt_cut=config["lineage_feature_validation"]["genes"]["principal_transcripts_threshold"], 
+        min_reads=config["lineage_feature_validation"]["genes"]["minimum_transcript_reads"],
+        min_ratio=config["lineage_feature_validation"]["genes"]["minimum_rpk_ratio"],
         intron_min=config["features"]["minimum_intron_length"],
         feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
         feature_rev="workflow/scripts/awk/feature_index_rev.awk",
@@ -299,30 +306,41 @@ rule validate_transcripts:
             }} ;
             name[$4]=a[1] ;
             if (princ[$4] >= 1 ) {{
+              start[$4]=p_start[$4] ;
+              end[$4]=p_end[$4] ;
               print $1, p_start[$4], p_end[$4], $4, p_end[$4] - p_start[$4], $6, "gene", $4, name[$4], 0, $4 ;
             }} else if (conf[$4] >= 1) {{
+              start[$4]=c_start[$4] ;
+              end[$4]=c_end[$4] ;              
               print $1, c_start[$4], c_end[$4], $4, c_end[$4] - c_start[$4], $6, "gene", $4, name[$4], 0, $4 ;
             }} else {{ 
+              start[$4]=$2 ;
+              end[$4]=$3 ;
               print $1, $2, $3, $4, $3-$2, $6, "gene", $4, name[$4], 0, $4 ;
             }}
           }}
-          FNR < NR && $7!="transcript" {{
-          if ( (principal[$8] >= 1) || (princ[$4] < 1 && confident[$8] >= 1 )) {{ 
-            $10=(principal[$8] >= 1)?1:$10 ;
-            $5=$3-$2 ;
-            if ($7=="exon") {{
-              $7="trscrpt" ; print ;
-              $7="exon" ; $8="" ; $9="" ; print ;
+          FNR < NR && $7=="transcript" && $16>0 {{
+            ratio[$8]=$16 ;
+            reads[$8]=$13 ;
+          }} ;
+          FNR < NR && $7 != "transcript" {{
+            if ( reads[$8] >= {params.min_reads}  && ratio[$8] >= {params.min_ratio} && $2>=start[$4] && $3<=end[$4] ) {{ 
+              $10=(principal[$8] >= 1)?1:$10 ;
+              $5=$3-$2 ;
+              if ($7=="exon") {{
+                $7="trscrpt" ; print ;
+                $7="exon" ; $8="" ; $9="" ; print ;
+              }}
+              else {{
+                $8="" ; $9="" ; print ;
+              }}
             }}
-            else {{
-              $8="" ; $9="" ; print ;
-            }}
-          }}
-        }}' - {input.transcripts} |
+          }}' - {output.rpk_tatio} {input.transcripts} |
 
         cut -f1-11 |
         sort -k7,7 -k4,4 -k2,2n -k3,3n |
 
+# Deduplicate elements and assign the highest tsl found to it
         awk -F'\\t' -v OFS='\\t' '
           {{
             name=$1":"$2"-"$3":"$7;
@@ -339,17 +357,35 @@ rule validate_transcripts:
           }}
         ' - > {output.main} &&
 
+# Divide verified main structure into minimal elements (exon-intron-exon-intron-exon, so on)  and index by foward, reverse and variant orders in a 5'-3' fashion, prioritising 5' position.
+# Isolate multi-lapping elements as "long" elements (aka if intron A = intron 1 + exon 1 + intron 2, intron A is output separately as long_intron)
+
         sort -k7,7 -k4,4 -k2,2n -k3,3n {output.main} |
         uniq - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
         sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
         awk -F'\\t' -v OFS='\\t' '
-#          $7=="long_intron"{{print >> "{output.long_intron}"}}
-          $7=="long_exon" {{ print >> "{output.long_exon}"}}
+          $7=="long_intron"{{print >> "{output.long_intron}"}}
+#          $7=="long_exon" {{ print >> "{output.long_exon}"}}
           $7!~/^long_/ {{ print }}
         ' - |
         sort -o {output.main} -k8,8 - &&
+
+# Initialise rMATS annotations
+        awk -F'\\t' -v OFS='\\t' '
+          BEGIN {{
+            print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_three}"
+            print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_five}"
+#            print "ID","GeneID","geneSymbol","chr","strand","1stExonStart_0base","1stExonEnd","2ndExonStart_0base","2ndExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_mxe}"
+#            print "ID","GeneID","geneSymbol","chr","strand","riExonStart_0base","riExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_ri}"
+#            print "ID","GeneID","geneSymbol","chr","strand","exonStart_0base","exonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_se}"
+          }}' &&
+
+# Isolate element variants and assign the maximal span of the element as its range, exons and introns may overlap
+# Generate minimal span of introns and exons as min_intron and min_exons
+# Generate rMATS table of 3' and 5' AS events
+# Generate every intron variant into a potential intron retention event to be considered, as intron retention events are not always similar between cell lines.
 
         awk -F'\\t' -v OFS='\\t' '
           BEGIN{{
@@ -368,6 +404,8 @@ rule validate_transcripts:
               $9=($9" var "$14) ; $8=($8"var"$14) ; $7=$7"_var"; print ;
               start[$8]=(start[$8]==0 || start[$8]>$2)?$2:start[$8] ;
               end[$8]=(end[$8]==0 || end[$8]<$3)?$3:end[$8] ;	      
+              min_start[$8]=(min_start[$8]==0 || min_start[$8]<$2)?$2:min_start[$8] ;
+              min_end[$8]=(min_end[$8]==0 || min_end[$8]>$3)?$3:min_end[$8] ;
             }}
             else {{
               print
@@ -381,42 +419,64 @@ rule validate_transcripts:
                 $3=end[id[i]] ;
                 $14=1 ;
                 print $0 ;
+                $2=min_start[id[i]] ;
+                $3=min_end[id[i]] ;
+                $7="min_"$7 ;
+                print $0 ;
               }}
             }}
           }}' {output.main} {output.main} |
 
-        sort -o {output.main} -k1,1 -k2,2n - &&
-     
+        sort -o {output.main} -k1,1 -k2,2n - |
+
         awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && $7=="intron" {{
-            id=$1":"$2"-"$3":"$6 ;
-            seen[id]=1 ;             
+          BEGIN {{
+            three_id=0 ;
+            five_id=0 ;
           }}
-          FNR<NR && $9>{params.min_overhang} && ($7>{params.min_uniq} || $8 > {params.min_mult}) {{
-            if (seen[$4]==0) {{
-              print $1, $2, $3, "intron", ".", $6
-            }}
-          }} ' {output.main} {input.sj} > {output.sj_int} &&
-
-        awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && $7=="intron" {{
-            print
-          }}' {output.main} |
- 
-        bedtools intersect -a {output.sj_int} -b - -wa -c -F 1 |
- 
-        awk -F'\\t' -v OFS='\\t' '
-          $7 ==1 {{ print >> "{output.alt_int}" }} 
-          $7 >=2 {{ print >> "{output.long_intron}" }}
-        ' - &&
-
-        awk -F'\\t' -v OFS='\\t' '
-          {{print $1,$2,$3, $1":"$2"-"$3":"$6, ".", $6 }}
-        ' {output.long_intron} |
-
-        sort | 
-        uniq |
-        sort -o {output.long_intron} -k1,1 -k2,2n - &&      
+          FNR==NR && ($7=="intron" || $7=="exon") {{
+            start[$4, $7, $12]=$2 ; 
+            end[$4,$7,$12]=$3 ;
+            strand[$4]=$6 ;
+          }} ;
+          FNR==NR && ($7=="min_intron" || $7=="min_exon") {{
+            min_start[$4,$7,$12]=$2 ;
+            min_end[$4,$7,$12]=$3 ;
+          }} ;
+          FNR < NR && $7=="intron_var" {{            
+            match($9,/^([^ ]*) intron/,gene) ;
+            if ($2 < min_start[$4,"intron", $12]) {{
+              event=$1":"$2"-"min_start[$4,"intron",$12]":"$6 ;
+              if (seen[event]==0) {{
+                if ($6=="+") {{
+                  print five_id, "\""$4"\"", "\""gene[1]"\"", "chr"$1, $6, min_start[$4,"exon",$12], $2, min_start[$4,"exon",$12], min_end[$4,"exon",$12], $3, min_end[$4,"exon",$12+1] >> "{output.rmats_five}" ;
+                  five_id += 1 ;
+                }} else {{
+                  print three_id, "\""$4"\"", "\""gene[1]"\"", "chr"$1, $6, min_start[$4,"exon",$12+1], $2, min_start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], $3, min_end[$4,"exon",$12] >> "{output.rmats_three}" ;
+                  three_id += 1 ;
+                }} ;
+              seen[event] += 1 ;
+              }} ;
+            }} ;
+            if ($3 < end[$4,"intron", $12]) {{
+              event=$1":"$3"-"end[$4,"intron",$12]":"$6 ;
+              if (seen[event]==0) {{
+                if ($6=="-") {{
+                  print five_id, "\""$4"\"", "\""gene[1]"\"", "chr"$1, $6, $3, min_end[$4,"exon",$12], min_start[$4,"exon",$12], min_end[$4,"exon",$12], min_start[$4,"exon",$12+1], $2 >> "{output.rmats_five}" ;
+                  five_id += 1 ;
+                }} else {{
+                  print three_id, "\""$4"\"", "\""gene[1]"\"", "chr"$1, $6, $3, min_end[$4,"exon",$12+1], min_start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], min_start[$4,"exon",$12], $2 >> "{output.rmats_three}" ;
+                  three_id += 1 ;
+                }} ;
+              seen[event] += 1 ;
+              }} ;
+            }} ;
+          }}' {output.main} {output.main} 
+        """  
+        
+        """
+             
+# Look for exon skipping events in validated multi-exonic gene structures, using previously generate long_introns
 
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
@@ -426,7 +486,7 @@ rule validate_transcripts:
             if (n_ex[$4] >= 2) {{
               print
             }}
-          }}' {output.main} |
+          }}' {input.gene_tab} {output.main} |
 
         bedtools intersect -a {output.long_intron} -b - -wa -wb -F 1 |
 
@@ -440,7 +500,7 @@ rule validate_transcripts:
                   for (i=first[id]+1 ; i <= last[id] ; i++) {{
                     part[id]=part[id]"+"i
                   }} ;
-                print chr[id], start[id], end[id], gene[id], end[id]-start[id], strand[id], "big_int", gene[id]":intron:"part[id], gname[id]" "intron" "part[id], 1, gene[id], first[id], last_rev[id], 1,
+                print chr[id], start[id], end[id], gene[id], end[id]-start[id], strand[id], "skip_int", gene[id]":intron:"part[id], gname[id]" "intron" "part[id], 1, gene[id], first[id], last_rev[id], 1,
               }} ;
               id=$4 ; 
               chr[$4]=$1 ;
@@ -463,11 +523,8 @@ rule validate_transcripts:
             for (i=first[id]+1 ; i <= last[id] ; i++) {{
               part[id]=part[id]"+"i
             }} ;
-            print chr[id], start[id], end[id], gene[id], end[id]-start[id], strand[id], "big_int", gene[id]":intron:"part[id], gname[id]" "intron" "part[id], 1, gene[id], first[id], last_rev[id], 1,
+            print chr[id], start[id], end[id], gene[id], end[id]-start[id], strand[id], "skip_int", gene[id]":intron:"part[id], gname[id]" "intron" "part[id], 1, gene[id], first[id], last_rev[id], 1,
           }} 
-        ' - >> {output.main} && 
-
-        awk -F'\\t'
-
+        ' - >> {output.main}
         """ 
 

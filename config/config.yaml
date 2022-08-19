@@ -44,10 +44,10 @@ features:
   validate_features: FALSE
 
 lineage_feature_validation:
-  genes:
-    principal_transcripts_threshold: 0.5 # Top transcripts accumulate to this proportion of reads mapped to a gene will be used to annotate the range and major structures (introns, exons, CDS, UTRs) of the gene expression/splicing in a lineage, higher the more transcript variant included, 0 includes only the most abundant transcript, 1 will include all. Quantified using Salmon.
-    minimum_reads: 5 # Genes with less than this amount of reads detected will be ignored from a lineage 
-    min_tpm_percentile: 0 # Only analyse genes with TPM above this percentile after trimming by minimum reads, 0 will include all. Quantified using Salmon.
+  genes: # Use Salmon Quantification to select transcripts that supports the structure (exon intron UTR CDS) of a gene
+    principal_transcripts_threshold: 0.5 # Top transcripts accumulate to this proportion of reads mapped to a gene will be used to annotate the range of the gene expression/splicing in a lineage, higher the more transcript variant included, 0 includes only the most abundant transcript, 1 will include all.
+    minimum_transcript_reads: 5 # transcripts with less than this amount of reads will not be used to support the structure of the gene.
+    minimum_rpk_ratio: 0.05 # Only consider transcripts that supply more than this ratio of TPM to a gene (1=100%, 0.1=10%), 0 will include all expressed transcripts.
   splicing:
     minimum_overhang: 10 # Minimum detected overhang length on each side of the intron/splice junction to validate a splicing event, recommend 6 or above for mammals.
     minimum_multimap_splice_reads: 100 # Number of multimap reads splice-across reads to exceptionally validate an intron, for managing unmasked duplicative genes such as SMN1 and 2 in human.

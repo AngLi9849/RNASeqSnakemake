@@ -1,6 +1,0 @@
-channels:
-  - bioconda
-  - conda-forge
-dependencies:
-  - deeptools =3.4.3
-  - pandas = 1.1

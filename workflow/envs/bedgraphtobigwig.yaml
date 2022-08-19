@@ -1,7 +1,0 @@
-annels:
-  - bioconda
-  - conda-forge
-dependencies:
-  - ucsc-bedgraphtobigwig = 377
-
-

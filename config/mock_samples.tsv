@@ -1,2 +1,0 @@
-condition	sample_name	unit_name	fq1	fq2	sra	adapters	strandedness
-mock	sample1	lane1	workflow/mock_samples/sample1.1.fastq.gz	workflow/mock_samples/sample1.2.fastq.gz		-a ATAAA -A ATAAA	reverse
