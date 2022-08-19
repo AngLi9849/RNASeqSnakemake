@@ -1,0 +1,39 @@
+Order of Features.bed:
+Chr 
+Start 
+End 
+GeneID 
+Score 
+Strand
+Biotype
+exonicity(multi or mono)
+main_feature_type 
+main_feature_id 
+main_feature_name 
+subfeature_type 
+subfeature_id 
+subfeature_name
+subfeature_sense_index
+subfeature_antisense_index
+subfeature_variant_index
+subfeature_length
+
+
+CHANGED 10/04/2022:
+1.Chr 
+2.Start 
+3.End 
+4.GeneID 
+5.Length 
+6.Strand
+7.Biotype
+8.GeneName
+9.subfeature_type 
+10.subfeature_id 
+11.subfeature_name
+12.subfeature_sense_index
+13.subfeature_antisense_index
+14.subfeature_variant_index
+15.exon_number
+16.exonicity(multi or mono)
+
