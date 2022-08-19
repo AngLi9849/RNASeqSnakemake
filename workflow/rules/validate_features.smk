@@ -196,7 +196,7 @@ rule validate_main_transcripts:
         transcripts="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.bed",
         salmon_quant = lambda wildcards: expand(
             "salmon/{sample.sample_name}/{sample.unit_name}/{sample.reference}/quant.sf",
-            sample=lineage.loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage][lineage.trs_val.tolist()].itertuples(),
+            sample=lineage[lineage.trs_val.tolist()].loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage].itertuples(),
         ),
         gene_tab="resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
         sj=lambda wildcards: "resources/annotations/{species}.{{lineage}}.star.splice_junctions.bed".format(
@@ -210,14 +210,14 @@ rule validate_main_transcripts:
         alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
         long_intron="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_intron.bed",
 #        sj_int="resources/annotations/{reference}/{lineage}.gtf.{tag}_sj_intron.bed",
-#        long_exon="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_exon.bed",
+        long_exon="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_exon.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
 #        features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
-#        rmats_se="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.SE.txt",
+        rmats_se="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.SE.txt",
         rmats_three="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A3SS.txt",
         rmats_five="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A5SS.txt",
-#        rmats_ri="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.RI.txt",
-#        rmats_mxe="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.MXE.txt",
+        rmats_ri="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.RI.txt",
+        rmats_mxe="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.MXE.txt",
     params:
         min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
         min_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
@@ -335,7 +335,7 @@ rule validate_main_transcripts:
                 $8="" ; $9="" ; print ;
               }}
             }}
-          }}' - {output.rpk_tatio} {input.transcripts} |
+          }}' - {output.rpk_ratio} {input.transcripts} |
 
         cut -f1-11 |
         sort -k7,7 -k4,4 -k2,2n -k3,3n |
@@ -367,7 +367,7 @@ rule validate_main_transcripts:
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
         awk -F'\\t' -v OFS='\\t' '
           $7=="long_intron"{{print >> "{output.long_intron}"}}
-#          $7=="long_exon" {{ print >> "{output.long_exon}"}}
+          $7=="long_exon" {{ print >> "{output.long_exon}"}}
           $7!~/^long_/ {{ print }}
         ' - |
         sort -o {output.main} -k8,8 - &&
@@ -377,9 +377,9 @@ rule validate_main_transcripts:
           BEGIN {{
             print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_three}"
             print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_five}"
-#            print "ID","GeneID","geneSymbol","chr","strand","1stExonStart_0base","1stExonEnd","2ndExonStart_0base","2ndExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_mxe}"
-#            print "ID","GeneID","geneSymbol","chr","strand","riExonStart_0base","riExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_ri}"
-#            print "ID","GeneID","geneSymbol","chr","strand","exonStart_0base","exonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_se}"
+            print "ID","GeneID","geneSymbol","chr","strand","1stExonStart_0base","1stExonEnd","2ndExonStart_0base","2ndExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_mxe}"
+            print "ID","GeneID","geneSymbol","chr","strand","riExonStart_0base","riExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_ri}"
+            print "ID","GeneID","geneSymbol","chr","strand","exonStart_0base","exonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_se}"
           }}' &&
 
 # Isolate element variants and assign the maximal span of the element as its range, exons and introns may overlap
@@ -473,58 +473,4 @@ rule validate_main_transcripts:
             }} ;
           }}' {output.main} {output.main} 
         """  
-        
-        """
-             
-# Look for exon skipping events in validated multi-exonic gene structures, using previously generate long_introns
-
-        awk -F'\\t' -v OFS='\\t' '
-          FNR==NR {{
-            n_ex[$1]=$4
-          }}
-          FNR < NR && ($7=="intron" || $7=="exon") {{
-            if (n_ex[$4] >= 2) {{
-              print
-            }}
-          }}' {input.gene_tab} {output.main} |
-
-        bedtools intersect -a {output.long_intron} -b - -wa -wb -F 1 |
-
-        sort -k13,13 -k10,10 -k4,4 -k18,18n |
-
-        awk -F'\\t' -v OFS='\\t' '
-          $13=="intron" {{
-            if ( id=="" || (id!=$4 && id!="")) {{
-              if (id!=$4 && id!="") {{
-                  part[id]=first[id] ; 
-                  for (i=first[id]+1 ; i <= last[id] ; i++) {{
-                    part[id]=part[id]"+"i
-                  }} ;
-                print chr[id], start[id], end[id], gene[id], end[id]-start[id], strand[id], "skip_int", gene[id]":intron:"part[id], gname[id]" "intron" "part[id], 1, gene[id], first[id], last_rev[id], 1,
-              }} ;
-              id=$4 ; 
-              chr[$4]=$1 ;
-              gene[$4]=$10 ;
-              strand[$4]=$6 ; 
-              match($15,/^([^ ]*) /,n) ;
-              gname[$4]=n[1] ;
-            }} ;
-            start[$4]=(start[$4]==0 || start[$4] >= $8)? $8 : start[$4] ; 
-            end[$4]=(end[$4]==0 || end[$4] <= $8)? $8 : end[$4] ;
-            first[$4]=(first[$4]==0 || first[$4] >= $18)?$18:first[$4] ;
-            last[$4]=(last[$4]==0 || last[$4] <= $19)?$19:last[$4] ;
-            last_rev[$4]=(last_rev[$4]==0 || last_rev[$4] >= $19)? $19 : last_rev[$4] ;
-          }}
-          $13=="exon" {{
-            print $7,$8,$9,$10, $11, $12, "skip_ex", $14, $15, $16, $17, $18, $19 ,$20
-          }}
-          END {{
-            part[id]=first[id] ;
-            for (i=first[id]+1 ; i <= last[id] ; i++) {{
-              part[id]=part[id]"+"i
-            }} ;
-            print chr[id], start[id], end[id], gene[id], end[id]-start[id], strand[id], "skip_int", gene[id]":intron:"part[id], gname[id]" "intron" "part[id], 1, gene[id], first[id], last_rev[id], 1,
-          }} 
-        ' - >> {output.main}
-        """ 
 

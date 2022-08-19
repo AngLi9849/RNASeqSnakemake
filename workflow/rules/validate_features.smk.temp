@@ -213,11 +213,11 @@ rule validate_main_transcripts:
 #        long_exon="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_exon.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
 #        features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
-#        rmats_se="resource/rmats/{reference}/{lineage}/fromGTF.SE.txt",
-#        rmats_three="resource/rmats/{reference}/{lineage}/fromGTF.A3SS.txt",
-#        rmats_five="resource/rmats/{reference}/{lineage}/fromGTF.A5SS.txt",
-#        rmats_ri="resource/rmats/{reference}/{lineage}/fromGTF.RI.txt",
-#        rmats_mxe="resource/rmats/{reference}/{lineage}/fromGTF.MXE.txt",
+#        rmats_se="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.SE.txt",
+        rmats_three="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A3SS.txt",
+        rmats_five="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A5SS.txt",
+#        rmats_ri="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.RI.txt",
+#        rmats_mxe="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.MXE.txt",
     params:
         min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
         min_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
@@ -377,9 +377,9 @@ rule validate_main_transcripts:
           BEGIN {{
             print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_three}"
             print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_five}"
-            print "ID","GeneID","geneSymbol","chr","strand","1stExonStart_0base","1stExonEnd","2ndExonStart_0base","2ndExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_mxe}"
-            print "ID","GeneID","geneSymbol","chr","strand","riExonStart_0base","riExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_ri}"
-            print "ID","GeneID","geneSymbol","chr","strand","exonStart_0base","exonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_se}"
+#            print "ID","GeneID","geneSymbol","chr","strand","1stExonStart_0base","1stExonEnd","2ndExonStart_0base","2ndExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_mxe}"
+#            print "ID","GeneID","geneSymbol","chr","strand","riExonStart_0base","riExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_ri}"
+#            print "ID","GeneID","geneSymbol","chr","strand","exonStart_0base","exonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_se}"
           }}' &&
 
 # Isolate element variants and assign the maximal span of the element as its range, exons and introns may overlap
