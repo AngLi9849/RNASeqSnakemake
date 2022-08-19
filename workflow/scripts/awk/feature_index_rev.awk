@@ -6,9 +6,9 @@ $6=="-" && ($7 != "gene" && $7 != "trscrpt") {
   }
   else if (gene!=$4) {
     gene=$4 ; a=$3 ; b=$2 ;  n=1 ; v=1 ; k=$12 ; $13=k ; $12=n ; $14=v ; $8=$8""n ; $9=$9" "n ; print ; 
-    if (k>1 && ($7=="exon" || $7=="intron")) { 
-      $7="first_"$7 ; print ;
-    } 
+#    if (k>1 && ($7=="exon" || $7=="intron")) { 
+#      $7="first_"$7 ; print ;
+#    } 
   }
   else if (gene==$4) {
     a=$3 ;  
@@ -24,9 +24,9 @@ $6=="-" && ($7 != "gene" && $7 != "trscrpt") {
         v+=1 ;  $13=k ; $12=n ; $14=v ; $8=$8""n ; $9=$9" "n ; print
       }
     } ;
-    if (k==1 && n>1 && ($7=="exon" || $7=="intron")) {
-      $7="last_"$7 ; print
-    } ;
+#    if (k==1 && n>1 && ($7=="exon" || $7=="intron")) {
+#      $7="last_"$7 ; print
+#    } ;
   }
 }
 
@@ -36,9 +36,9 @@ $6=="+" && ($7 != "gene" && $7 != "trscrpt") {
   }
   else if (gene!=$4) {
     gene=$4 ; c=$3 ; d=$2 ; w=$12 ; m=1 ; $13=m ; $8=$8""w ; $9=$9" "w ; print
-    if (w>1 && ($7=="exon" || $7=="intron")) {
-      $7="last_"$7 ; print ;
-    }
+ #   if (w>1 && ($7=="exon" || $7=="intron")) {
+ #     $7="last_"$7 ; print ;
+ #   }
   }
   else if (gene==$4) {
     c=$3 ;
@@ -52,11 +52,11 @@ $6=="+" && ($7 != "gene" && $7 != "trscrpt") {
       }
       else if (w==$12) {
         w=$12 ; $13=m ; $8=$8""w ; $9=$9" "w ; print
-      }
+       }
     } ; 
-    if (w==1 && m>1 && ($7=="exon" || $7=="intron")) {
-      $7="first_"$7 ; print
-    } ;
+#    if (w==1 && m>1 && ($7=="exon" || $7=="intron")) {
+#      $7="first_"$7 ; print
+#    } ;
   }
 }
 

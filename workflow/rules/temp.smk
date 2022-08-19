@@ -1,4 +1,4 @@
-rule mv_bam:
+rule mv_all_bam:
     input:
         "{prefix}/star/{sample}-{unit}/AllAligned{suffix}",
     output:
@@ -15,8 +15,6 @@ rule mv_Unspliced_bam:
         "mv {input} {output}"
 
 rule test:
-    input:
-        "test.a.bed",
     output:
         "test.tsv",
     params:
@@ -26,7 +24,8 @@ rule test:
         b=["A","B","C"],
     shell:
         """
-        awk -F'\\t' -v OFS='\\t' '{{
-          print {params.a} ; 
-        }}' {input} > {output}
+        awk -F'\\t' -v OFS='\\t' ' BEGIN{{
+          print {params.a};
+          print "\\"" ; 
+        }}' > {output}
         """

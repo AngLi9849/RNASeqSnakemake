@@ -14,8 +14,11 @@ FNR < NR && ($7 != "gene" && $7 != "trscrpt") {
     else if (a==b && ($7=="exon" || $7=="intron") ) {
       $7="long_"$7 ; $8=$4":"$7 ; $9=name[$4]" "$7 ; print $0, 1, 1, 1
     }
-    else if (a<b) {
+    else if (a<b && $3 >= b) {
       n+=0 ; v+=1 ; $8=$4":"$7 ; $9=name[$4]" "$7 ; print $0, n, 1, v
+    } 
+    else if (a<b && $3 < b) {
+      n+=0 ; v+=1 ; b=$3 ; $8=$4":"$7 ; $9=name[$4]" "$7 ; print $0, n, 1, v
     } ;
   }
 }

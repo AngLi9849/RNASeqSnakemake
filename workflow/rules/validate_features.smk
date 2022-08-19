@@ -212,7 +212,7 @@ rule validate_main_transcripts:
 #        sj_int="resources/annotations/{reference}/{lineage}.gtf.{tag}_sj_intron.bed",
         long_exon="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_exon.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
-#        features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
+        features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
         rmats_se="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.SE.txt",
         rmats_three="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A3SS.txt",
         rmats_five="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A5SS.txt",
@@ -401,11 +401,11 @@ rule validate_main_transcripts:
                 seen[$8]=1  ;
                 entry[$8]=$0 ;
               }} ; 
+              start[$8]=(start[$8]=="" || start[$8]>$2 )?$2:start[$8] ;
+              end[$8]=(end[$8]=="" || end[$8]<$3)?$3:end[$8] ;	      
+              min_start[$8]=(min_start[$8]=="" || min_start[$8]<$2)?$2:min_start[$8] ;
+              min_end[$8]=(min_end[$8]=="" || min_end[$8]>$3)?$3:min_end[$8] ;
               $9=($9" var "$14) ; $8=($8"var"$14) ; $7=$7"_var"; print ;
-              start[$8]=(start[$8]==0 || start[$8]>$2)?$2:start[$8] ;
-              end[$8]=(end[$8]==0 || end[$8]<$3)?$3:end[$8] ;	      
-              min_start[$8]=(min_start[$8]==0 || min_start[$8]<$2)?$2:min_start[$8] ;
-              min_end[$8]=(min_end[$8]==0 || min_end[$8]>$3)?$3:min_end[$8] ;
             }}
             else {{
               print
@@ -413,7 +413,7 @@ rule validate_main_transcripts:
           }}
           END {{
             for (i in id) {{
-              if id[i]!="" {{
+              if (id[i]!="") {{
                 $0=entry[id[i]] ; 
                 $2=start[id[i]] ;
                 $3=end[id[i]] ;
@@ -427,7 +427,7 @@ rule validate_main_transcripts:
             }}
           }}' {output.main} {output.main} |
 
-        sort -o {output.main} -k1,1 -k2,2n - |
+        sort -k1,1 -k2,2n - > {output.features} &&
 
         awk -F'\\t' -v OFS='\\t' '
           BEGIN {{
@@ -435,24 +435,26 @@ rule validate_main_transcripts:
             five_id=0 ;
           }}
           FNR==NR && ($7=="intron" || $7=="exon") {{
-            start[$4, $7, $12]=$2 ; 
+            start[$4,$7,$12]=$2 ;
             end[$4,$7,$12]=$3 ;
-            strand[$4]=$6 ;
+            min_start[$4, $7, $12]=(min_start[$4,$7,$12]=="" || min_start[$4,$7,$12] < $2)? $2 : min_start[$4,$7,$12] ; 
+            min_end[$4,$7,$12]=(min_end[$4,$7,$12]=="" || min_end[$4,$7,$12] > $3)? $3 : min_end[$4,$7,$12] ;
           }} ;
           FNR==NR && ($7=="min_intron" || $7=="min_exon") {{
-            min_start[$4,$7,$12]=$2 ;
-            min_end[$4,$7,$12]=$3 ;
+            match($7,/min_(.*)/,e) ;
+            min_start[$4,e[1],$12]= (min_start[$4,e[1],$12]=="" || min_start[$4,e[1],$12] < $2)? $2 : min_start[$4,e[1],$12]  ;
+            min_end[$4,e[1],$12]=(min_end[$4,e[1],$12]=="" || min_end[$4,e[1],$12] > $3)? $3 : min_end[$4,e[1],$12] ;
           }} ;
           FNR < NR && $7=="intron_var" {{            
             match($9,/^([^ ]*) intron/,gene) ;
-            if ($2 < min_start[$4,"intron", $12]) {{
+            if ($2 > start[$4,"intron", $12]) {{
               event=$1":"$2"-"min_start[$4,"intron",$12]":"$6 ;
               if (seen[event]==0) {{
                 if ($6=="+") {{
-                  print five_id, "\""$4"\"", "\""gene[1]"\"", "chr"$1, $6, min_start[$4,"exon",$12], $2, min_start[$4,"exon",$12], min_end[$4,"exon",$12], $3, min_end[$4,"exon",$12+1] >> "{output.rmats_five}" ;
+                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, min_start[$4,"exon",$12], $2, min_start[$4,"exon",$12], min_end[$4,"exon", $12], $3, min_end[$4,"exon",$12+1] >> "{output.rmats_five}" ;
                   five_id += 1 ;
                 }} else {{
-                  print three_id, "\""$4"\"", "\""gene[1]"\"", "chr"$1, $6, min_start[$4,"exon",$12+1], $2, min_start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], $3, min_end[$4,"exon",$12] >> "{output.rmats_three}" ;
+                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, min_start[$4,"exon",$12+1],  $2, min_start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], $3, min_end[$4,"exon",$12] >> "{output.rmats_three}" ;
                   three_id += 1 ;
                 }} ;
               seen[event] += 1 ;
@@ -462,15 +464,15 @@ rule validate_main_transcripts:
               event=$1":"$3"-"end[$4,"intron",$12]":"$6 ;
               if (seen[event]==0) {{
                 if ($6=="-") {{
-                  print five_id, "\""$4"\"", "\""gene[1]"\"", "chr"$1, $6, $3, min_end[$4,"exon",$12], min_start[$4,"exon",$12], min_end[$4,"exon",$12], min_start[$4,"exon",$12+1], $2 >> "{output.rmats_five}" ;
+                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, min_end[$4,"exon",$12], min_start[$4,"exon",$12], min_end[$4,"exon",$12], min_start[$4,"exon",$12+1], $2 >> "{output.rmats_five}" ;
                   five_id += 1 ;
                 }} else {{
-                  print three_id, "\""$4"\"", "\""gene[1]"\"", "chr"$1, $6, $3, min_end[$4,"exon",$12+1], min_start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], min_start[$4,"exon",$12], $2 >> "{output.rmats_three}" ;
+                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, min_end[$4,"exon",$12+1], min_start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], min_start[$4,"exon",$12], $2 >> "{output.rmats_three}" ;
                   three_id += 1 ;
                 }} ;
               seen[event] += 1 ;
               }} ;
             }} ;
-          }}' {output.main} {output.main} 
+          }}' {output.features} {output.features} 
         """  
 
