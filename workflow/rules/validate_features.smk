@@ -219,14 +219,16 @@ rule validate_main_transcripts:
         rmats_ri="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.RI.txt",
         rmats_mxe="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.MXE.txt",
     params:
-        min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
-        min_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
-        min_mult = config["lineage_feature_validation"]["splicing"]["minimum_multimap_splice_reads"],
+#        min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
+#        min_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
+#        min_mult = config["lineage_feature_validation"]["splicing"]["minimum_multimap_splice_reads"],
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         alt_cut=config["lineage_feature_validation"]["genes"]["principal_transcripts_threshold"], 
         min_reads=config["lineage_feature_validation"]["genes"]["minimum_transcript_reads"],
         min_ratio=config["lineage_feature_validation"]["genes"]["minimum_rpk_ratio"],
         intron_min=config["features"]["minimum_intron_length"],
+        filter_fwd="workflow/scripts/awk/filter_long_fwd.awk",
+        filter_rev="workflow/scripts/awk/filter_long_rev.awk",
         feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
         feature_rev="workflow/scripts/awk/feature_index_rev.awk",
     threads: 1
@@ -239,6 +241,16 @@ rule validate_main_transcripts:
         "logs/awk/{reference}/{lineage}/validate_{tag}_features.log",
     shell:
         """
+# Initialise rMATS annotations
+        awk -F'\\t' -v OFS='\\t' '
+          BEGIN {{
+            print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_three}"
+            print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_five}"
+            print "ID","GeneID","geneSymbol","chr","strand","1stExonStart_0base","1stExonEnd","2ndExonStart_0base","2ndExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_mxe}"
+            print "ID","GeneID","geneSymbol","chr","strand","riExonStart_0base","riExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_ri}"
+            print "ID","GeneID","geneSymbol","chr","strand","exonStart_0base","exonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_se}"
+          }}' &&
+
 # Take all salmon quant files and calculate accumulative reads, effective rpk and effective tpm of each transcript
 # Print only transcripts with  more than 1 reads into 'expressed' bed
         cat {input.salmon_quant} |
@@ -357,11 +369,17 @@ rule validate_main_transcripts:
           }}
         ' - > {output.main} &&
 
-# Divide verified main structure into minimal elements (exon-intron-exon-intron-exon, so on)  and index by foward, reverse and variant orders in a 5'-3' fashion, prioritising 5' position.
+# Divide verified main structure into minimal elements (exon-intron-exon-intron-exon, so on)  
+# Filter out features that span across multiple of same type and index by foward, reverse and variant orders in a 5'-3' fashion, prioritising 5' position.
 # Isolate multi-lapping elements as "long" elements (aka if intron A = intron 1 + exon 1 + intron 2, intron A is output separately as long_intron)
 
         sort -k7,7 -k4,4 -k2,2n -k3,3n {output.main} |
         uniq - |
+
+        awk -F'\\t' -v OFS='\\t' -f {params.filter_fwd} {input.gene_tab} - |
+        sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
+        awk -F'\\t' -v OFS='\\t' -f {params.filter_rev} - |
+        sort -k7,7 -k4,4 -k2,2n -k3,3n - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
         sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
@@ -371,16 +389,6 @@ rule validate_main_transcripts:
           $7!~/^long_/ {{ print }}
         ' - |
         sort -o {output.main} -k8,8 - &&
-
-# Initialise rMATS annotations
-        awk -F'\\t' -v OFS='\\t' '
-          BEGIN {{
-            print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_three}"
-            print "ID","GeneID","geneSymbol","chr","strand","longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE" >> "{output.rmats_five}"
-            print "ID","GeneID","geneSymbol","chr","strand","1stExonStart_0base","1stExonEnd","2ndExonStart_0base","2ndExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_mxe}"
-            print "ID","GeneID","geneSymbol","chr","strand","riExonStart_0base","riExonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_ri}"
-            print "ID","GeneID","geneSymbol","chr","strand","exonStart_0base","exonEnd","upstreamES","upstreamEE","downstreamES","downstreamEE" >> "{output.rmats_se}"
-          }}' &&
 
 # Isolate element variants and assign the maximal span of the element as its range, exons and introns may overlap
 # Generate minimal span of introns and exons as min_intron and min_exons
