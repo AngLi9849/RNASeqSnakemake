@@ -376,10 +376,11 @@ rule validate_main_transcripts:
         sort -k7,7 -k4,4 -k2,2n -k3,3n {output.main} |
         uniq - |
 
-        awk -F'\\t' -v OFS='\\t' -f {params.filter_fwd} {input.gene_tab} - |
-        sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
-        awk -F'\\t' -v OFS='\\t' -f {params.filter_rev} - |
-        sort -k7,7 -k4,4 -k2,2n -k3,3n - |
+#        awk -F'\\t' -v OFS='\\t' -f {params.filter_fwd} {input.gene_tab} - |
+#        sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
+#        awk -F'\\t' -v OFS='\\t' -f {params.filter_rev} - |
+#        cut -f1-11 - |
+#        sort -k7,7 -k4,4 -k2,2n -k3,3n - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
         sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
@@ -459,10 +460,10 @@ rule validate_main_transcripts:
               event=$1":"$2"-"min_start[$4,"intron",$12]":"$6 ;
               if (seen[event]==0) {{
                 if ($6=="+") {{
-                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, min_start[$4,"exon",$12], $2, min_start[$4,"exon",$12], min_end[$4,"exon", $12], $3, min_end[$4,"exon",$12+1] >> "{output.rmats_five}" ;
+                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, start[$4,"exon",$12], $2, start[$4,"exon",$12], min_end[$4,"exon", $12], $3, end[$4,"exon",$12+1] >> "{output.rmats_five}" ;
                   five_id += 1 ;
                 }} else {{
-                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, min_start[$4,"exon",$12+1],  $2, min_start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], $3, min_end[$4,"exon",$12] >> "{output.rmats_three}" ;
+                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, start[$4,"exon",$12+1],  $2, start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], $3, end[$4,"exon",$12] >> "{output.rmats_three}" ;
                   three_id += 1 ;
                 }} ;
               seen[event] += 1 ;
@@ -472,10 +473,10 @@ rule validate_main_transcripts:
               event=$1":"$3"-"end[$4,"intron",$12]":"$6 ;
               if (seen[event]==0) {{
                 if ($6=="-") {{
-                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, min_end[$4,"exon",$12], min_start[$4,"exon",$12], min_end[$4,"exon",$12], min_start[$4,"exon",$12+1], $2 >> "{output.rmats_five}" ;
+                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, end[$4,"exon",$12], min_start[$4,"exon",$12], end[$4,"exon",$12], start[$4,"exon",$12+1], $2 >> "{output.rmats_five}" ;
                   five_id += 1 ;
                 }} else {{
-                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, min_end[$4,"exon",$12+1], min_start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], min_start[$4,"exon",$12], $2 >> "{output.rmats_three}" ;
+                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, end[$4,"exon",$12+1], min_start[$4,"exon",$12+1], end[$4,"exon",$12+1], start[$4,"exon",$12], $2 >> "{output.rmats_three}" ;
                   three_id += 1 ;
                 }} ;
               seen[event] += 1 ;
