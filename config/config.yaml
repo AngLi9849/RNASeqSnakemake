@@ -46,7 +46,7 @@ lineage_feature_validation:
   genes: # Use Salmon Quantification to select transcripts that supports the structure (exon intron UTR CDS) of a gene
     principal_transcripts_threshold: 0.5 # (0~1) Top transcripts accumulate to this proportion of reads mapped to a gene will be used to annotate the range of the gene expression/splicing in a lineage, higher the more transcript variant included, 0 includes only the most abundant transcript, 1 will include all.
     minimum_transcript_reads: 5 # (+integer) transcripts with less than this amount of reads will not be used to support the structure of the gene.
-    minimum_rpk_ratio: 0.05 # (0~1)  Only consider transcripts that supply more than this ratio of TPM to a gene 1=100%, 0.1=10%), 0 will include all expressed transcripts.
+    minimum_rpk_ratio: 0.1 # (0~1)  Only consider transcripts that supply more than this ratio of TPM to a gene 1=100%, 0.1=10%), 0 will include all expressed transcripts.
   intron_retention:
     inclusion_fold_threshold: 3 # An intron is considered retained when its inclusion level is this fold or higher of median of introns of its gene
 #  splicing:

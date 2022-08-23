@@ -194,6 +194,7 @@ rule validate_main_transcripts:
     input:
         bed="resources/annotations/{reference}/genome.gtf.bed",
         transcripts="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.bed",
+        trs_idx="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.indexed.bed",
         salmon_quant = lambda wildcards: expand(
             "salmon/{sample.sample_name}/{sample.unit_name}/{sample.reference}/quant.sf",
             sample=lineage[lineage.trs_val.tolist()].loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage].itertuples(),
@@ -213,11 +214,11 @@ rule validate_main_transcripts:
         long_exon="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_exon.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
         features="resources/annotations/{reference}/{lineage}.gtf.{tag}_validated.bed",
-        rmats_se="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.SE.txt",
-        rmats_three="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A3SS.txt",
-        rmats_five="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.A5SS.txt",
-        rmats_ri="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.RI.txt",
-        rmats_mxe="resource/rmats/{reference}/{lineage}.{tag}/fromGTF.MXE.txt",
+        rmats_se="resources/rmats/{reference}/{lineage}.{tag}/fromGTF.SE.txt",
+        rmats_three="resources/rmats/{reference}/{lineage}.{tag}/fromGTF.A3SS.txt",
+        rmats_five="resources/rmats/{reference}/{lineage}.{tag}/fromGTF.A5SS.txt",
+        rmats_ri="resources/rmats/{reference}/{lineage}.{tag}/fromGTF.RI.txt",
+        rmats_mxe="resources/rmats/{reference}/{lineage}.{tag}/fromGTF.MXE.txt",
     params:
 #        min_overhang=config["lineage_feature_validation"]["splicing"]["minimum_overhang"],
 #        min_uniq=config["lineage_feature_validation"]["splicing"]["minimum_unique_splice_reads"],
@@ -275,18 +276,20 @@ rule validate_main_transcripts:
             rpk[$4] += $14   
           }}
           FNR < NR {{
-          if (gene!=$4) {{
-            alt=0;
-            gene=$4;
-          }} ;       
-            acum[$4]+=$14/rpk[$4] ;
-          if (alt==1) {{
-            print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "alternative"  >> "{output.alternative}" ;
-          }} else if (alt==0) {{
-            print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "principal" >> "{output.principal}" ;
-          }} ;
+            if (gene!=$4) {{
+              rank=0 ;
+              alt=0;
+              gene=$4;
+            }} ;       
+              acum[$4]+=$14/rpk[$4] ;
+            if (alt==1) {{
+              print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "alternative"  >> "{output.alternative}" ;
+            }} else if (alt==0) {{
+              print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "principal" >> "{output.principal}" ;
+            }} ;
             alt=(acum[$4] >= {params.alt_cut})?1:0 ;
-            print $0, $14/rpk[$4], acum[$4];
+            rank+=1 ;
+            print $0, $14/rpk[$4], acum[$4], rank;
           }}' {output.expressed} {output.expressed}  > {output.rpk_ratio} &&
 
 # Determine principal transcription/genebody start and end site based on largest span of principal transcripts        
@@ -295,20 +298,39 @@ rule validate_main_transcripts:
  
         cat {output.principal} {input.confident} |
         cut -f1-12 |
-        cat - {input.bed} |
+        cat {output.rpk_ratio} - {input.trs_idx} {input.bed} |
         awk -F'\\t' -v OFS='\\t' '
+          FNR== NR && $7=="transcript" && $16>0 {{
+            trs_start[$8]=$2 ;
+            trs_end[$8]=$3 ;
+            ratio[$8]=$16 ;
+            reads[$8]=$13 ;
+            rank[$8]=$18 ;
+          }} ;
           FNR==NR && $12=="principal" {{
             princ[$4]+=1 ;
             principal[$8] += 1 ;
             p_start[$4]=(p_start[$4]=="" || p_start[$4]>$2)?$2:p_start[$4] ;
             p_end[$4]=(p_end[$4]=="" || p_end[$4]<$3)?$3:p_end[$4] ;
           }}
-          FNR==NR && $12 !="principal" {{
+          FNR==NR && $12 =="confident" {{
             conf[$4] += 1 ;
             confident[$8] += 1 ;
-            c_start[$4]=(c_start[$4]=="" || c_start[$4]>$2)?$2:c_start[$4] ;
-            c_end[$4]=(c_end[$4]=="" || c_end[$4]<$3)?$3:c_end[$4] ;
+            c_start[$4]=(c_start[$4]=="" || c_start[$4]>$2)? $2 : c_start[$4] ;
+            c_end[$4]=(c_end[$4]=="" || c_end[$4]<$3)? $3 : c_end[$4] ;
           }}      
+          FNR==NR && $7=="intron" && $13 >= 1 {{
+            if (principal[$4] > 0 || (principal[$4]==0 && princ[$11]==0 && confident[$4]>0) ) {{
+              if ( ( $6=="-" && $13==1 ) || ($6=="+" && $12==1 ) ) {{
+                first_intron_start[$11]=(first_intron_start[$11] =="" || first_intron_start[$11] > $2)?$2:first_intron_start[$11] ;
+                first_intron_end[$11]=(first_intron_end[$11] =="" || first_intron_end[$11] < $3)?$3:first_intron_end[$11] ;
+              }} ;
+              if ( ( $6=="+" && $13==1 ) || ($6=="-" && $12==1 ) ) {{
+                last_intron_start[$11]=(last_intron_start[$11] =="" || last_intron_start[$11] > $2)?$2:last_intron_start[$11] ;
+                last_intron_end[$11]=(last_intron_end[$11] =="" || last_intron_end[$11] < $3)?$3:last_intron_end[$11] ;
+              }} ;
+            }} ;
+          }}
           FNR == NR && $8=="gene" {{
             if ($0~"gene_name") {{
               match($0,/gene_name "([^"]*)".*/,a)
@@ -320,34 +342,87 @@ rule validate_main_transcripts:
             if (princ[$4] >= 1 ) {{
               start[$4]=p_start[$4] ;
               end[$4]=p_end[$4] ;
-              print $1, p_start[$4], p_end[$4], $4, p_end[$4] - p_start[$4], $6, "gene", $4, name[$4], 0, $4 ;
             }} else if (conf[$4] >= 1) {{
               start[$4]=c_start[$4] ;
               end[$4]=c_end[$4] ;              
-              print $1, c_start[$4], c_end[$4], $4, c_end[$4] - c_start[$4], $6, "gene", $4, name[$4], 0, $4 ;
             }} else {{ 
               start[$4]=$2 ;
               end[$4]=$3 ;
-              print $1, $2, $3, $4, $3-$2, $6, "gene", $4, name[$4], 0, $4 ;
+            }} ;
+            print $1, start[$4], end[$4], $4, end[$4] - start[$4], $6, "gene", $4, name[$4], 0, $4 ;
+          }}
+          FNR < NR && NF < 5 {{
+            n_exon[$1]=$4 ;
+          }}
+          FNR < NR && NF > 5 && $7 != "transcript" {{
+          if ( reads[$4] >= {params.min_reads}  && ratio[$4] >= {params.min_ratio} && $2>=start[$11] && $3<=end[$11] ) {{ 
+            $10=(principal[$4] >= 1)?1:$10 ;
+            trs_id=$4 ;
+            $5=$3-$2 ;
+            $4=$11 ;
+            if ($7=="exon") {{
+              $7="trscrpt" ; print ;
+              $7="exon" ;
+            }} ;
+            if (n_exon[$4] > 1) {{
+              if ($7=="exon") {{
+                if ($12 ==1 && principal[trs_id]>0) {{
+                    $7="FirstEx" ; $8="" ; $9="" ; print ;
+                }} 
+                else if ($13==1 && principal[trs_id]>0) {{
+                    $7="LastEx" ; $8="" ; $9="" ; print ;
+                }} ;  
+                $7="exon" ; 
+              }}
+              else if ($7=="intron") {{
+                if ($12 ==1 && principal[trs_id]>0) {{
+                    $7="FirstIn" ; $8="" ; $9="" ; print ;
+                }} 
+                else if ($13==1 && principal[trs_id]>0) {{
+                    $7="LastIn" ; $8="" ; $9="" ; print ;
+                }} ;
+                $7="intron" ;
+              }} ;
+              if ( \
+                ($7=="intron" || $7=="exon") && ( \
+                  ($12==1 && ( \
+                    ($6=="+" && trs_start[trs_id] > first_intron_start[$4]) || \
+                    ($6=="-" && trs_end[trs_id] < last_intron_end[$4]) ) \
+                  ) || \
+                  ($13==1 && ( \
+                    ($6=="-" && trs_start[trs_id] > first_intron_start[$4]) || \
+                    ($6=="+" && trs_end[trs_id] < last_intron_end[$4]) ) \
+                  ) \
+                ) \
+              ) {{ 
+                next
+              }}
+              else if ( \
+                 ($7=="intron" || $7=="exon") && ( \
+                 ($6=="+" && trs_start[trs_id] > first_intron_start[$4] && $2 < first_intron_end[$4]) || \
+                 ($6=="-" && trs_end[trs_id] < last_intron_end[$4] && $3 > last_intron_start[$4]) ) \
+              ) {{
+                $7="alt_start_"$7 ; $8="" ; $9="" ; print
+              }}
+              else if ( \
+                 ($7=="intron" || $7=="exon") && ( \
+                 ($6=="-" && trs_start[trs_id] > first_intron_start[$4] && $2 < first_intron_end[$4]) || \
+                 ($6=="+" && trs_end[trs_id] < last_intron_end[$4] && $3 > last_intron_start[$4]) ) \
+              ) {{
+                $7="alt_end_"$7 ; $8="" ; $9="" ; print
+              }}
+              else if (principal[trs_id] > 0 || (principal[trs_id]==0 && princ[$4]==0 && confident[trs_id]>0) ) {{
+              $8="" ; $9="" ; print ;
+              }}
+            }}
+            else if (principal[trs_id] > 0 || (principal[trs_id]==0 && princ[$4]==0 && confident[trs_id]>0) ) {{
+              $8="" ; $9="" ; print ;
             }}
           }}
-          FNR < NR && $7=="transcript" && $16>0 {{
-            ratio[$8]=$16 ;
-            reads[$8]=$13 ;
-          }} ;
-          FNR < NR && $7 != "transcript" {{
-            if ( reads[$8] >= {params.min_reads}  && ratio[$8] >= {params.min_ratio} && $2>=start[$4] && $3<=end[$4] ) {{ 
-              $10=(principal[$8] >= 1)?1:$10 ;
-              $5=$3-$2 ;
-              if ($7=="exon") {{
-                $7="trscrpt" ; print ;
-                $7="exon" ; $8="" ; $9="" ; print ;
-              }}
-              else {{
-                $8="" ; $9="" ; print ;
-              }}
-            }}
-          }}' - {output.rpk_ratio} {input.transcripts} |
+          else {{
+            next ;
+          }}
+          }}' - {input.gene_tab} {input.trs_idx} |
 
         cut -f1-11 |
         sort -k7,7 -k4,4 -k2,2n -k3,3n |
@@ -380,9 +455,12 @@ rule validate_main_transcripts:
 #        sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
 #        awk -F'\\t' -v OFS='\\t' -f {params.filter_rev} - |
 #        cut -f1-11 - |
-#        sort -k7,7 -k4,4 -k2,2n -k3,3n - |
+
+
+#        sort -k7,7 -k4,4 -k2,2n -k3,3n |
+
         awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {input.gene_tab} - |
-        sort -k7,7r -k4,4r -k3,3nr -k2,2nr - |
+        sort -k7,7r -k4,4r -k3,3nr -k2,2nr |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
         awk -F'\\t' -v OFS='\\t' '
           $7=="long_intron"{{print >> "{output.long_intron}"}}
@@ -460,10 +538,10 @@ rule validate_main_transcripts:
               event=$1":"$2"-"min_start[$4,"intron",$12]":"$6 ;
               if (seen[event]==0) {{
                 if ($6=="+") {{
-                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, start[$4,"exon",$12], $2, start[$4,"exon",$12], min_end[$4,"exon", $12], $3, end[$4,"exon",$12+1] >> "{output.rmats_five}" ;
+                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, min_start[$4,"exon",$12], $2, min_start[$4,"exon",$12], min_end[$4,"exon", $12], $3, min_end[$4,"exon",$12+1] >> "{output.rmats_five}" ;
                   five_id += 1 ;
                 }} else {{
-                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, start[$4,"exon",$12+1],  $2, start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], $3, end[$4,"exon",$12] >> "{output.rmats_three}" ;
+                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, min_start[$4,"exon",$12+1],  $2, start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], $3, min_end[$4,"exon",$12] >> "{output.rmats_three}" ;
                   three_id += 1 ;
                 }} ;
               seen[event] += 1 ;
@@ -473,10 +551,10 @@ rule validate_main_transcripts:
               event=$1":"$3"-"end[$4,"intron",$12]":"$6 ;
               if (seen[event]==0) {{
                 if ($6=="-") {{
-                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, end[$4,"exon",$12], min_start[$4,"exon",$12], end[$4,"exon",$12], start[$4,"exon",$12+1], $2 >> "{output.rmats_five}" ;
+                  print five_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, min_end[$4,"exon",$12], min_start[$4,"exon",$12], min_end[$4,"exon",$12], min_start[$4,"exon",$12+1], $2 >> "{output.rmats_five}" ;
                   five_id += 1 ;
                 }} else {{
-                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, end[$4,"exon",$12+1], min_start[$4,"exon",$12+1], end[$4,"exon",$12+1], start[$4,"exon",$12], $2 >> "{output.rmats_three}" ;
+                  print three_id, "\\""$4"\\"", "\\""gene[1]"\\"", "chr"$1, $6, $3, min_end[$4,"exon",$12+1], min_start[$4,"exon",$12+1], min_end[$4,"exon",$12+1], min_start[$4,"exon",$12], $2 >> "{output.rmats_three}" ;
                   three_id += 1 ;
                 }} ;
               seen[event] += 1 ;

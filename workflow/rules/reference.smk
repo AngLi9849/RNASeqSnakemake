@@ -189,17 +189,21 @@ rule bwa_index:
 
 rule gtf_transcripts:
     input:
-        bed="resources/annotations/{prefix}.gtf.bed",
-        chr="resources/genomes/{prefix}.fasta.chrom.sizes",
+        bed="resources/annotations/{prefix}/genome.gtf.bed",
+        chr="resources/genomes/{prefix}_genome.fasta.chrom.sizes",
     output:
-        gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
-        transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
-        inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
-        confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
-        biotyped="resources/annotations/{prefix}.gtf.{tag}_biotyped.bed",
+        gene_tab="resources/annotations/{prefix}/genome.gtf.{tag}_gene_info.tab",
+        trs_tab="resources/annotations/{prefix}/genome.gtf.{tag}_trs_info.tab",
+        transcripts="resources/annotations/{prefix}/genome.gtf.{tag}_transcripts.bed",
+        inconfident="resources/annotations/{prefix}/genome.gtf.{tag}_inconfident.bed",
+        confident="resources/annotations/{prefix}/genome.gtf.{tag}_confident.bed",
+        biotyped="resources/annotations/{prefix}/genome.gtf.{tag}_biotyped.bed",
+        indexed="resources/annotations/{prefix}/genome.gtf.{tag}_transcripts.indexed.bed",
     params:
         intron_min=config["features"]["minimum_intron_length"],
         tsl_tol=config["ensembl_annotations"]["transcript_support_level_tolerance"],
+        feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
+        feature_rev="workflow/scripts/awk/feature_index_rev.awk",
     threads: 1
     resources:
         mem="16G",
@@ -280,7 +284,7 @@ rule gtf_transcripts:
               tsl[1]=-1 ;
               tbt[1]=biotype[$4] ;
             }} ; 
-            if ( ( tag[1] == "{wildcards.tag}" ) || ( $0 ~ "tag "{wildcards.tag}"" ) ) {{
+            if ( ( tag[1] == "{wildcards.tag}" ) || ( $0 ~ "tag \\"{wildcards.tag}\\"" ) ) {{
             print $1, $2, $3, $4, $5, $6, $8, a[1], b[1], tsl[1], $4, tbt[1]
             }}
           }}
@@ -335,11 +339,30 @@ rule gtf_transcripts:
           }}
           FNR < NR {{
             if ($10<=(tsl[$4]+{params.tsl_tol})) {{
+              $12="confident" ;
               print $0, tsl[$4]
             }} else {{
               print >> "{output.inconfident}"
             }}
-          }}' {output.biotyped} {output.biotyped} > {output.confident}
+          }}' {output.biotyped} {output.biotyped} > {output.confident} && 
+
+# Transcript names
+        awk -F'\\t' -v OFS='\\\t' '{{ 
+          print $8, $9
+        }}' {output.transcripts} |
+        sort | uniq > {output.trs_tab} &&
+
+# Index features in each transcript by their order
+        awk -F'\\t' -v OFS='\\t' ' {{
+          $4=$8 ; print
+        }}' {output.transcripts} |
+
+        cut -f1-11 | 
+        sort -k7,7 -k4,4 -k2,2n -k3,3n |
+        awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {output.trs_tab} - |
+        sort -k7,7r -k4,4r -k3,3nr -k2,2nr |
+        awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
+        sort -k1,1 -k2,2n > {output.indexed}
         """
 
 rule annotated_features:
