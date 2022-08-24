@@ -195,6 +195,7 @@ rule validate_main_transcripts:
         bed="resources/annotations/{reference}/genome.gtf.bed",
         transcripts="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.bed",
         trs_idx="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.indexed.bed",
+        trs_sj="resources/annotations/{reference}/genome.gtf.{tag}_trs_sj.bed",
         salmon_quant = lambda wildcards: expand(
             "salmon/{sample.sample_name}/{sample.unit_name}/{sample.reference}/quant.sf",
             sample=lineage[lineage.trs_val.tolist()].loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage].itertuples(),

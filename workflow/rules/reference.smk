@@ -194,6 +194,7 @@ rule gtf_transcripts:
     output:
         gene_tab="resources/annotations/{prefix}/genome.gtf.{tag}_gene_info.tab",
         trs_tab="resources/annotations/{prefix}/genome.gtf.{tag}_trs_info.tab",
+        trs_sj="resources/annotations/{prefix}/genome.gtf.{tag}_trs_sj.bed",
         transcripts="resources/annotations/{prefix}/genome.gtf.{tag}_transcripts.bed",
         inconfident="resources/annotations/{prefix}/genome.gtf.{tag}_inconfident.bed",
         confident="resources/annotations/{prefix}/genome.gtf.{tag}_confident.bed",
@@ -290,10 +291,14 @@ rule gtf_transcripts:
           }}
         ' {output.gene_tab} {input.bed} |
 
-# Sort through each transcript in to generate introns
+# Sort through each transcript in to generate introns and splice junctions (intron + flanking exons)
         sort -k7,7 -k4,4 -k8,8 -k2,2n -k3,3n |
 
-        awk -F'\\t' -v OFS='\\t' '{{
+        awk -F'\\t' -v OFS='\\t' '
+        FNR==NR {{
+          gene_name[$1]=$2
+        }}
+        FNR < NR {{
           if (id != $8) {{
             n=$0 ; t=$8 ;
             $0 = m ; $2 = a ; $3 = b ; 
@@ -312,6 +317,10 @@ rule gtf_transcripts:
               d=$2 ; e=$3 ; n=$0 ;
               $0=m ; $2=a ; $3=b ; print ;
               $7 = "intron" ; $2 = b ; $3 = c ; print ; 
+              $7 = "splice" ; $10=$8 ; 
+              $8=$8":splice:"$1":ex:"a"-"b":in:"b"-"c":ex:"c"-"e":"$6 ; 
+              $9=gene_name[$11]":splice:"$1":ex1:"a"-"b":in:"b"-"c":ex2:"c"-"e":"$6 ; 
+              print >> "{output.trs_sj}" ;
               a=d ; b=e ; m=n ;
             }}
           }}
@@ -347,7 +356,7 @@ rule gtf_transcripts:
           }}' {output.biotyped} {output.biotyped} > {output.confident} && 
 
 # Transcript names
-        awk -F'\\t' -v OFS='\\\t' '{{ 
+        awk -F'\\t' -v OFS='\\t' '{{ 
           print $8, $9
         }}' {output.transcripts} |
         sort | uniq > {output.trs_tab} &&
@@ -362,7 +371,19 @@ rule gtf_transcripts:
         awk -F'\\t' -v OFS='\\t' -f {params.feature_fwd} {output.trs_tab} - |
         sort -k7,7r -k4,4r -k3,3nr -k2,2nr |
         awk -F'\\t' -v OFS='\\t' -f {params.feature_rev} - |
-        sort -k1,1 -k2,2n > {output.indexed}
+        sort -k1,1 -k2,2n > {output.indexed} && 
+
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR && $7=="intron" {{
+            fwd[$4,$2,$3]=$12 ; 
+            rev[$4,$2,$3]=$13 ;
+          }}
+          FNR < NR {{ 
+            print $0, fwd[$10,$2,$3], rev[$10,$2,$3], 1 ;
+          }}
+        ' {output.indexed} {output.trs_sj} | 
+
+        sort -o {output.trs_sj} -k1,1 -k2,2n
         """
 
 rule annotated_features:

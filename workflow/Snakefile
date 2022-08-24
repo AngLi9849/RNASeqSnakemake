@@ -69,8 +69,8 @@ rule all:
         #"resources/annotations/MANE_homo_sapiens.GRCh38.104_genome.gtf.basic_confident.bed"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/HCT116.gtf.basic_validated.bed"
         #"resources/annotations/homo_sapiens.HCT116.star.splice_junctions.bed"
-        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_transcripts.indexed.bed"
-        "resources/annotations/ensembl_homo_sapiens.GRCh38.104/HCT116.gtf.basic_validated.bed"
+        "resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_trs_sj.bed"
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/HCT116.gtf.basic_validated.bed"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104_genome.custom-7e5ff750dfd4716388d8ebad286d805e.annotated_basic.mRNA.bed"
         #"differential/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/differential_expression/unpaired.internal_TotalReadCount_normalised/All_Aligned.genome_annotated.custom-137b0876fc9ef82c9b34f6e1f1a90898.basic.GeneBody.docx"
         #"bigwigs/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.fwd.raw.bigwig",
