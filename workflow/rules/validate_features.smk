@@ -211,6 +211,7 @@ rule validate_main_transcripts:
         principal="resources/annotations/{reference}/{lineage}.gtf.{tag}_principal.bed",
         alternative="resources/annotations/{reference}/{lineage}.gtf.{tag}_alternative.bed",
         long_intron="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_intron.bed",
+        trs_model="resources/annotations/{reference}/{lineage}.gtf.{tag}_trs_model.bed",
 #        sj_int="resources/annotations/{reference}/{lineage}.gtf.{tag}_sj_intron.bed",
         long_exon="resources/annotations/{reference}/{lineage}.gtf.{tag}_long_exon.bed",
         main="resources/annotations/{reference}/{lineage}.gtf.{tag}_main.bed",
@@ -319,47 +320,81 @@ rule validate_main_transcripts:
         
         sort -o {output.rpk_ratio} -k4,4 -k19,19nr -k7,7nr -k10,10nr -k16,16nr &&
 
-        cat {output.rpk_ratio} {input.trs_sj} |
+        cat {output.rpk_ratio} {input.trs_idx} {input.trs_sj}|
 
         awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && $7!="splice" {{
+          FNR==NR && NF > 18 {{
             if (gene != $4) {{
               model[$8]=1 ;
+              model_start[$4]=$2 ;
+              model_end[$4]=$3 ;
               gene=$4 ;
               valid[$4]=$19 ;
             }} ;
               valid[$8]=$19 ;
           }}
-          FNR==NR && $7=="splice" {{
+          FNR==NR && $7=="intron" {{
             if (model[$11]==1) {{
               sj_start_idx[$4][$2]=$12 ;
               sj_end_idx[$4][$3]=$12 ; 
             }}
           }}  
+          FNR== NR && $7=="splice" {{
+            if ( $2 in sj_start_idx[$4] ) {{
+              start_idx=($6=="+") $12 : $12+1 ;
+              end_idx=($6=="+") $12-1 : $12 ;
+              conform_first[$11]=(conform_first[$11]=="" || conform_first[$11] > start_idx)? start_idx : conform_first[$11] ;
+              conform_last[$11]=(conform_last[$11]=="" || conform_last[$11] < end_idx)? end_idx : conform_last[$11] ;
+              conform_start[$11]=(conform_start[$11]=="" || conform_start[$11] > $2)? $2 : conform_start[$11] ;
+              conform_end[$11]=(conform_end[$11]=="" || conform_end[$11] < $2)? $2 : conform_end[$11] ;
+            }} ;
+            if ( $3 in sj_end_idx[$4] ) {{
+              start_idx=($6=="+") $12+1 : $12 ;
+              end_idx=($6=="+") $12 : $12-1 ;
+              conform_first[$11]=(conform_first[$11]=="" || conform_first[$11] > start_idx)? start_idx : conform_first[$11] ;
+              conform_last[$11]=(conform_last[$11]=="" || conform_last[$11] < end_idx)? end_idx : conform_last[$11] ;
+              conform_start[$11]=(conform_start[$11]=="" || conform_start[$11] > $3)? $3 : conform_start[$11] ;
+              conform_end[$11]=(conform_end[$11]=="" || conform_end[$11] < $3)? $3 : conform_end[$11] ;
+            }} ;
+          }}
           FNR < NR && $7=="splice" {{
-            if (model[$11]!=1) {{
-              if ( $2 in sj_start_idx[$4] ) {{
-                conform_start[$11]=(conform_start[$11]=="" || conform_start[$11] > $2)? $2 : conform_start[$11] ;
-              }} ;
-              if ( $3 in sj_end_idx[$4] ) {{
-                conform_end[$11]=(conform_end[$11]=="" || conform_end[$11] < $3)? $3 : conform_end[$11] ;
-              }} ;
-          FNR < NR && $7!="splice" {{
-            print $0, conform_start[$8]-0, conform_end[$8]-0 ;
-          }}' - {input.trs_sj} {input.transcripts} |
+            print $0, conform_start[$8]-0, conform_end[$8]-0, conform_first[$8]-0, conform_last[$8]-0, model[$8]-0, valid[$8]-0 ;
+          }}' - {input.transcripts} > {output.trs_model} && 
+
+        cat {input.gene_tab} {output.rpk_ratio} {output.trs_model} {input.trs_idx} |
           
+        awk -F'\\t' -v OFS='\\t' '
+
+          FNR==NR && NF == 19 {{
+            trs_start[$8]=$2 ;
+            trs_end[$8]=$3 ;
+            ratio[$8]=$16 ;
+            reads[$8]=$13 ;
+            rank[$8]=$18 ;
+          }}
+          FNR==NR && NF == 20 {{
+            first_ss[$8]=$12 ;
+            last_ss[$8]=$13 ;
+            conform_start[$8]=$15 ;
+            conform_end[$8] = $16 ;
+            conform_first[$8] = $17 ;
+            conform_last[$8] = $18 ;
+            model[$8]=$19 ;
+            valid[$8]=$20 ;
+            valid[$4]=((valid[$4]-0)<$20)? $20 : valid[$4]-0 ; 
+          }} 
+          FNR==NR && NF < 19 && $7!="exon" {{
+            if ( reads[$4] >= {params.min_reads}  && ratio[$4] >= {params.min_ratio}) {{
+              if (first_ss[$8]=conform_start[$8])  {{
+         
 
           
-          
-
-
 # Determine principal transcription/genebody start and end site based on largest span of principal transcripts        
 # If a gene does not have detected transcript, use annotated confident transcripts 
 # If neither expressed nor confident transcripts exists, use genebody annotation
  
         cat {output.principal} {input.confident} |
-        cut -f1-12 |
-        cat {output.rpk_ratio} - {input.trs_idx} {input.bed} |
+        cat {output.rpk_ratio} {output.principal} {input.confident} {input.trs_idx} {input.bed} |
         awk -F'\\t' -v OFS='\\t' '
           FNR== NR && $7=="transcript" && $16>0 {{
             trs_start[$8]=$2 ;
