@@ -365,14 +365,14 @@ rule validate_main_transcripts:
           
         awk -F'\\t' -v OFS='\\t' '
 
-          FNR==NR && NF == 19 {{
+          FNR==NR && $12 == "expressed" {{
             trs_start[$8]=$2 ;
             trs_end[$8]=$3 ;
             ratio[$8]=$16 ;
             reads[$8]=$13 ;
             rank[$8]=$18 ;
           }}
-          FNR==NR && NF == 20 {{
+          FNR==NR && $12 != "expressed" && NF > 18 {{
             first_ss[$8]=$12 ;
             last_ss[$8]=$13 ;
             conform_start[$8]=$15 ;
@@ -385,6 +385,7 @@ rule validate_main_transcripts:
           }} 
           FNR==NR && NF < 19 && $7!="exon" {{
             if ( reads[$4] >= {params.min_reads}  && ratio[$4] >= {params.min_ratio}) {{
+              if ($7 != "intron") {{
               if (first_ss[$8]=conform_start[$8])  {{
          
 
