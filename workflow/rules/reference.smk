@@ -317,23 +317,23 @@ rule gtf_transcripts:
               d=$2 ; e=$3 ; n=$0 ;
               $0=m ; $2=a ; $3=b ; print ;
               $7 = "intron" ; $2 = b ; $3 = c ; print ; 
-              $7 = "splice" ; $10=$8 ; 
-              $8=$8":splice:"$1":ex:"a"-"b":in:"b"-"c":ex:"c"-"e":"$6 ; 
-              $9=gene_name[$11]":splice:"$1":ex1:"a"-"b":in:"b"-"c":ex2:"c"-"e":"$6 ; 
+              $7 = "splice" ; $11=$8 ; 
+              $8=$8":splice:"$1":ex1:"a"-"b":in:"b"-"c":ex2:"c"-"e":"$6 ; 
+              $9=gene_name[$4]":splice:"$1":ex1:"a"-"b":in:"b"-"c":ex2:"c"-"e":"$6 ; 
               print >> "{output.trs_sj}" ;
               a=d ; b=e ; m=n ;
             }}
           }}
         }} END {{
           $0=m ; $2=a ; $3=b ; print ;
-        }}' - > {output.transcripts} &&
+        }}' {output.gene_tab} - > {output.transcripts} &&
 
 # Filter out transcript features with biotypes mismatching the parental gene biotype to inconfident entries
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
             biotype[$1] = $3 ;
           }}
-          FNR < NR {{
+          FNR < NR && $7=="transcript" {{
             if ($12==biotype[$4]) {{
               print
             }} else {{
@@ -343,10 +343,10 @@ rule gtf_transcripts:
 
 # Find highest tsl of the gene and filter out transcript features with less tsl than tolerance of the gene
         awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && $7=="transcript" && $10 > 0{{
+          FNR==NR && $10 > 0{{
             tsl[$4] = (tsl[$4]==0 || tsl[$4] > $10)?$10:tsl[$4] ;
           }}
-          FNR < NR {{
+          FNR < NR && $7=="transcript" {{
             if ($10<=(tsl[$4]+{params.tsl_tol})) {{
               $12="confident" ;
               print $0, tsl[$4]
@@ -356,9 +356,13 @@ rule gtf_transcripts:
           }}' {output.biotyped} {output.biotyped} > {output.confident} && 
 
 # Transcript names
-        awk -F'\\t' -v OFS='\\t' '{{ 
-          print $8, $9
-        }}' {output.transcripts} |
+        awk -F'\\t' -v OFS='\\t' '
+        FNR==NR {{
+          name[$1]=$2
+        }} 
+        FNR < NR {{ 
+          print $8, $9, name[$4]
+        }}' {output.gene_tab} {output.transcripts} |
         sort | uniq > {output.trs_tab} &&
 
 # Index features in each transcript by their order
@@ -378,12 +382,49 @@ rule gtf_transcripts:
             fwd[$4,$2,$3]=$12 ; 
             rev[$4,$2,$3]=$13 ;
           }}
-          FNR < NR {{ 
-            print $0, fwd[$10,$2,$3], rev[$10,$2,$3], 1 ;
+          FNR < NR {{
+            $12=fwd[$11,$2,$3] ; 
+            $13=rev[$11,$2,$3]
+            $14=1 ;
+            print 
           }}
         ' {output.indexed} {output.trs_sj} | 
 
-        sort -o {output.trs_sj} -k1,1 -k2,2n
+        sort -o {output.trs_sj} -k1,1 -k2,2n &&
+
+        cat {output.trs_tab} {output.biotyped} {output.indexed} | 
+
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR && NF < 5 {{
+            trs_name[$1] = $2 ; 
+            gene_name[$1] = $3 ;
+          }}
+          FNR==NR && NF > 5 && NF < 13 {{ 
+            biotyped[$8]=1
+          }}
+          FNR==NR && $7=="exon" {{
+            if (id != $4 ) {{ 
+              n_exon[$4]=1 ;
+              id = $4 ;
+            }}
+            else {{
+              n_exon[$4]+=1 ;
+            }} ;
+          }}
+          FNR==NR && $7=="intron" {{
+            if ( ($12==1 && $6=="+" ) || ($13==1 && $6=="-") ) {{
+              first_ss[$4]=$2 ;
+            }} ; 
+            if ( ($12==1 && $6=="-") || ($13==1 && $6=="+") ) {{
+              last_ss[$4]=$3 ;
+            }} ;
+          }}
+          FNR < NR && $7=="transcript" {{
+            $7=biotyped[$8]-0 ; $11=gene_name[$8] ; $12=first_ss[$8]-0 ; $13=last_ss[$8]-0 ; $14=n_exon[$8] ; 
+            print ;
+          }}' - {output.transcripts} |
+
+        sort -o {output.transcripts} -k1,1 -k2,2n 
         """
 
 rule annotated_features:

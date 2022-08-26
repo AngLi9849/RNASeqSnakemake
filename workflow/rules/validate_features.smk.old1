@@ -294,11 +294,11 @@ rule validate_main_transcripts:
             print $0, $14/rpk[$4], acum[$4], rank;
           }}' {output.expressed} {output.expressed}  > {output.rpk_ratio} &&
 
-# Rank transcripts by validity (principal=2 or confident=1), biotype identity, exon number, rpk ratio
-# Identify different major forms of a gene's principal or confident transcripts by their first and last splice sites
+# Identify different major forms of a gene's transcripts by their first and last splice sites
+# Rank transcripts by validity (principal or confident), biotype identity, exon number, rpk ratio
 # Top transcript of each gene is used as splicing model to identify conforming region (first identical splice site) in other transcript variants of the gene 
 # Comb through 
-
+        
         cat {output.principal} {input.confident} |
         cut -f1-12 |
         cat - {output.rpk_ratio} |
@@ -326,31 +326,11 @@ rule validate_main_transcripts:
             if (gene != $4) {{
               model[$8]=1 ;
               gene=$4 ;
-              valid[$4]=$19 ;
-            }} ;
-              valid[$8]=$19 ;
+            }}
           }}
           FNR==NR && $7=="splice" {{
-            if (model[$11]==1) {{
-              sj_start_idx[$4][$2]=$12 ;
-              sj_end_idx[$4][$3]=$12 ; 
-            }}
-          }}  
-          FNR < NR && $7=="splice" {{
-            if (model[$11]!=1) {{
-              if ( $2 in sj_start_idx[$4] ) {{
-                conform_start[$11]=(conform_start[$11]=="" || conform_start[$11] > $2)? $2 : conform_start[$11] ;
-              }} ;
-              if ( $3 in sj_end_idx[$4] ) {{
-                conform_end[$11]=(conform_end[$11]=="" || conform_end[$11] < $3)? $3 : conform_end[$11] ;
-              }} ;
-          FNR < NR && $7!="splice" {{
-            print $0, conform_start[$8]-0, conform_end[$8]-0 ;
-          }}' - {input.trs_sj} {input.transcripts} |
-          
-
-          
-          
+            
+      
 
 
 # Determine principal transcription/genebody start and end site based on largest span of principal transcripts        
