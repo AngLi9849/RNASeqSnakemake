@@ -273,27 +273,47 @@ rule validate_main_transcripts:
           }}' - {input.transcripts} |
           
         sort -k4,4 -k14,14nr > {output.expressed} &&
+
+        cat {output.expressed} | 
          
         awk -F'\\t' -v OFS='\\t' '
-          FNR==NR {{
+          FNR==NR && $12=="expressed" {{
             rpk[$4] += $14   
           }}
-          FNR < NR {{
+          FNR < NR && $12=="expressed" {{
             if (gene!=$4) {{
               rank=0 ;
               alt=0;
               gene=$4;
             }} ;       
-              acum[$4]+=$14/rpk[$4] ;
+            acum[$4]+=$14/rpk[$4] ;
             if (alt==1) {{
               print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "alternative"  >> "{output.alternative}" ;
             }} else if (alt==0) {{
               print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "principal" >> "{output.principal}" ;
             }} ;
+            ratio[$4]=$14/rpk[$4] ;
             alt=(acum[$4] >= {params.alt_cut})?1:0 ;
             rank+=1 ;
-            print $0, $14/rpk[$4], acum[$4], rank;
-          }}' {output.expressed} {output.expressed}  > {output.rpk_ratio} &&
+            print $0, ratio[$4], acum[$4], rank >> "{output.rpk_ratio}" ;
+          }}
+          FNR < NR && $12 != "expressed" {{ 
+            form[$4][$15]=$4":Form:"$15 ;
+            form_ratio[$4][$15]+=ratio[$8] ;
+            acum[$4]+=ratio[$8] ;
+            form_acum[$4][$15]=acum[$4] ;
+          }}
+          END {{
+            for (i in form) {{
+              for (j in form[i]) {{
+                print i, j, form_ratio[i][j], form_acum[i][j] ;
+              }}
+            }} 
+          }}' - {output.expressed} {input.transcripts} |
+
+          sort -k1,1 -k3,3nr |
+
+          
 
 # Rank transcripts by validity (principal=2 or confident=1), biotype identity, exon number, rpk ratio
 # Identify different major forms of a gene's principal or confident transcripts by their first and last splice sites
@@ -302,21 +322,32 @@ rule validate_main_transcripts:
 
         cat {output.principal} {input.confident} |
         cut -f1-12 |
-        cat - {output.rpk_ratio} |
+        cat - {output.rpk_ratio} {input.transcripts} |
         
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR && $12=="principal" {{
             principal[$8] += 1 ;
             valid[$8]=2 ;
+            valid[$4]=(valid[$4]<2)?2:valid[$4] ;
           }}
           FNR==NR && $12 =="confident" {{
-            if (principal[$8] == 0) {{
-              valid[$8]=1
+            if (principal[$8]-0 == 0) {{
+              valid[$8]=1 ; 
+              valid[$4]=(valid[$4]<1)?1:valid[$4] ;
             }} ;
           }}
           FNR==NR && $12=="expressed" {{
-            print $0, valid[$8]-0
+            print $0, valid[$8]
+            trs_start[$8]=$2 ;
+            trs_end[$8]=$3 ;
+            ratio[$8]=$16 ;
+            reads[$8]=$13 ;
+            rank[$8]=$18 ;
+          }}
+          FNR == NR && $12-0 >= 1 {{
+            form_ratio[$4][$15]+=ratio[$8]
           }}' - | 
+
         
         sort -o {output.rpk_ratio} -k4,4 -k19,19nr -k7,7nr -k10,10nr -k16,16nr &&
 

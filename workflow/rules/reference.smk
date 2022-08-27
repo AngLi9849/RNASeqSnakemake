@@ -358,10 +358,11 @@ rule gtf_transcripts:
 # Transcript names
         awk -F'\\t' -v OFS='\\t' '
         FNR==NR {{
-          name[$1]=$2
+          name[$1]=$2 ;
+          n_exon[$1]=$4 ;
         }} 
         FNR < NR {{ 
-          print $8, $9, name[$4]
+          print $8, $9, name[$4], n_exon[$4]
         }}' {output.gene_tab} {output.transcripts} |
         sort | uniq > {output.trs_tab} &&
 
@@ -398,6 +399,7 @@ rule gtf_transcripts:
           FNR==NR && NF < 5 {{
             trs_name[$1] = $2 ; 
             gene_name[$1] = $3 ;
+            gene_exon[$1] = $4 ;
           }}
           FNR==NR && NF > 5 && NF < 13 {{ 
             biotyped[$8]=1
@@ -420,11 +422,33 @@ rule gtf_transcripts:
             }} ;
           }}
           FNR < NR && $7=="transcript" {{
+            $5=$3-$2 ;
             $7=biotyped[$8]-0 ; $11=gene_name[$8] ; $12=first_ss[$8]-0 ; $13=last_ss[$8]-0 ; $14=n_exon[$8] ; 
+            $15=$13-$12;
             print ;
           }}' - {output.transcripts} |
 
-        sort -o {output.transcripts} -k1,1 -k2,2n 
+        sort -k4,4 -k15,15nr -k12,12n -k13,13n -k5,5nr -k2,2n -k3,3n |
+
+# Sorted transcripts of a gene into different forms based on their first and last splice sites (aka splice region), if not spliced by their length
+# Rank forms by their splice region length, then if not spliced, their length, if tied, then by coordinate
+
+        awk -F'\\t' -v OFS='\\t' '
+        FNR==NR {{
+          form=($15==0)?($2"-"$3):($12"-"$13) ;  
+          if (gene!=$4) {{
+            form_n=1 ; 
+            gene=$4 ;  
+          }}
+          else if (form != last_form) {{
+            form_n +=1 ; 
+          }};
+          $15=form_n ; 
+          last_form=form ;
+          print ;
+        }}' - | 
+
+        sort -o {output.transcripts} -k4,4 -k15,15n -k2,2n -k3,3n   
         """
 
 rule annotated_features:
