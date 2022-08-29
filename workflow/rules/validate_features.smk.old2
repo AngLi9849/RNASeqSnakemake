@@ -49,33 +49,32 @@ rule star_detected_splice_junctions:
           }}' - > {output.sj}
         """
 
-rule salmon_index:
+rule transcript_bed2fasta:
     input:
-        trs = "resources/annotations/{reference}/transcriptome.{tag}_{type}.fasta",
-        decoy="resources/salmon/{reference}/transcriptome.{tag}_{type}.decoy.txt"
+        bed = "resources/annotations/{reference}/genome.gtf.{tag}_{type}.bed12",
+        fasta = "resources/genomes/{reference}_genome.fasta",
     output:
-        idx="resources/salmon/{reference}/transcriptome.{tag}_{type}.idx",
-    threads: 2
+        fasta = "resources/annotations/{reference}/transcriptome.{tag}_{type}.fasta",
+    threads: 1
     resources:
-        mem="12G",
-        rmem="8G",
+        mem="6G",
+        rmem="4G",
     conda:
-        "../envs/salmon.yaml"    
+        "../envs/bedtools.yaml"    
     shell:
         """
-        salmon index -t {input.trs} --decoys {input.decoy} -i {output.idx} -k 31
+        bedtools getfasta -split -nameOnly -fi {input.fasta} -bed {input.bed} > {output.fasta}
         """
 
 rule salmon_lineage_transcriptome_quant:
     input:
-        idx="resources/salmon/{reference}/transcriptome.{tag}_{type}.idx",
-        fq=get_salmon_fq
+        bam="star/{sample}/{unit}/{reference}/Aligned.toTranscriptome.out.bam",
+        fasta="resources/annotations/{reference}/transcriptome.{tag}_{type}.fasta",
     output:
         quant="salmon/{sample}/{unit}/{reference}/{tag}_{type}/quant.sf"
     params: 
         libtype="A",
         outdir=lambda wildcards, output: dirname(output.quant),
-        fqs=lambda wildcards, input: get_salmon_input(wildcards, input)
     threads: 2
     resources:
         mem="8G",
@@ -84,7 +83,7 @@ rule salmon_lineage_transcriptome_quant:
         "../envs/salmon.yaml"
     shell:
         """
-        salmon quant -i {input.idx} -l {params.libtype} {params.fqs} -o {params.outdir} --seqBias --gcBias
+        salmon quant -t {input.fasta} -l {params.libtype} -a {input.bam} -o {params.outdir} --seqBias --gcBias
         """
 
 rule rmats_lineage_intron_retention_exon_skip:

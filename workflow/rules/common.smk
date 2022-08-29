@@ -444,6 +444,48 @@ def get_fq(wildcards):
         else :
             return {"fq1": f"{u.fq1}", "fq2": f"{u.fq2}"}
 
+def get_salmon_fq(wildcards):
+    sample = samples.loc[wildcards.sample].loc[wildcards.unit].squeeze(axis=0)
+
+    if pd.isna(sample["fq1"]):
+        accession = sample["sra"]
+        return expand("sra/{accession}_{read}.fastq", accession=accession, read=[1, 2])
+
+    if sample["fq1"].endswith("gz"):
+        ending = ".gz"
+    else :
+        ending = ""
+    if not pd.isna(samples.loc[(wildcards.sample,wildcards.unit),"adapters"]):
+        trim="trimmed"
+        if is_paired_end(wildcards.sample):
+            single="trimmed"
+        else:
+            single="single"
+    else:
+        trim="raw"
+        single="raw"  
+    if pd.isna(sample["fq2"]):
+        return "reads/{Trim}/{S}_{U}_fq1_{Single}.fastq{E}".format(
+            S=sample.sample_name, U=sample.unit_name, Trim=trim, Single=single, E=ending
+        )
+    else :
+        return expand(
+            "reads/{Trim}/{S}_{U}_{{read}}_{Single}.fastq{E}".format(
+                 S=sample.sample_name, U=sample.unit_name, Trim=trim, Single=single, E=ending
+            ),
+            read=["fq1", "fq2"],
+        )
+    
+def get_salmon_input(wildcards, input):
+    def add_gunzip(a):
+       return "<(gunzip -c " + str(a) + ")"
+    if input.fq[0].endswith("gz"):
+       fqs=[add_gunzip(i) for i in input.fq]
+    if is_paired_end(wildcards.sample):
+       return "-1 " + fqs[0] + " -2 " + fqs[1]
+    else :
+       return "-r " + fqs[0]
+
 
 def get_strandedness(samples):
     if "strandedness" in samples.columns:

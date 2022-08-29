@@ -28,25 +28,34 @@ rule fasta2bed:
         ' {intput} > {output}
         """
  
-rule gtfbed2bed12:
+rule transcript_bed12_fasta_decoy:
     input:
-        bed="{prefix}.gtf.bed",
+        fasta = "resources/genomes/{reference}_genome.fasta",
+        bed="resources/annotations/{reference}/genome.gtf.bed",
+        transcript="resources/annotations/{reference}/genome.gtf.{tag}_{type}.bed",
     output:
-        bed12="{prefix}.gtf.bed12",
+        bed12="resources/annotations/{reference}/genome.gtf.{tag}_{type}.bed12",
+        fasta = "resources/annotations/{reference}/transcriptome.{tag}_{type}.fasta",
+        decoy="resources/salmon/{reference}/transcriptome.{tag}_{type}.decoy.txt",
     log:
-        "logs/bed12/{prefix}_gtfbed2bed12.log",
+        "logs/bed12/resources/annotations/{reference}/genome_{tag}_{type}_bed12.log",
     params:
-        temp = "{prefix}.gtf.temp",
+        temp="resources/annotations/{reference}/genome.gtf.{tag}_{type}.temp.txt",
     resources:
         mem="6G",
         rmem="4G",
+    conda:
+        "../envs/bedtools.yaml"
     shell:
         """
         awk -F'\\t' -v OFS='\\t' '
-          ($8=="transcript" || $8=="exon") && match($0,/transcript_id "([^"]*)"/,t) {{
+          $8=="exon" && match($0,/transcript_id "([^"]*)"/,t) {{
             print $1, $2, $3, t[1], $3-$2, $6, $8;
           }}' {input.bed} |
         sort -k7,7 -k1,1 -k4,4 -k2,2n > {params.temp} &&
+
+        cat {params.temp} {input.transcript} | 
+
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR && $7=="exon" {{
             a=(l[$4]=="")?$2:a ;
@@ -54,12 +63,23 @@ rule gtfbed2bed12:
             s[$4] = (s[$4]=="")?0:(s[$4]","($2-a)) ;
             n[$4] +=1 ;
           }}
-          FNR < NR && $7=="transcript" {{ 
-            $7=$2 ; 
-            print $0,$3 , 0, n[$4], l[$4], s[$4]
-          }}' {params.temp} {params.temp} > {output.bed12} 
+          FNR==NR && $7=="transcripts" {{
+            seen[$8]==1
+          }}
+          FNR < NR {{ 
+            if (seen[$4]==1) {{
+              $7=$2 ; 
+              print $0,$3 , 0, n[$4], l[$4], s[$4]
+            }}
+          }}' - {params.temp} > {output.bed12} &&
+
+        bedtools getfasta -split -nameOnly -fi {input.fasta} -bed {output.bed12} |
+        cat - {input.fasta} > {output.fasta} &&
+
+        cat {input.fasta} |
+        awk 'match($0,/^>([^ ]*)/,a) {{print a[1]}}' > {output.decoy}
         """
-          
+
 
 rule gtf2bed:
     input:
