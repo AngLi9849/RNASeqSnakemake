@@ -66,7 +66,7 @@ rule all:
         #"resources/annotations/MANE_homo_sapiens.GRCh38.104/genome.gtf.bed12"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.fasta",
         #"salmon/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/quant.sf",
-        #"resources/annotations/MANE_homo_sapiens.GRCh38.104_genome.gtf.basic_confident.bed"
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_transcript.bed12"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/HCT116.gtf.basic_validated.bed"
         #"resources/annotations/homo_sapiens.HCT116.star.splice_junctions.bed"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_trs_sj.bed"

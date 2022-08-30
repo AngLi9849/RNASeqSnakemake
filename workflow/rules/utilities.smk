@@ -34,7 +34,7 @@ rule transcript_bed12_fasta_decoy:
         bed="resources/annotations/{reference}/genome.gtf.bed",
         transcript="resources/annotations/{reference}/genome.gtf.{tag}_{type}.bed",
     output:
-        bed12="resources/annotations/{reference}/genome.gtf.{tag}_{type}.bed12",
+        bed12="resources/annotations/{reference}/transcriptome.{tag}_{type}.bed12",
         fasta = "resources/annotations/{reference}/transcriptome.{tag}_{type}.fasta",
         decoy="resources/salmon/{reference}/transcriptome.{tag}_{type}.decoy.txt",
     log:
@@ -54,7 +54,7 @@ rule transcript_bed12_fasta_decoy:
           }}' {input.bed} |
         sort -k7,7 -k1,1 -k4,4 -k2,2n > {params.temp} &&
 
-        cat {params.temp} {input.transcript} | 
+        cat {params.temp} | 
 
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR && $7=="exon" {{
@@ -63,15 +63,9 @@ rule transcript_bed12_fasta_decoy:
             s[$4] = (s[$4]=="")?0:(s[$4]","($2-a)) ;
             n[$4] +=1 ;
           }}
-          FNR==NR && $7=="transcript" {{
-            seen[$8]==1
-          }}
-          FNR < NR {{ 
-            if (seen[$4]==1) {{
-              $7=$2 ; 
-              print $0,$3 , 0, n[$4], l[$4], s[$4]
-            }}
-          }}' - {params.temp} > {output.bed12} &&
+          FNR<NR {{
+            print $1, $2, $3, $8, $5, $6, $2, $3, 0, n[$8], l[$8], s[$8]
+          }}' - {input.transcript} > {output.bed12} &&
 
         bedtools getfasta -split -nameOnly -fi {input.fasta} -bed {output.bed12} |
         cat - {input.fasta} > {output.fasta} &&
