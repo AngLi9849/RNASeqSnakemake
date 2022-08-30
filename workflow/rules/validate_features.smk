@@ -54,16 +54,18 @@ rule salmon_index:
         trs = "resources/annotations/{reference}/transcriptome.{tag}_{type}.fasta",
         decoy="resources/salmon/{reference}/transcriptome.{tag}_{type}.decoy.txt"
     output:
+        idx=directory("resources/salmon/{reference}/transcriptome.{tag}_{type}.idx"),
+    params:
         idx="resources/salmon/{reference}/transcriptome.{tag}_{type}.idx",
-    threads: 2
+    threads: 8
     resources:
-        mem="12G",
+        mem="16G",
         rmem="8G",
     conda:
         "../envs/salmon.yaml"    
     shell:
         """
-        salmon index -t {input.trs} --decoys {input.decoy} -i {output.idx} -k 31
+        salmon index -t {input.trs} --decoys {input.decoy} -i {params.idx} -k 31
         """
 
 rule salmon_lineage_transcriptome_quant:
@@ -76,10 +78,10 @@ rule salmon_lineage_transcriptome_quant:
         libtype="A",
         outdir=lambda wildcards, output: dirname(output.quant),
         fqs=lambda wildcards, input: get_salmon_input(wildcards, input)
-    threads: 2
+    threads: 8
     resources:
         mem="8G",
-        rmem="6G",
+        rmem="4G",
     conda:
         "../envs/salmon.yaml"
     shell:

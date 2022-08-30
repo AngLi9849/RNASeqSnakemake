@@ -63,7 +63,7 @@ rule transcript_bed12_fasta_decoy:
             s[$4] = (s[$4]=="")?0:(s[$4]","($2-a)) ;
             n[$4] +=1 ;
           }}
-          FNR==NR && $7=="transcripts" {{
+          FNR==NR && $7=="transcript" {{
             seen[$8]==1
           }}
           FNR < NR {{ 
