@@ -53,6 +53,10 @@ rule validate_test:
             species=get_reference_species(wildcards.reference),
         ),
         confident="resources/annotations/{reference}/genome.gtf.{tag}_confident.bed",
+    threads: 1
+    resources:
+        mem="16G",
+        rmem="12G",
     output:
         form="resources/annotations/{reference}/{lineage}.gtf.{tag}_form.tab",
     shell:
@@ -65,7 +69,7 @@ rule validate_test:
             nreads[$1]+=$5 ;
             rpksum+=($5/$3) ;
           }}
-          FNR < NR && $7=="transcript" {{
+          FNR < NR {{
             if (nreads[$8]>0) {{
               form[$4][$15]= 1 ;
               form_rpk[$4][$15]+=rpk[$8] ;
@@ -75,11 +79,11 @@ rule validate_test:
           END {{
             for (i in form) {{
               for (j in form[i]) {{
-                print i, j, form_ratio[i][j], form_reads[i][j] ;
+                print i, j, form_rpk[i][j], form_reads[i][j] ;
               }}
             }}
           }}
-        ' - {input.transcripts} {input.transcripts} |
+        ' - {input.transcripts} |
 
         sort -k1,1 -k4,4nr > {output.form}
 
