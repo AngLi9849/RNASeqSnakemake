@@ -340,6 +340,13 @@ rule validate_main_transcripts:
               alt=0;
               gene=$4;
             }} ;       
+            acum[$4]+=$14/rpk[$4] ;
+            if (alt==1) {{
+              print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "alternative"  >> "{output.alternative}" ;
+            }} else if (alt==0) {{
+              print $1, $2, $3, $4, $3-$2, $6, $7, $8, $9, $14/rpk[$4], $4, "principal" >> "{output.principal}" ;
+            }} ;
+            ratio[$4]=$14/rpk[$4] ;
             alt=(acum[$4] >= {params.alt_cut})?1:0 ;
             rank+=1 ;
             print $0, ratio[$4], acum[$4], rank >> "{output.rpk_ratio}" ;

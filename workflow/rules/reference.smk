@@ -233,10 +233,12 @@ rule gtf_transcripts:
             }}
           }}
           FNR<NR&&$8=="gene"&&$0~"gene_name"&&match($0,/gene_name "([^"]*)".*gene_biotype "([^"]*)"; .*/,a) && t[$4]>=1{{
-             num[$4]=(num[$4]==""?1:num[$4]);print $4,a[1],a[2],num[$4]
+             num[$4]=(num[$4]==""?1:num[$4]);
+             print $4,a[1],a[2],num[$4], $1, $2, $3, $6 ;
           }}
           FNR<NR&&$8=="gene"&&$0!~"gene_name"&&match($0,/gene_biotype "([^"]*)".*/,a) && t[$4]>=1 {{
-            num[$4]=(num[$4]==""?1:num[$4]);print $4,$4,a[1],num[$4]
+            num[$4]=(num[$4]==""?1:num[$4]);
+            print $4,$4,a[1],num[$4], $1, $2, $3, $6 ;
           }}
         ' {input.bed} {input.bed} > {output.gene_tab} &&
 
