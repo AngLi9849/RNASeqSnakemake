@@ -242,15 +242,16 @@ rule validate_main_transcripts:
           }}
           FNR < NR {{
             if (nreads[$8]>0) {{
+              nreads[$4]+=nreads[$8] ;
               form[$4][$15]= 1 ;
               form_rpk[$4][$15]+=rpk[$8] ;
-              form_reads[$4][$15]+=nreads[$8] ;              
+              form_reads[$4][$15]+=nreads[$8] ;
             }} ;
           }}
           END {{
             for (i in form) {{
               for (j in form[i]) {{
-                print i, j, form_rpk[i][j], form_reads[i][j] ;
+                print i, j, form_rpk[i][j], form_reads[i][j], form_reads[i][j]/nreads[i];
               }}
             }}
           }}
@@ -277,33 +278,33 @@ rule validate_main_transcripts:
             }} ; 
           }}' - {input.transcripts} |
           
-        sort -k4,4 -k14,14nr > {output.expressed} &&
+        sort -k4,4 -k10,10nr -k14,14nr > {output.expressed} &&
 
-        cat {output.form} {output.expressed} {input.transcripts} | 
+        cat {output.form} {output.expressed} | 
          
         awk -F'\\t' -v OFS='\\t' '
-          FNR==NR && NF==4 {{
-            read_acum[$1]+=$4 ;
-            principal[$1][$2]=(alt==1)?0:1 ;
-            alt=(read_acum[$1] >= {params.alt_cut})?1:0 ;  
+          FNR==NR && NF<8 {{
+            read_acum[$1]+=$5 ;
+            principal[$1][$2]=(alt[$1]==1)?0:1 ;
+            alt[$1]=(read_acum[$1] >= {params.alt_cut})?1:0 ;  
           }} 
           FNR == NR && NF > 4 && $12=="expressed" {{
-            if (selected[$4]==0) {{
+            if ( (selected[$4]-0)==0) {{
               if (principal[$4][$9]==1) {{
-                model[$8]==1 ;
-                selected[$4]==1 ;
+                model[$8]=1 ;
+                selected[$4]=1 ;
               }}
             }}
           }}
-          FNR==NR && NF>4 && $12 != "expressed" {{
+          FNR<NR && NF>12 {{
             if (model[$8]==1) {{ 
               print $1, $2, $3, $4, $5, $6, "gene", $4, $11, 0, $4, 1, 1, 1 ;
             }}
           }}
-          FNR<NR {{
-            if selected[$1]==0 {{
-              print $5, $6, $7, $1, $7-$6, $8, "gene", $1, $2, 1, $4,  1, 1, 1 ;
+          FNR<NR && NF<10 {{
+            if (selected[$1]==0) {{
+              print $5, $6, $7, $1, $7-$6, $8, "gene", $1, $2, 1, $1,  1, 1, 1 ;
             }}
           }} 
-        ' - {input.gene_tab}  > {output.features}
+        ' - {input.transcripts} {input.gene_tab}  > {output.features}
         """ 
