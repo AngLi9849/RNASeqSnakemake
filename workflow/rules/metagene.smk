@@ -102,6 +102,8 @@ rule expressed_non_overlapping_feature:
     output:
         biotype_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.{sig}sig2noise.biotype_non_overlap.bed",
         all_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.{sig}sig2noise.all_non_overlap.bed",
+    params:
+        sig_noi=lambda wildcards: features.loc[wildcards.feature,"sig2noi"]
     threads: 1
     conda:
         "../envs/bedtools.yaml"
@@ -114,8 +116,6 @@ rule expressed_non_overlapping_feature:
         awk -F'\\t' -v OFS='\\t' '{{
           if ($5 >= {wildcards.sig}*$13) {{
             print $1, $2, $3, $4, $5, $6, $7, $8 
-
-
 
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
@@ -132,7 +132,6 @@ rule expressed_non_overlapping_feature:
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{ 
             
-
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
             biotype[$1] = $2 ;
