@@ -1,5 +1,5 @@
 # Base Features: gene exon intron skip_ex ret_int trscrpt CDS 5UTR 3UTR
-feature_name        	dif_exp	dif_use	dif_enr	dif_spl	dif_var	region	exclude	group	feature	force	min_len	tsl	section	sense	no_frst	no_last	len_bef	len_aft	plotbef	plotaft	5_unscl	3_unscl	sig_noi	noi_fea	annotation_bed
+feature_name        	dif_exp	dif_use	dif_enr	dif_spl	dif_var	region	exclude	group	feature	force	min_len	tsl	section	sense	no_frst	no_last	len_bef	len_aft	plotbef	plotaft	5_unscl	3_unscl	sig_noi	bkgrd	annotation_bed
 GeneBody            	TRUE	FALSE	FALSE	TRUE	FALSE	gene		gene	gene	FALSE	0	3	body	+	0	0	0	0	1500	1500	0	0	50	GeneBody
 PROMPT-TSS          	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	start	+-	0	0	1500	3000	500	500	0	0	20	GeneBody
 PROMPT              	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	start	-	0	0	1500	0	500	500	0	0	20	GeneBody

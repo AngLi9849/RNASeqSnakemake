@@ -183,6 +183,8 @@ def get_norm_group_samples(norm_group):
     sample = samples[samples.protocol == protocol][samples.condition.isin(cond)]
     return sample
 
+experiments["paired"]=experiments.apply( lambda row: "paired" if row.pairRep else "unpaired" , axis = 1 )
+experiments["diff_lineage"]=experiments.sample_lineage if config['features']['validate_features'] else "genome"
 # Create a summary data frame to assign samples to lineages
 lineage=[]
 
@@ -250,6 +252,7 @@ SPLICE=['All','Spliced','Unspliced'] if config['seperate_spliced_reads'] else 'A
 
 VALID=['validated'] if config['features']['validate_features'] else ['annotated']
 TAG=list(config['ensembl_tags'])
+STRAND_BIGWIG=""
 
 #STRAND_BIGWIG=['unstranded','fwd','rev'] if config['strand_specific_bigwigs'] else ['unstranded']
 #STRAND_META=['stranded']
@@ -285,7 +288,7 @@ def get_feature_counts():
 
 def get_genebody_diffexp_docx():
     counts = expand(
-        "results/{exp.experiment}/{exp.reference}/differential_expression/{exp.normaliser}_{exp.norm_feat}ReadCount_normalised.{splice}_Aligned{demulti}{dedup}.genome_{valid}.{type}.{tag}.GeneBody.docx",
+        "differential/{exp.experiment}/{exp.reference}/differential_expression/{exp.paired}.{exp.normaliser}_{exp.norm_feat}ReadCount_normalised/{splice}_Aligned{demulti}{dedup}.{exp.diff_lineage}_{valid}.{type}.{tag}.GeneBody.docx",
         exp=experiments.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICE, type="custom-" + str(features.loc["GeneBody","prefix_md5"]) 
     ),
     return counts

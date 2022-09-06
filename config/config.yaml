@@ -40,7 +40,7 @@ ensembl_annotations:
 features:
   minimum_intron_length: 6
   minimum_retained_intron_coverage: 0.1 #minimum fraction of a retained intron annotated as part of a bridging exon
-  validate_features: FALSE
+  validate_features: TRUE
 
 lineage_feature_validation:
   genes: # Use Salmon Quantification to select transcripts that supports the structure (exon intron UTR CDS) of a gene

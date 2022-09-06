@@ -5,13 +5,16 @@ rule samtools_index:
         "{prefix}.bam.bai",
     log:
         "logs/samtools_index/{prefix}.log"
-    threads: 2 
+    threads: 4 
     resources:
         mem="6G",
         rmem="4G",
-    wrapper:
-        "0.80.2/bio/samtools/index"
-
+    conda:
+        "../envs/samtools.yaml"
+    shell:
+        """
+        samtools index -@ 3 {input} {output}
+        """
 
 rule stranded_bam:
     input:

@@ -296,15 +296,22 @@ rule validate_main_transcripts:
               }}
             }}
           }}
-          FNR<NR && NF>12 {{
-            if (model[$8]==1) {{ 
-              print $1, $2, $3, $4, $5, $6, "gene", $4, $11, 0, $4, 1, 1, 1 ;
-            }}
-          }}
           FNR<NR && NF<10 {{
             if (selected[$1]==0) {{
               print $5, $6, $7, $1, $7-$6, $8, "gene", $1, $2, 1, $1,  1, 1, 1 ;
+            }} ; 
+            name[$1]=$2 ;
+          }}
+          FNR<NR && NF>12 {{
+            if (model[$4]==1) {{
+              if ($7=="transcript") {{ 
+                print $1, $2, $3, $11, $5, $6, "gene", $11, name[$11], 0, $11, 1, 1, 1 ;
+              }} else {{
+                $5=$3-$2 ; $4=$11 ; $8=$11":"$7$12 ; $9=name[$11]" "$7" "$12 ; $10=0 ; print ;
+              }}
             }}
-          }} 
-        ' - {input.transcripts} {input.gene_tab}  > {output.features}
+          }}
+        ' - {input.gene_tab} {input.trs_idx}  > {output.features}
+
+        
         """ 

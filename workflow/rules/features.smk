@@ -61,7 +61,7 @@ rule feature_nuc_info:
         fasta="resources/genomes/{source}_genome.fasta",
         bed="resources/annotations/{source}/{lineage}.{type}.{valid}_{tag}.{feature}.bed",
     output:
-        info="resources/annotations/{source}_{lineage}.{type}.{valid}_{tag}.{feature}.bed.nuc.tab",
+        info="resources/annotations/{source}/{lineage}.{type}.{valid}_{tag}.{feature}.bed.nuc.tab",
     log:
         "logs/features/nuc_info/{source}_{lineage}.{type}.{valid}_{tag}.{feature}.log"
     threads: 1

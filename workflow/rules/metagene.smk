@@ -93,17 +93,15 @@ rule expressed_non_overlapping_feature:
     input:
         rpkm = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
         range = "resources/annotations/{reference}_{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_range.bed",
-        genetab = "resources/annotations/{reference}_genome.gtf.{tag}_gene_info.tab",
+        genetab = "resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
         background = lambda wildcards: "featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{valid}.{type}.{{tag}}.{base}.rpkm.bed".format(
-            type = get_feature_type(features.loc[wildcards.feature,"feature"]),
-            valid = get_feature_validity(features.loc[wildcards.feature,"feature"]),
-            base = features.loc[wildcards.feature,"feature"],
+            type = get_feature_type(features.loc[wildcards.feature,"bkgrd"]),
+            valid = get_feature_validity(features.loc[wildcards.feature,"bkgrd"]),
+            base = features.loc[wildcards.feature,"bkgrd"],
         ),
     output:
         biotype_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.{sig}sig2noise.biotype_non_overlap.bed",
         all_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.{sig}sig2noise.all_non_overlap.bed",
-    params:
-        sig_noi=lambda wildcards: features.loc[wildcards.feature,"sig2noi"]
     threads: 1
     conda:
         "../envs/bedtools.yaml"

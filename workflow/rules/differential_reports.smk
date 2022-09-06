@@ -28,6 +28,6 @@ rule differential_plots:
         "../envs/differential.yaml"
     log:
         "logs/differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plots.log",
-    threads: get_deseq2_threads()
+    threads: 1
     script:
         "../scripts/R/differential_plots.R"

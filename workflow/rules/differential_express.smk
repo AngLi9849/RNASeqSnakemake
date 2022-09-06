@@ -57,7 +57,7 @@ rule deseq2_expression:
         "../envs/differential.yaml"
     log:
         "logs/{experiment}/{reference}/deseq2/{splice}ed{prefix}.{lineage}_{valid}.{type}.{tag}_{spikein}_{feature}_{pair}_{normaliser}ReadCount.diffexp.log",
-    threads: get_deseq2_threads()
+    threads: 1
     script:
         "../scripts/R/deseq2_express.R"
 

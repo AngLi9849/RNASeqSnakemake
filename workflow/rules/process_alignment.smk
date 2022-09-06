@@ -27,7 +27,7 @@ rule samtools_read_count:
         "../envs/samtools.yaml"
     shell:
         """
-        samtools idxstat {input.bam} |
+        samtools idxstats {input.bam} |
         awk -F'\\t' -v OFS='\\t' '
           BEGIN {{
             sum=0 ; spikein=0
@@ -110,7 +110,7 @@ rule featurecounts:
         saf=lambda w: "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.bed.saf" 
     output:
         tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.featurecounts.tab",
-    threads: lambda wildcards, input: ((input.size//10000000000)+2)
+    threads: 8
     resources:
         mem="16G",
         rmem="12G",

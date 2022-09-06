@@ -455,17 +455,17 @@ rule gtf_transcripts:
 
 rule annotated_features:
     input:
-        bed="resources/annotations/{prefix}/genome.gtf.bed",
-        chr="resources/genomes/{prefix}_genome.fasta.chrom.sizes",
-        transcripts="resources/annotations/{prefix}/genome.gtf.{tag}_transcripts.bed",
-        gene_tab="resources/annotations/{prefix}/genome.gtf.{tag}_gene_info.tab",
-        inconfident="resources/annotations/{prefix}/genome.gtf.{tag}_inconfident.bed",
-        confident="resources/annotations/{prefix}/genome.gtf.{tag}_confident.bed",
+        bed="resources/annotations/{prefix}.gtf.bed",
+        chr="resources/genomes/{prefix}.fasta.chrom.sizes",
+        transcripts="resources/annotations/{prefix}.gtf.{tag}_transcripts.bed",
+        gene_tab="resources/annotations/{prefix}.gtf.{tag}_gene_info.tab",
+        inconfident="resources/annotations/{prefix}.gtf.{tag}_inconfident.bed",
+        confident="resources/annotations/{prefix}.gtf.{tag}_confident.bed",
     output:
-        features="resources/annotations/{prefix}/genome.gtf.{tag}_annotated.bed",
-        feature_list="resources/annotations/{prefix}/genome.gtf.{tag}_feature_list.tab",
-        long_intron="resources/annotations/{prefix}/genome.gtf.{tag}_long_intron.bed",
-        long_exon="resources/annotations/{prefix}/genome.gtf.{tag}_long_exon.bed",
+        features="resources/annotations/{prefix}.gtf.{tag}_annotated.bed",
+        feature_list="resources/annotations/{prefix}.gtf.{tag}_feature_list.tab",
+        long_intron="resources/annotations/{prefix}.gtf.{tag}_long_intron.bed",
+        long_exon="resources/annotations/{prefix}.gtf.{tag}_long_exon.bed",
     params:
         min_ret_cov=config["features"]["minimum_retained_intron_coverage"],
         feature_fwd="workflow/scripts/awk/feature_index_fwd.awk",
