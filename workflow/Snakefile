@@ -68,7 +68,7 @@ rule all:
         #"salmon/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/CCDS_transcripts/quant.sf",
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_transcript.bed12"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/HCT116.gtf.basic_validated.bed"
-        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_gene_info.tab"
+        "resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_gene_info.tab"
         #"resources/annotations/homo_sapiens.HCT116.star.splice_junctions.bed"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_trs_sj.bed"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/HCT116.gtf.basic_form.tab"
@@ -81,7 +81,7 @@ rule all:
         #"resources/annotations/homo_sapiens.HCT116.rmats.ret_int.bed",
         #"matrices/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.fwd/genome_annotated.plot-095b4d96d6e4d066a112a711bfe0b4fb.basic.GeneBody.sense_main.1000bins.matrix.gz",
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104_genome.plot-095b4d96d6e4d066a112a711bfe0b4fb.annotated_basic.GeneBody.sense.before.bed"
-        get_genebody_diffexp_docx()
+        #get_genebody_diffexp_docx()
         #"resources/templates/Arial.docx"
         #"test.tsv"
         #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/SplicedAligned.HCT116_validated.custom-7e5ff750dfd4716388d8ebad286d805e.basic.GeneBodyReads.lengths.tsv"

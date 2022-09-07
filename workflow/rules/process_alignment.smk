@@ -110,7 +110,7 @@ rule featurecounts:
         saf=lambda w: "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.bed.saf" 
     output:
         tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.featurecounts.tab",
-    threads: 12
+    threads: 6
     resources:
         mem="16G",
         rmem="12G",

@@ -81,7 +81,7 @@ rule splice_site_featurecount:
     shell:
         """
         featureCounts -s {params.strand} {params.paired} --minOverlap 1 -M -O -T {threads} -F SAF --verbose -a {input.saf} -o {output.splice} {input.splice_bam} &&
-        featureCounts -s {params.strand} {params.paired} --minOverlap {params.unspl_overlap} -M -T {threads} -F SAF --verbose -a {input.saf} -o {output.unsplice} {input.unsplice_bam}
+        featureCounts -s {params.strand} {params.paired} --minOverlap {params.unspl_overlap} -M -O -T {threads} -F SAF --verbose -a {input.saf} -o {output.unsplice} {input.unsplice_bam}
         """
 
 rule dexseq_splice_ratio:
