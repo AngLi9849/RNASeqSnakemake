@@ -30,7 +30,7 @@ count_length <- read.table(snakemake@input[["length"]], sep='\t',header=TRUE, ch
 nuc <- read.csv(snakemake@input[["nuc"]],header=T,row.names = 1, sep='\t')
 
 # Import feature biotype and exon count information
-genes <- read.csv(snakemake@input[["genetab"]],sep='\t',header=F,col.names=c("gene_id","gene_name","biotype","exon_count"),check.names=F)
+genes <- read.csv(snakemake@input[["genetab"]],sep='\t',header=F,col.names=c("gene_id","gene_name","biotype","exon_count","chr","start","end","strand"),check.names=F)
 bed <- unique(read.csv(snakemake@input[["bed"]],sep='\t',header=F,check.names=F)[,c(7,4,8,9)])
 bed[5:6] <- genes[match(bed[,2],genes$gene_id),3:4]
 bed[5][is.na(bed[5])] <- bed[1][is.na(bed[5])]

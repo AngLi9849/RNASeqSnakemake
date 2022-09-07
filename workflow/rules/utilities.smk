@@ -90,8 +90,10 @@ rule gtf2bed:
     conda:
         "../envs/bedops.yaml",
     shell:
-        "awk -f {params.bedops_fix} {input} | "
-        "gtf2bed - > {output}"
+        """
+        awk -f {params.bedops_fix} {input} | 
+        gtf2bed - > {output}
+        """
 
 rule bed2saf:
     input:
