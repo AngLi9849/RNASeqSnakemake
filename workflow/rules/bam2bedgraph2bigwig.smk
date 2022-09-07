@@ -13,7 +13,7 @@ rule samtools_index:
         "../envs/samtools.yaml"
     shell:
         """
-        samtools index -@ 3 {input} {output}
+        samtools index -b -@ 3 {input} {output}
         """
 
 rule stranded_bam:

@@ -2,6 +2,6 @@ annels:
   - bioconda
   - conda-forge
 dependencies:
-  - samtools = 1.12
+  - samtools = 1.15.1
 
 
