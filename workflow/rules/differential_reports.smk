@@ -14,7 +14,7 @@ rule differential_plots:
             c=str(config["differential_plots"]["word_docx"]["font_colour"]),
         ),
     output:
-        docx="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
+        docx="diff_reports/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
     params:
         protocol = lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["protocol"],
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],

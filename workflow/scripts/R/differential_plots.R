@@ -91,9 +91,9 @@ doc <- body_add(doc,fpar(ftext(analysis_heading, prop=heading_2)),style = "headi
 min_mean
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(c(""),unique(expr$group[expr$biotype %in% biotypes]))
-#for (i in i_group) {
+for (i in i_group) {
 
-i <- "Multiexonic Protein Coding"
+#i <- "Multiexonic Protein Coding"
 
 if (i =="") {
   expr_i <- expr
@@ -217,7 +217,7 @@ doc <- body_add(doc,fpar(values=c,fp_p = fp_par(padding.top=(caption_size/2))))
 
 }
 
-#}
+}
 
 print(doc, target = snakemake@output[["docx"]])
 

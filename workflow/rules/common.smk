@@ -288,7 +288,7 @@ def get_feature_counts():
 
 def get_genebody_diffexp_docx():
     counts = expand(
-        "differential/{exp.experiment}/{exp.reference}/differential_expression/{exp.paired}.{exp.normaliser}_{exp.norm_feat}ReadCount_normalised/{splice}_Aligned{demulti}{dedup}.{exp.diff_lineage}_{valid}.{type}.{tag}.GeneBody.docx",
+        "diff_reports/{exp.experiment}/{exp.reference}/differential_expression/{exp.paired}.{exp.normaliser}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{splice}_Aligned{demulti}{dedup}.{exp.diff_lineage}_{valid}.{type}.{tag}.GeneBody.docx",
         exp=experiments.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICE, type="custom-" + str(features.loc["GeneBody","prefix_md5"]) 
     ),
     return counts

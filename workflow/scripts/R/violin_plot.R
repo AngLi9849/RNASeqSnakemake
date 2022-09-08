@@ -22,7 +22,7 @@ violin_p_y <- max(violin_data$value) + 0.1*abs(max(violin_data$value)-min(violin
 test_p_i <- compare_means(formula=value ~ condition, data = violin_data, comparisons = compare, method="t.test", paired = TRUE)
 test_p_i$y.position <- c(violin_p_y)
 
-violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +
+violin <- ggplot(data = violin_data, aes(x=factor(condition, levels=c(control,treat)), y=value)) +
   geom_violin(trim=FALSE,aes(fill=condition)) +
   geom_boxplot(width=0.1) +
   stat_pvalue_manual(data = test_p_i, label = "p.signif") +
