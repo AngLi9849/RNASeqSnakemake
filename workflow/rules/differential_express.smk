@@ -17,7 +17,7 @@ rule pca:
 
 rule deseq2_expression:
     input:
-        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
@@ -27,7 +27,7 @@ rule deseq2_expression:
         counts= lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}Reads.counts.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
-        total_sum = lambda w: "deseq2/{norm_group}/{{reference}}/{{splice}}{{prefix}}.gtf.TotalReadCount.{{pair}}.summary.tsv".format(
+        total_sum = lambda w: "deseq2/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.gtf.TotalReadCount.{{pair}}.summary.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
         genetab=lambda w: "resources/annotations/{source}/genome.gtf.{{tag}}_gene_info.tab".format(

@@ -60,14 +60,14 @@ rule total_read_count_scale_factors:
             sample=get_norm_group_samples(wildcards.norm_group).itertuples(),
         ),
     output:
-        summary = "deseq2/{norm_group}/{reference}/{prefix}.gtf.TotalReadCount.{pair}.summary.tsv",
-        internal = "deseq2/{norm_group}/{reference}/{prefix}.gtf.TotalReadCount.internal_{pair}.scale_factors.tsv",
-        spikein = "deseq2/{norm_group}/{reference}/{prefix}.gtf.TotalReadCount.spikein_{pair}.scale_factors.tsv",
+        summary = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.TotalReadCount.{pair}.summary.tsv",
+        internal = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.TotalReadCount.internal_{pair}.scale_factors.tsv",
+        spikein = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.TotalReadCount.spikein_{pair}.scale_factors.tsv",
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/scale_factors/{norm_group}/{reference}/{prefix}_{pair}_totalreadcount_scale.log",
+        "logs/scale_factors/{norm_group}/{reference}/{prefix}_{lineage}_{valid}_{pair}_totalreadcount_scale.log",
     shell:
         """
         cat {input} > {output.summary} &&
@@ -111,11 +111,11 @@ rule total_read_count_scale_factors:
 
 rule feature_count_scale_factors:
     input:
-        counts="featurecounts/{norm_group}/{reference}/{prefix}.genome_annotated.{type}.basic.{feature}Reads.counts.tsv",
+        counts="featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.basic.{feature}Reads.counts.tsv",
         bed="resources/annotations/{reference}/genome.{type}.annotated_basic.{feature}.bed"
     output:
-        paired = "deseq2/{norm_group}/{reference}/{prefix}.{type}.{feature}ReadCount.{spikein}_paired.scale_factors.tsv",
-        unpaired = "deseq2/{norm_group}/{reference}/{prefix}.{type}.{feature}ReadCount.{spikein}_unpaired.scale_factors.tsv",
+        paired = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{feature}ReadCount.{spikein}_paired.scale_factors.tsv",
+        unpaired = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{feature}ReadCount.{spikein}_unpaired.scale_factors.tsv",
     params:
         sample_table="config/samples.tsv",
     resources:
@@ -126,7 +126,7 @@ rule feature_count_scale_factors:
     conda:
         "../envs/deseq2.yaml"
     log:
-        "logs/deseq2/{norm_group}/{reference}/{prefix}_{spikein}.{type}.{feature}Reads_scale.log",
+        "logs/deseq2/{norm_group}/{reference}/{prefix}_{spikein}.{lineage}_{valid}.{type}.{feature}Reads_scale.log",
     script:
         "../scripts/R/deseq2_feature_scale.R"
 

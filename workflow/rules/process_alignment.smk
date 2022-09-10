@@ -110,7 +110,7 @@ rule featurecounts:
         saf=lambda w: "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.bed.saf" 
     output:
         tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.featurecounts.tab",
-    threads: 12 
+    threads: 6 
     resources:
         mem="16G",
         rmem="12G",
@@ -119,12 +119,44 @@ rule featurecounts:
     conda:
         "../envs/subread.yaml",
     params:
+        ram=int(0.75 * config["max_ram_gb"] * 1000000),
         strand=get_sample_strandedness,
         paired=lambda wildcards:("-p" if is_paired_end(wildcards.sample) else ""),
         overlap="-O" if config["counting"]["count_every_overlap"] else "",
     shell:
         """
+        if [[ $(du {input.bam} | cut -f1) -gt {params.ram} ]] ;
+        then 
+          for i in $(cut -f2 {input.saf} | sort | uniq) ; do
+            samtools view -bh -@ 5 {input.bam} $i > {input.bam}"$i".bam && 
+            samtools index -b -@ 5 {input.bam}"$i".bam {input.bam}"$i".bam.bai && 
+            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab}"$i".chr.tab {input.bam}"$i".bam ;
+          done &&
+
+          for i in $(cut -f2 {input.saf} | sort | uniq) ; do
+            cat {output.tab}"$i".chr.tab ;
+          done |
+    
+          awk -F'\\t' -v OFS='\\t' '
+            FNR<3 {{
+              print >> "{output.tab}"
+            }}
+            FNR>2 && $1!="Geneid" && NF>5 {{
+              entry[$1]=$0 ; 
+              count[$1]+=$7 ;
+            }}
+            END {{
+              for (i in entry) {{
+                $0=entry[i] ;
+                $7=count[i] ;
+                print ;
+              }}
+            }}
+           ' - |
+           sort -k1,1 >> {output.tab} ;
+        else    
         featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
+        fi
         """
 
 rule count_matrix:

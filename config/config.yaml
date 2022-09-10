@@ -1,3 +1,6 @@
+# Hardware config:
+max_ram_gb: 64 # Highest ram available in a single machine
+
 # path or URL to sample sheet (TSV format, columns: sample, unit, condition, fq1, fq2)
 # Units are biological or technical replicates of experiment or sequencing lanes.
 # Conditions are compared in differential expression analysis.
@@ -27,7 +30,7 @@ trimming:
   minimum_read_quality: 20
 
 counting:
-  count_every_overlap: FALSE # If a read is counted to every feature it overlaps  
+  count_every_overlap: TRUE # If a read is counted to every feature it overlaps  
 
 #Specific Settings for Splicing Analysis
 splicing: 
