@@ -2,10 +2,10 @@ rule star_detected_splice_junctions:
     input:
         sj=lambda wildcards: expand(
                 "star/{sample.sample_name}/{sample.unit_name}/{sample.reference}/SJ.out.tab",
-                sample=lineage[lineage.splice.tolist()].loc[wildcards.species].loc[wildcards.lineage].itertuples(),
+                sample=lineage[lineage.splice.tolist()].loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage].itertuples(),
         ),
     output:
-        sj="resources/annotations/{species}.{lineage}.star.splice_junctions.bed",
+        sj="resources/annotations/{reference}/{lineage}.star.splice_junctions.bed",
     threads: 1
     resources:
         mem="16G",
@@ -13,7 +13,7 @@ rule star_detected_splice_junctions:
     conda:
         "../envs/bedtools.yaml",
     log:
-        "logs/awk/{species}_{lineage}_splice_junctions.log",
+        "logs/awk/{reference}_{lineage}_splice_junctions.log",
     shell:
         """
         cat {input.sj} |
@@ -96,10 +96,10 @@ rule rmats_lineage_intron_retention_exon_skip:
             sample=lineage[lineage.trs_val.tolist()].loc[wildcards.species].loc[wildcards.lineage].itertuples(),
         ),
     output:
-       ret_int="resources/annotations/{species}.{lineage}.rmats.ret_int.bed",
-       skip_ex="resources/annotations/{species}.{lineage}.rmats.skip_ex.bed",
-       skip_in="resources/annotations/{species}.{lineage}.rmats.skip_in.bed",
-       ret_ex="resources/annotations/{species}.{lineage}.rmats.ret_ex.bed",
+       ret_int="resources/annotations/{reference}/{lineage}.rmats.ret_int.bed",
+       skip_ex="resources/annotations/{reference}/{lineage}.rmats.skip_ex.bed",
+       skip_in="resources/annotations/{reference}/{lineage}.rmats.skip_in.bed",
+       ret_ex="resources/annotations/{reference}/{lineage}.rmats.ret_ex.bed",
     threads: 2
     resources:
         mem="8G",
@@ -208,7 +208,7 @@ rule validate_main_transcripts:
             sample=lineage[lineage.trs_val.tolist()].loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage].itertuples(),
         ),
         gene_tab="resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
-        sj=lambda wildcards: "resources/annotations/{species}.{{lineage}}.star.splice_junctions.bed".format(
+        sj=lambda wildcards: "resources/annotations/{{reference}}/{{lineage}}.star.splice_junctions.bed".format(
             species=get_reference_species(wildcards.reference),
         ),
         confident="resources/annotations/{reference}/genome.gtf.{tag}_confident.bed",

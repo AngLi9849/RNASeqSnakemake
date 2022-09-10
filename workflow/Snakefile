@@ -35,7 +35,7 @@ include: "rules/scale_factors.smk"
 include: "rules/rmats.smk"
 include: "rules/differential_reports.smk"
 include: "rules/differential_express.smk"
-#include: "rules/differential_splice.smk"
+include: "rules/differential_splice.smk"
 #include: "rules/differential_usage.smk"
 include: "rules/bam2bedgraph2bigwig.smk"
 include: "rules/metagene.smk"
@@ -63,11 +63,12 @@ rule all:
         #"differential/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/differential_expression/unpaired.internal_mRNAReadCount_normalised/All_Aligned.genome_annotated.custom-137b0876fc9ef82c9b34f6e1f1a90898.basic.GeneBody.lfc.tab",
         #"deseq2/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.gtf.TotalReadCount.unpaired.summary.tsv"
         #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.genome_annotated.custom-7e5ff750dfd4716388d8ebad286d805e.basic.GeneBody.rpkm.bed"
+        #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/SplicedAligned.HCT116_validated.custom-7e5ff750dfd4716388d8ebad286d805e.basic.GeneBody.star.SpliceSite.counts.tsv"
         #"resources/annotations/MANE_homo_sapiens.GRCh38.104/genome.gtf.bed12"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.fasta",
         #"salmon/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/CCDS_transcripts/quant.sf",
-        "resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.basic_transcripts.bed12",
-        "resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.basic_confident.bed12",
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.basic_transcripts.bed12",
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.basic_confident.bed12",
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/HCT116.gtf.basic_validated.bed"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_gene_info.tab"
         #"resources/annotations/homo_sapiens.HCT116.star.splice_junctions.bed"
@@ -82,7 +83,8 @@ rule all:
         #"resources/annotations/homo_sapiens.HCT116.rmats.ret_int.bed",
         #"matrices/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.fwd/genome_annotated.plot-095b4d96d6e4d066a112a711bfe0b4fb.basic.GeneBody.sense_main.1000bins.matrix.gz",
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104_genome.plot-095b4d96d6e4d066a112a711bfe0b4fb.annotated_basic.GeneBody.sense.before.bed"
-        get_genebody_diffexp_docx()
+        get_diffexp_docx(),
+        get_diffsplice_docx(),
         #"resources/templates/Arial.docx"
         #"test.tsv"
         #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/SplicedAligned.HCT116_validated.custom-7e5ff750dfd4716388d8ebad286d805e.basic.GeneBodyReads.lengths.tsv"

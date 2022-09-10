@@ -30,7 +30,7 @@ trimming:
   minimum_read_quality: 20
 
 counting:
-  count_every_overlap: TRUE # If a read is counted to every feature it overlaps  
+  count_every_overlap: FALSE # If a read is counted to every feature it overlaps  
 
 #Specific Settings for Splicing Analysis
 splicing: 

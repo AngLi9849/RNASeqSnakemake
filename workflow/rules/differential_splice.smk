@@ -1,13 +1,11 @@
 rule feature_splice_sites:
     input:
-        gene_tab = "resources/annotations/{species}_genome.gtf.{tag}_gene_info.tab",
-        bed= lambda wildcards: "resources/annotations/{{species}}_{g}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
-            g=wildcards.lineage if wildcards.valid=="validated" else "genome",
-        ),
-        sj = "resources/annotations/{species}.{lineage}.{source}.splice_junctions.bed"
+        gene_tab = "resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
+        bed= lambda wildcards: "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.bed",
+        sj="resources/annotations/{reference}/{lineage}.{source}.splice_junctions.bed",
     output:
-        bed="resources/annotations/{species}.{lineage}.{type}.{valid}_{tag}.{feature}.{source}_splice_sites.bed",
-        saf="resources/annotations/{species}.{lineage}.{type}.{valid}_{tag}.{feature}.{source}_splice_sites.saf",
+        bed="resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.{source}_splice_sites.bed",
+        saf="resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.{source}_splice_sites.saf",
     params:
         overhang = config["splicing"]["splice_site_overhang"],
     threads: 1
@@ -15,7 +13,7 @@ rule feature_splice_sites:
         mem="8G",
         rmem="6G",
     log:
-        "logs/bedtools/{species}.{lineage}_{valid}.{type}.{tag}.{feature}.{source}_splice_sites.log"
+        "logs/bedtools/{reference}.{lineage}_{valid}.{type}.{tag}.{feature}.{source}_splice_sites.log"
     conda:
         "../envs/bedtools.yaml"
     shell:
@@ -33,9 +31,9 @@ rule feature_splice_sites:
 
         awk -F'\\t' -v OFS='\\t' '
           {{
-             a = $2 ; b = $3 ; s = $6 ; $4 = $14 ;
+             a = $2 ; b = $3 ; s = $6 ; $4 = $17 ;
              $2 = a-{params.overhang};
-             $3 = a-{params.overhang};
+             $3 = a+{params.overhang};
              $7 = (s==1)? 5 : 3 ;
              print $1, $2, $3, $4, $5, $6, $7;
              $2 = b-{params.overhang} ;
@@ -60,24 +58,22 @@ rule splice_site_featurecount:
         splice_bai="star/{sample}/{unit}/{reference}/Spliced{prefix}.sortedByCoord.out.bam.bai",
         unsplice_bam="star/{sample}/{unit}/{reference}/Unspliced{prefix}.sortedByCoord.out.bam",
         unsplice_bai="star/{sample}/{unit}/{reference}/Unspliced{prefix}.sortedByCoord.out.bam.bai",
-        saf=lambda w: "resources/annotations/{{reference}}.{{lineage}}.{type}.{{valid}}_{{tag}}.{{feature}}.{{source}}_splice_sites.saf".format(
-            type="custom" if (w.feature in features["feature_name"].tolist()) else "gtf",
-        ),
+        saf="resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.{source}_splice_sites.saf",
     output:
-        splice="star/{sample}/{unit}/{reference}/Spliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSite.featurecounts.tab",
-        unsplice="star/{sample}/{unit}/{reference}/Unspliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSite.featurecounts.tab",
+        splice="featurecounts/{sample}/{unit}/{reference}/Spliced{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{source}.SpliceSite.featurecounts.tab",
+        unsplice="featurecounts/{sample}/{unit}/{reference}/Unspliced{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{source}.SpliceSite.featurecounts.tab",
     threads: 6
     resources:
         mem=lambda wildcards, input: (str((input.size//4000000000)+4) + "G"),
         rmem=lambda wildcards, input: (str((input.size//8000000000)+4) + "G"),
     log:
-        "logs/feature_counts/{reference}/{sample}-{unit}/Spliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSiteReads.log"
+        "logs/featurecounts/{sample}/{unit}/{reference}/Spliced{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{source}.SpliceSite.featurecounts.log"
     conda:
         "../envs/subread.yaml",
     params:
         unspl_overlap= config["splicing"]["splice_site_overhang"] + 1 ,
         strand=get_sample_strandedness,
-        paired=lambda wildcards:("" if not is_paired_end(wildcards.experiment,wildcards.sample) else "-p")
+        paired=lambda wildcards:("-p" if is_paired_end(wildcards.sample) else ""),
     shell:
         """
         featureCounts -s {params.strand} {params.paired} --minOverlap 1 -M -O -T {threads} -F SAF --verbose -a {input.saf} -o {output.splice} {input.splice_bam} &&
@@ -86,31 +82,34 @@ rule splice_site_featurecount:
 
 rule dexseq_splice_ratio:
     input:
-        spliced="{experiment}/counts/Spliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSite.counts.tsv",
-        unspliced="{experiment}/counts/Unspliced{prefix}.{lineage}_{valid}.{tag}.{feature}.{source}.SpliceSite.counts.tsv",
-        genetab=lambda wildcards: (str(get_annotation(experiments.loc[wildcards.experiment,"sample_source"])) + ".{tag}_gene_info.tab"),
+        spliced= lambda w: "featurecounts/{norm_group}/{{reference}}/Spliced{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}.star.SpliceSite.counts.tsv".format(
+            norm_group=experiments.loc[w.experiment,"group_name"],
+        ),
+        unspliced= lambda w: "featurecounts/{norm_group}/{{reference}}/Unspliced{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}.star.SpliceSite.counts.tsv".format(
+            norm_group=experiments.loc[w.experiment,"group_name"],
+        ),
+        genetab=lambda w: "resources/annotations/{source}/genome.gtf.{{tag}}_gene_info.tab".format(
+            source= str( get_sample_source(w.experiment) ),
+        ),
+        nuc=lambda w: "resources/annotations/{source}/{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed.nuc.tab".format(
+            source=  str( get_sample_source(w.experiment) ),
+        ),
+        bed=lambda w: "resources/annotations/{source}/{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
+            source=  str( get_sample_source(w.experiment) ),
+        ),
+        express="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
     output:
-        dir=directory("results/{experiment}/differential_splicing/All{prefix}")
+        lfc="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
+        levels="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
     params:
-        plot_script="workflow/scripts/R/differential_plots.R",
-        sample_table="config/samples.tsv",
-        biotypes=config["biotypes"],
-        goi=config["GOI"],
-        control=lambda wildcards: experiments.loc[wildcards.experiment,"control_condition"],
-        paired=lambda wildcards: str(experiments.loc[wildcards.experiment,"paired_analysis"]),
-        dir="results/{experiment}/differential_splicing/All{prefix}",
-        ma_number=config["differential_plots"]["ma_gene_name_numbers"],
-        volc_number=config["differential_plots"]["volcano_gene_name_numbers"],
-        up_col=config["differential_plots"]["up_colour"],
-        down_col=config["differential_plots"]["down_colour"],
-        p_threshold=config["differential_plots"]["p_value_threshold"],
+        paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
     resources:
         mem="16G",
         rmem="12G",
     conda:
         "../envs/dexseq.yaml"
     log:
-        "logs/dexseq/{experiment}/Aligned{prefix}.diffsplice.log",
+        "logs/dexseq/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
     threads: get_deseq2_threads()
     script:
         "../scripts/R/dexseq_splice.R"
