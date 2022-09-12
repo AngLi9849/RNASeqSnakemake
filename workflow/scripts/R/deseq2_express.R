@@ -69,7 +69,10 @@ rpkm <- data.frame(lapply(names(cts), function(x) {
 }))
 
 names(rpkm) <- names(cts)
+sum <- data.frame(lapply(rpkm,sum))
+
 rownames(rpkm) <- rownames(cts)
+
 rpkm <- rpkm/count_length$Length[match(rownames(rpkm),count_length$gene)]*(10^9)
 
 # Convert counts table to matrix
@@ -96,6 +99,10 @@ mean_level <- data.frame(
   lapply(c(control_cond,treatment), function(x) {
     apply(rpkm[,match(sample_table$sample_name[sample_table$condition==x],names(rpkm))],1,FUN=mean)}))
 names(mean_level) <- c(control,treat)
+
+levels <- rpkm
+
+ 
 
 # Calculate number of features considered in each  multi/monoexonic-biotype group
 cts_genes <- data.frame(cts_names,genes$biotype[match(cts_names,genes$gene_id)],genes$exon_count[match(cts_names,genes$gene_id)])
@@ -145,7 +152,7 @@ expr$rpkm <- expr$baseMean*1000000000/(expr$Length*mean(norm_sum$internal))
 
 write.table(data.frame("id"=rownames(rpkm),rpkm, check.names=FALSE), file=snakemake@output[["rpkm"]], sep='\t', row.names=F,quote=F,)
 
-write.table(data.frame("id"=rownames(norm_counts), norm_counts, check.names=FALSE), file=snakemake@output[["normcounts"]], sep='\t', row.names=F,quote=F)
+write.table(data.frame("id"=rownames(norm_counts), norm_counts, check.names=FALSE), file=snakemake@output[["counts"]], sep='\t', row.names=F,quote=F)
 
 #write.table(data.frame(cts_genes[c(1,5)], check.names=FALSE),file=snakemake@output[["count_sums"]],sep='\t',row.names=F,quote=F)
 

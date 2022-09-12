@@ -27,10 +27,12 @@ if (snakemake@threads > 1) {
 # Import lfc table and mean levels table
 expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 
 # Import snakemake parameters and inputs
 # Identify analysis
-difference <- as.character(snakemake@wildcards[["difference"]])
+diff <- as.character(snakemake@wildcards[["difference"]])
+difference <- as.character(diff)
 analysis <- paste("differential", difference, "analysis")
 
 if (difference == "expression") {
@@ -55,7 +57,7 @@ spikein <- gsub("_"," ",as.character(snakemake@wildcards[["spikein"]]))
 
 splice <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["splice"]]))
 normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["normaliser"]]))
-counting <- "read count"
+counting <- ifelse(diff=="splicing_ratio","splice sites read count","read count")
 counted <- gsub("_"," ",paste(tolower(splice), tolower(prefix), feature, counting, sep=" "))
 norm <- gsub("_"," ",paste(spikein, normaliser, "read count", sep=" "))
 
@@ -83,6 +85,14 @@ title <- gsub("_"," ",paste(experiment, toTitleCase(analysis),sep=" "))
 # Initialise Plotting
 source(snakemake@config[["differential_plots"]][["scripts"]][["initialise"]])
 expr$colour <- ifelse(expr$padj < sig_p, ifelse(expr$log2FoldChange < 0, down_col, up_col), insig_col)
+
+analysis_plots <- read.csv(snakemake@config[["analysis_summary_plots"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+analysis_plots
+diff
+sum_list <- as.list(colnames(analysis_plots)[analysis_plots[rownames(analysis_plots)==diff,]==TRUE])
+sum_list
+sum_list <- c(sum_list,"ma","volcano")
+
 
 # Initialise Word Document
 doc <- read_docx(snakemake@input[["docx"]])
@@ -115,6 +125,14 @@ expr_i$log10P <- -log10(expr_i$padj)
 
 mean_level_i <- mean_level[rownames(mean_level) %in% expr_i$featureID,]
 
+if (diff=="splicing_ratio") {
+splice_sum_i <- lapply(cts[(cts$state=="spliced") && cts$id %in% expr_i$featureID,1:(ncol(cts)-2)],sum)
+unsplice_sum_i <- lapply(cts[(cts$state=="unspliced") && cts$id %in% expr_i$featureID,1:(ncol(cts)-2)],sum)
+sum <- splice_sum_i/(splice_sum_i + 2*unsplice_sum_i)
+} else {
+sum <- lapply(cts[rownames(cts) %in% expr_i$featureID,],sum)
+}
+
 # Set file name and path
 feature_i <- ifelse(i=="", feature, paste(tolower(i),feature))
 
@@ -146,21 +164,16 @@ expr_i$colour <- ifelse(expr_i$padj < sig_p, ifelse(expr_i$log2FoldChange < 0, d
 
 title_i <- gsub("_"," ",paste(experiment, feature_i, "Differential", toTitleCase(difference),sep=" "))
 
-# Pie Chart ===================================================
-source(snakemake@config[["differential_plots"]][["scripts"]][["pie_chart"]])
-
-pie_caption
-# Violin Plot =================================================
-source(snakemake@config[["differential_plots"]][["scripts"]][["violin_plot"]])
-# MA plot ====================================================
-source(snakemake@config[["differential_plots"]][["scripts"]][["ma_plot"]])
-# Volcano Plot ===============================================
-source(snakemake@config[["differential_plots"]][["scripts"]][["volcano_plot"]])
+# Summary Plots =============================================
+for ( i in sum_list ) {{
+source(snakemake@config[["differential_plots"]][["scripts"]][[paste(i)]])
+}}
 # Metagene ===================================================
-#source(snakemake@config[["differential_plots"]][["scripts"]][["metagene"]])
-
+#if (diff=="expression") {{
+#source(snakemake@config[["differential_plots"]][["scripts"]][["meta"]])
+#}}
 # Heatmap ====================================================
-#source(snakemake@config[["differential_plots"]][["scripts"]][["heatmap"]])
+#source(snakemake@config[["differential_plots"]][["scripts"]][["heat"]])
 
 
 # GC, Length and RPKM Bias ===================================
@@ -168,7 +181,6 @@ source(snakemake@config[["differential_plots"]][["scripts"]][["bias"]])
 
 # Summary ====================================================
 
-sum_list <- list("pie","violin","ma","volcano")
 sum_plot_list <- lapply(sum_list,function(x) {get(x)})
 sum_ncol <- 2
 sum_nrow <- ceiling(length(sum_plot_list)/sum_ncol)
@@ -176,7 +188,7 @@ sum_nrow <- ceiling(length(sum_plot_list)/sum_ncol)
 summary <- ggarrange(plotlist=sum_plot_list,ncol=sum_ncol,nrow=sum_nrow,labels="AUTO")
 
 summary_title <- paste(title_i, "Analysis Summary.")
-summary_caption <- paste("Overviews of changes in ", feature_i, " ", difference, ". ", str_to_sentence(difference), " are compared in Deseq2 based on ", counted, " normalised to ", norm, ".", sep="")
+summary_caption <- paste("Overviews of changes in ", feature_i, " ", difference, ". ", str_to_sentence(difference), " are compared based on ", counted, " normalised to ", norm, ".", sep="")
 summary_captions <- lapply(paste(sum_list,"_caption",sep=""),function(x) {get(x)})
 summary_captions <- paste( "(", LETTERS[1:length(summary_captions)], "). ", summary_captions, sep="")
 summary_caption <- unlist(list(summary_caption,summary_captions))

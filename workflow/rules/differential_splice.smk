@@ -101,7 +101,10 @@ rule dexseq_splice_ratio:
     output:
         lfc="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
         levels="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
+        counts="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
     params:
+        control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
+        treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],
         paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
     resources:
         mem="16G",

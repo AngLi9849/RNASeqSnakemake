@@ -5,7 +5,6 @@ sink(log, type="message")
 options(error=function()traceback(2))
 
 library(DEXSeq)
-library(ggrepel)
 library(ashr)
 library(dplyr)
 library(tools)
@@ -37,14 +36,7 @@ bed[5][is.na(bed[5])] <- bed[1][is.na(bed[5])]
 genes <- bed[3:6]
 names(genes) <- c("gene_id","gene_name","biotype","exon_count")
 
-#  Import sample config, size factors and count table and conduct DESeq2 Differential Expression Analysis
 rep_pair <- as.logical(snakemake@params[["paired"]])
-
-# Import size factors
-size_table <- read.csv(snakemake@input[["size_table"]],header=T,sep="\t",check.names=F)
-size_table <- size_table[match(samples,size_table$sample_name),]
-size_factors <- as.numeric(size_table$size_factor)
-names(size_factors) <- size_table$sample_name
 
 #Import splice and unsplice counts
 splice_cts <- read.table(snakemake@input[["spliced"]], header=TRUE, row.names="gene", check.names=FALSE, stringsAsFactors=FALSE)
@@ -62,6 +54,11 @@ unsplice_cts_names <- row.names(unsplice_cts)
 unsplice_cts <- sapply(unsplice_cts,as.numeric)
 row.names(unsplice_cts) <- unsplice_cts_names
 
+cts <- data.frame(rbind(splice_cts,unsplice_cts), check.names=F)
+cts$state <- c(replicate(nrow(splice_cts),"spliced"),replicate(nrow(unsplice_cts),"unspliced"))
+cts$id <- c(rownames(splice_cts),rownames(splice_cts))
+
+
 feature_id <- row.names(splice_cts)
 temp <- data.frame(row.names(splice_cts))
 temp$group_id <- "input"
@@ -73,6 +70,7 @@ sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, 
 sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
 sample_table <- sample_table[match(samples,sample_table$sample_name),]
 rownames(sample_table) <- sample_table$sample_name
+sample_table <- sample_table[order(row.names(sample_table)), , drop=F]
 
 feature_id <- row.names(splice_cts)
 temp <- data.frame(row.names(splice_cts))
@@ -81,8 +79,7 @@ temp$group_id <- "input"
 group_id <- temp$group_id
 
 coldata <- sample_table[,c("condition","replicate")]
-coldata <- coldata[order(row.names(coldata)), , drop=F]
-
+coldata
 splice_control <- splice_cts[,sample_table$condition==control_cond]
 unsplice_control <- unsplice_cts[,sample_table$condition==control_cond]
 coldata_control <- coldata[sample_table$condition==control_cond,]
@@ -100,6 +97,14 @@ coldata_exp <- rbind(coldata_control,coldata[sample_table$condition==treatment,]
 
 coldata <- data.frame(lapply(coldata_exp,function(x) { gsub("[-_]",".",x) } ))
 
+control_cond
+treatment
+sample_table
+coldata
+head(splice_cts_exp,10)
+nrow(splice_cts_exp)
+head(unsplice_cts_exp,10)
+nrow(unsplice_cts_exp)
 
 if (rep_pair){
   full_model <- ~sample + exon + condition:exon + replicate:exon
@@ -127,6 +132,7 @@ expr$exon <- ifelse(expr$exon_count>1,"Multiexonic","Monoexonic")
 expr$change <- ifelse(expr$Rawlog2FoldChange>=0,"Upregulated","Downregulated")
 expr$group <- toTitleCase(gsub("_"," ",paste(expr$exon,expr$biotype)))
 expr$group2<-paste(expr$change,expr$group)
+expr$log2FoldChange <- expr$Rawlog2FoldChange
 expr$featureID <- rownames(expr)
 expr$Length <- express$Length[match(rownames(expr),express$featureID)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
@@ -143,9 +149,29 @@ expr$rpkm <- express$rpkm[match(rownames(expr),express$featureID)]
 #expr <- expr %>% arrange(change,padj) %>% group_by(change) %>% mutate(total_p_rank=1:n()) %>% ungroup
 #expr <- expr %>% arrange(change,abs(log2FoldChange)) %>% group_by(change) %>% mutate(total_lfc_rank=n():1) %>% ungroup
 
+# Total Splicing Ratio and mean feature splicing ratios
+splice_cts_sum <- apply(splice_cts,2,FUN=sum)
+unsplice_cts_sum <- apply(unsplice_cts,2,FUN=sum)
+sum <- ((splice_cts_sum)/(splice_cts_sum + 2*unsplice_cts_sum))
+
+splice_ratio <- data.frame(splice_cts/(splice_cts + 2*unsplice_cts))
+names(splice_ratio) <- row.names(coldata)
+splice_ratio <- splice_ratio[coldata$condition %in% c(control_cond,treatment)]
+contrast <- list(c(control_cond,treatment))
+
+splice_ratio_mean <- data.frame(lapply(c(control_cond,treatment),function(x) {
+    apply(splice_ratio[,coldata$condition==x],1,FUN=mean)
+  }))
+names(splice_ratio_mean) <- c(control,treat)
+splice_ratio_mean <- splice_ratio_mean[rownames(splice_ratio_mean) %in% expr$featureID,]
+mean_level <- splice_ratio_mean[complete.cases(splice_ratio_mean),]
+
 write.table(data.frame("id"=rownames(expr),expr, check.names=FALSE),file=snakemake@output[["lfc"]],sep='\t',row.names=F,quote=F)
 
 write.table(data.frame("id"=rownames(mean_level),mean_level, check.names=FALSE),file=snakemake@output[["levels"]],sep='\t',row.names=F,quote=F)
+
+write.table(data.frame("id"=rownames(cts),cts, check.names=FALSE),file=snakemake@output[["counts"]],sep='\t',row.names=F,quote=F)
+
 
 #}
 

@@ -1,3 +1,21 @@
+
+dot_data <- data.frame(
+  unlist(
+    lapply(colnames(mean_level_i), function (x) { 
+      mean_level_i[paste(x)] 
+    })),
+  unlist(
+    lapply(colnames(mean_level_i), function (x) { 
+      replicate(nrow(mean_level_i),paste(x)) 
+    })),
+  unlist(
+    lapply(colnames(mean_level_i), function (x) { 
+      rownames(mean_level_i) 
+    }))
+)
+
+names(dot_data) <- c("value","condition","featureID")
+dot_data$rpkm <- expr$rpkm[match(dot_data$featureID,expr$featureID)]
 dot_data$top10 <- ifelse(dot_data$rpkm>=quantile(dot_data$rpkm,0.9),dot_data$value,NA)
 dot_data$top50 <- ifelse(dot_data$rpkm>=quantile(dot_data$rpkm,0.5),dot_data$value,NA)
 

@@ -71,7 +71,7 @@ pie_caption <- paste(
   sig_down, " significantly decreased (", sig_down_pc, ", ", down_col, "), and ",
   insig, " changed insignificantly (", insig_pc, ", p >= ", sig_p, "). ",
   "Changes were not detected in ", undetect, " (", undetect_pc, ", p >= ", undetect_p, "), and ",
-  insuf_i, " were insufficiently evidenced (", insuf_pc ,", counted less than", round(min_mean,2), " reads per sample", rpkm_lim, 
+  insuf_i, " were insufficiently evidenced (", insuf_pc ,", counted less than ", round(min_mean,2), " reads per sample", rpkm_lim, 
   sep="")
 
 

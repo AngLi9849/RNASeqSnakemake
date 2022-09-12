@@ -295,7 +295,7 @@ def get_diffexp_docx():
 
 def get_diffsplice_docx():
     counts = expand(
-        "diff_reports/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.paired}.{exp.normaliser}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{splice}_Aligned{demulti}{dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        "diff_reports/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.paired}.{exp.normaliser}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.All_Aligned{demulti}{dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
         exp=experiments.itertuples(), valid=VALID, tag=TAG, demulti=DEMULTI, dedup=DEDUP,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_spl.tolist()].itertuples()
     ),
     return counts

@@ -1,3 +1,8 @@
+bar_data <- data.frame(c(control,treat),
+                      as.numeric(paste(lapply(c(control_cond,treatment),function(x) {mean(sum[,names(sum) %in% sample_table$sample_name[sample_table$condition==x]])}))),
+                      as.numeric(paste(lapply(c(control_cond,treatment),function(x) {sd(sum[,names(sum) %in% sample_table$sample_name[sample_table$condition==x]])})))
+)
+
 names(bar_data) <- c("condition","mean","SD")
 bar_cond <- bar_data$condition
 names(bar_cond) <- bar_data$condition

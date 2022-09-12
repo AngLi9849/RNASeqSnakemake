@@ -8,6 +8,8 @@ samples: config/samples.tsv
 experiments: config/experiments.tsv
 feature_parameters: config/features.tsv
 references_info: config/references.tsv
+analysis_summary_plots: config/analysis.tsv
+
 
 MANE_gene_range: FALSE # Determine GRCh38 gene ranges and principal structures using MANE project annotated transcripts, if validating features, validated principal transcripts may take priority
 MANE_annotation: "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.0/MANE.GRCh38.v1.0.ensembl_genomic.gtf.gz" # Curated disease-related protein coding gene structures from MANE project for human GRCh38 genome, see https://www.ncbi.nlm.nih.gov/refseq/MANE/ 
@@ -19,7 +21,7 @@ remove_duplicate_reads: FALSE
 # Bigwig track options
 bigwig_bin_size: 1
 #strand_specific_bigwigs: TRUE # Generate strand-specific bigwigs for strand-specific data
-seperate_spliced_reads: TRUE 
+seperate_spliced_reads: FALSE 
 unspliced_min_length: 20
 unspliced_max_length: 2000
 
@@ -72,14 +74,14 @@ differential_analysis:
 differential_plots:
   scripts:
     initialise: "workflow/scripts/R/initialise_plots.R"
-    ma_plot: "workflow/scripts/R/ma_plot.R"
-    volcano_plot: "workflow/scripts/R/volcano_plot.R"
-    metagene: "workflow/scripts/R/metagene_plot.R"
-    heatmap: "workflow/scripts/R/heatmap.R"
-    bar_plot: "workflow/scripts/R/bar_plot.R"
-    violin_plot: "workflow/scripts/R/violin_plot.R"
-    gradient_dot_plot: "workflow/scripts/R/dot_plot.R"
-    pie_chart: "workflow/scripts/R/pie_chart.R"
+    ma: "workflow/scripts/R/ma_plot.R"
+    volcano: "workflow/scripts/R/volcano_plot.R"
+    meta: "workflow/scripts/R/metagene_plot.R"
+    heat: "workflow/scripts/R/heatmap.R"
+    bar: "workflow/scripts/R/bar_plot.R"
+    violin: "workflow/scripts/R/violin_plot.R"
+    dot: "workflow/scripts/R/dot_plot.R"
+    pie: "workflow/scripts/R/pie_chart.R"
     bias: "workflow/scripts/R/bias_plot.R"   
   # Resolution of output files. Typically publications require at least 300 dpi.
   dpi: 400
