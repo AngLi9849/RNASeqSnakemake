@@ -25,7 +25,7 @@ dot_ymin <- min(dot_data$value)
 dot_p_y <- max(dot_data$value) + 0.1*abs(max(dot_data$value)-min(dot_data$value))
 
 dot_bin <- abs(max(dot_data$value) - min(dot_data$value))/(nrow(dot_data)/70)
-dot <- ggplot(data = dot_data, aes(x=condition,y=value,fill=condition,colour=condition)) +
+dot <- ggplot(data = dot_data, aes(x=factor(condition,levels=c(control,treat)),y=value,fill=condition,colour=condition)) +
   geom_dotplot(
     aes(
       x=dot_data$condition,
@@ -59,8 +59,8 @@ dot <- ggplot(data = dot_data, aes(x=condition,y=value,fill=condition,colour=con
     method="histodot",
     alpha=1
   ) +
-  scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,exp)], labels = bar_cond) +
-  scale_colour_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,exp)], labels = bar_cond) +
+  scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,treat)], labels = c(control,treat)) +
+  scale_colour_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,treat)], labels = c(control,treat)) +
   ylab("Splicing Index") +
   stat_compare_means(comparisons = contrast, label = "p.signif", label.y=dot_p_y, method="t.test") +
   scale_y_continuous(limits = c(dot_ymin, dot_ymax)) +
@@ -77,5 +77,9 @@ dot <- ggplot(data = dot_data, aes(x=condition,y=value,fill=condition,colour=con
     axis.title.y = element_text(size=9)
   )
 
-ggsave("dot.png",dot,width=w/2,height=h/4,units="cm",dpi=300)
+dot_caption <- paste(
+  "Distribution of normalised ", difference, " of ", nrow(mean_level_i), " expressed ",  feature_i, " in dot plot. Top 50 and 10 percent highliest expressed ", feature_i, " are represented by increasingly opaque dots.", sep=""
+  )
+ 
+#ggsave("dot.png",dot,width=w/2,height=h/4,units="cm",dpi=300)
 

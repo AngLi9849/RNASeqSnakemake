@@ -22,8 +22,23 @@ if (snakemake@threads > 1) {
 # Set Control and Treatment Conditions
 treatment <- as.character(snakemake@params[["treat"]])
 control_cond <- as.character(snakemake@params[["control"]])
-treat <-  gsub("_"," ",treatment)
-control <- gsub("_"," ",control_cond)
+
+treat_split <- strsplit(treatment,"")
+control_split <- strsplit(control_cond,"")
+
+cond_match_ls <- match(treat_split[[1]],control_split[[1]])
+cond_match_ls <- lapply(cond_match_ls,function(x) {ifelse(is.na(x),1,x)})
+nonmatch <- c(Inf)
+for (i in 1:length(cond_match_ls)) {if (i != cond_match_ls[i]) {nonmatch <- c(nonmatch,i)}}
+cond_match <- min(nonmatch)
+
+treat_str <- substr(treatment,cond_match,length(treat_split[[1]]))
+control_str <- substr(control_cond,cond_match,length(control_split[[1]]))
+common_str <- ifelse(cond_match==1,"",substr(treatment,1,cond_match-1))
+
+common <- gsub("_"," ",common_str)
+treat <-  gsub("_"," ",treat_str)
+control <- gsub("_"," ",control_str)
 
 # Import feature lengths and nucleotide content
 count_length <- read.table(snakemake@input[["length"]], sep='\t',header=TRUE, check.names=FALSE)

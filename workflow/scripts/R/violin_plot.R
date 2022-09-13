@@ -51,5 +51,5 @@ violin <- violin + scale_y_continuous(limits = c(0, violin_ymax))
 test_p_i <- compare_means(formula=value ~ condition, data = violin_data, comparisons = compare, method="t.test", paired = TRUE)
 
 violin_caption <- paste(
-  "Distribution of normalised ", difference, " of ", nrow(mean_level_i), " expressed ",  feature_i, " presented as violin and bar plot. Indicated significance of comparison is computed with ", as.character(test_p_i$method[1]), " method. (p=", test_p_i$p.format[1] , ", ", test_p_i$p.signif[1],")", sep=""
+  "Distribution of normalised ", difference, " of ", nrow(mean_level_i), " expressed ",  feature_i, " presented as violin and box plot. Indicated significance of comparison is computed with ", as.character(test_p_i$method[1]), " method. (p=", test_p_i$p.format[1] , ", ", test_p_i$p.signif[1],")", sep=""
   )

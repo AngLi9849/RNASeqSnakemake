@@ -20,8 +20,23 @@ if (snakemake@threads > 1) {
 # Set Control and Treatment Conditions
 treatment <- as.character(snakemake@params[["treat"]])
 control_cond <- as.character(snakemake@params[["control"]])
-treat <-  gsub("_"," ",treatment)
-control <- gsub("_"," ",control_cond)
+
+treat_split <- strsplit(treatment,"")
+control_split <- strsplit(control_cond,"")
+
+cond_match_ls <- match(treat_split[[1]],control_split[[1]])
+cond_match_ls <- lapply(cond_match_ls,function(x) {ifelse(is.na(x),1,x)})
+nonmatch <- c(Inf)
+for (i in 1:length(cond_match_ls)) {if (i != cond_match_ls[i]) {nonmatch <- c(nonmatch,i)}}
+cond_match <- min(nonmatch)
+
+treat_str <- substr(treatment,cond_match,length(treat_split[[1]]))
+control_str <- substr(control_cond,cond_match,length(control_split[[1]]))
+common_str <- ifelse(cond_match==1,"",substr(treatment,1,cond_match-1))
+
+common <- gsub("_"," ",common_str)
+treat <-  gsub("_"," ",treat_str)
+control <- gsub("_"," ",control_str)
 
 # Import feature lengths and nucleotide content
 express <- read.table(snakemake@input[["express"]], sep='\t',header=TRUE, check.names=FALSE)
@@ -90,12 +105,14 @@ coldata_control <- coldata[sample_table$condition==control_cond,]
 splice_exp <- splice_cts[,sample_table$condition==treatment]
 unsplice_exp <- unsplice_cts[,sample_table$condition==treatment]
 
-splice_cts_exp <- cbind(splice_control,splice_exp)
-unsplice_cts_exp <- cbind(unsplice_control,unsplice_exp)
+splice_cts_exp <- cbind(splice_exp,splice_control)
+unsplice_cts_exp <- cbind(unsplice_exp,unsplice_control)
 
 coldata_exp <- rbind(coldata_control,coldata[sample_table$condition==treatment,])
 
 coldata <- data.frame(lapply(coldata_exp,function(x) { gsub("[-_]",".",x) } ))
+
+coldata$condition <- factor(coldata$condition, levels=c(gsub("[-_]",".",control_cond),gsub("[-_]",".",treatment)))
 
 control_cond
 treatment
@@ -150,20 +167,16 @@ expr$rpkm <- express$rpkm[match(rownames(expr),express$featureID)]
 #expr <- expr %>% arrange(change,abs(log2FoldChange)) %>% group_by(change) %>% mutate(total_lfc_rank=n():1) %>% ungroup
 
 # Total Splicing Ratio and mean feature splicing ratios
-splice_cts_sum <- apply(splice_cts,2,FUN=sum)
-unsplice_cts_sum <- apply(unsplice_cts,2,FUN=sum)
-sum <- ((splice_cts_sum)/(splice_cts_sum + 2*unsplice_cts_sum))
-
-splice_ratio <- data.frame(splice_cts/(splice_cts + 2*unsplice_cts))
-names(splice_ratio) <- row.names(coldata)
-splice_ratio <- splice_ratio[coldata$condition %in% c(control_cond,treatment)]
-contrast <- list(c(control_cond,treatment))
+splice_ratio <- data.frame(splice_cts/(splice_cts + 2*unsplice_cts),check.names=F)
+head(splice_ratio,10)
 
 splice_ratio_mean <- data.frame(lapply(c(control_cond,treatment),function(x) {
-    apply(splice_ratio[,coldata$condition==x],1,FUN=mean)
+    apply(splice_ratio[,colnames(splice_ratio) %in% sample_table$sample_name[sample_table$condition==x]],1,FUN=mean)
   }))
 names(splice_ratio_mean) <- c(control,treat)
 splice_ratio_mean <- splice_ratio_mean[rownames(splice_ratio_mean) %in% expr$featureID,]
+head(splice_ratio_mean,10)
+
 mean_level <- splice_ratio_mean[complete.cases(splice_ratio_mean),]
 
 write.table(data.frame("id"=rownames(expr),expr, check.names=FALSE),file=snakemake@output[["lfc"]],sep='\t',row.names=F,quote=F)

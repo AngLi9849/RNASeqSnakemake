@@ -3,8 +3,8 @@ expr_bias$change <- paste("Significantly", expr_bias$change)
 expr_bias$abslog2FoldChange <- abs(expr_bias$log2FoldChange)
 
 
-FCmin=quantile(expr_bias$log2FoldChange,0.001)
-FCmax=quantile(expr_bias$log2FoldChange,0.999)
+FCmin=quantile(expr_bias$log2FoldChange,0.001,na.rm=TRUE)
+FCmax=quantile(expr_bias$log2FoldChange,0.999,na.rm=TRUE)
 
 expr_bias$density <- 0.01/expr_bias$padj
 
@@ -125,10 +125,14 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog
         axis.title.x = element_text(size=9)
   )
 
-bias <- ggarrange(plotlist=list(GC_plot,Length_plot,rpkm_plot),ncol=1,nrow=3,labels="AUTO")
-
 bias_title <- paste("Potential Biases in ", title_i, ".",sep="")
 
+if (nrow(expr_bias)==0) {
+bias <- ""
+bias_caption <- paste("There is not any significant changes in ", difference, " of ", feature_i, ".",sep="")
+} else {
+bias <- ggarrange(plotlist=list(GC_plot,Length_plot,rpkm_plot),ncol=1,nrow=3,labels="AUTO")
 bias_caption <- paste(
   "Absolute values of significant (p < ", sig_p, ") log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
 )
+}

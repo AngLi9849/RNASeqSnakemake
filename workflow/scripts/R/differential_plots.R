@@ -39,6 +39,7 @@ if (difference == "expression") {
   difference <- "expression levels"
   difference_unit <- "expression levels (RPKM)"
 } else {
+  difference <- gsub("_"," ",difference)
   difference_unit <- gsub("_"," ",difference)
 }
 
@@ -51,9 +52,28 @@ feature <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.
 experiment <- gsub("_"," ",as.character(snakemake@wildcards[["experiment"]]))
 treatment <- as.character(snakemake@params[["treat"]])
 control_cond <- as.character(snakemake@params[["control"]])
-treat <-  gsub("_"," ",treatment)
-control <- gsub("_"," ",control_cond)
+
+treat_split <- strsplit(treatment,"")
+control_split <- strsplit(control_cond,"")
+
+cond_match_ls <- match(treat_split[[1]],control_split[[1]])
+cond_match_ls <- lapply(cond_match_ls,function(x) {ifelse(is.na(x),1,x)})
+nonmatch <- c(Inf)
+for (i in 1:length(cond_match_ls)) {if (i != cond_match_ls[i]) {nonmatch <- c(nonmatch,i)}}
+cond_match <- min(nonmatch)
+
+treat_str <- substr(treatment,cond_match,length(treat_split[[1]]))
+control_str <- substr(control_cond,cond_match,length(control_split[[1]]))
+common_str <- ifelse(cond_match==1,"",substr(treatment,1,cond_match-1))
+
+common <- gsub("_"," ",common_str)
+treat <-  gsub("_"," ",treat_str)
+control <- gsub("_"," ",control_str)
+
 spikein <- gsub("_"," ",as.character(snakemake@wildcards[["spikein"]]))
+
+contrast <- list(c(control,treat))
+
 
 splice <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["splice"]]))
 normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["normaliser"]]))
@@ -126,12 +146,18 @@ expr_i$log10P <- -log10(expr_i$padj)
 mean_level_i <- mean_level[rownames(mean_level) %in% expr_i$featureID,]
 
 if (diff=="splicing_ratio") {
-splice_sum_i <- lapply(cts[(cts$state=="spliced") && cts$id %in% expr_i$featureID,1:(ncol(cts)-2)],sum)
-unsplice_sum_i <- lapply(cts[(cts$state=="unspliced") && cts$id %in% expr_i$featureID,1:(ncol(cts)-2)],sum)
-sum <- splice_sum_i/(splice_sum_i + 2*unsplice_sum_i)
+splice_sum_i <- apply(cts[(cts$state=="spliced" & cts$id %in% expr_i$featureID),1:(ncol(cts)-2)],2,sum)
+unsplice_sum_i <- apply(cts[(cts$state=="unspliced" & cts$id %in% expr_i$featureID),1:(ncol(cts)-2)],2,sum)
+splice_sum_i
+unsplice_sum_i
+sum_i <- data.frame(splice_sum_i/(splice_sum_i + 2*unsplice_sum_i),check.names=F)
 } else {
-sum <- lapply(cts[rownames(cts) %in% expr_i$featureID,],sum)
+sum_i <- data.frame(lapply(cts[rownames(cts) %in% expr_i$featureID,],sum))
 }
+splice_sum_i
+unsplice_sum_i
+
+sum_i
 
 # Set file name and path
 feature_i <- ifelse(i=="", feature, paste(tolower(i),feature))
