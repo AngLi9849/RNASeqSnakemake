@@ -13,7 +13,7 @@ bar_brks <- signif(c(bar_max/2,bar_max),2)
 bar <- ggplot(data = bar_data, aes(x=factor(condition,levels=c(control,treat)), y=mean, fill = condition)) + 
   geom_col(width=0.6,colour = "black") + 
   geom_errorbar(aes(ymin=mean-SD,ymax=mean+SD),width=0.2,position=position_dodge()) +
-  scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,exp)], labels = bar_cond) +
+  scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,treat)], labels = bar_cond) +
   scale_x_discrete(breaks=bar_data$condition) +
   scale_y_continuous(limits=c(0,bar_max),breaks=c(0,bar_brks)) +
   ylab(paste("Total",toTitleCase(difference_unit))) +
