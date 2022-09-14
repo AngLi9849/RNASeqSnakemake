@@ -16,7 +16,7 @@ MANE_annotation: "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.
 
 # Alignment Processing options (TRUE, FALSE or BOTH)
 remove_multimappers: FALSE
-remove_duplicate_reads: TRUE
+remove_duplicate_reads: FALSE
 
 # Bigwig track options
 bigwig_bin_size: 1

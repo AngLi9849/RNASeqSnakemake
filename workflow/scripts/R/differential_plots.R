@@ -60,11 +60,11 @@ cond_match_ls <- match(treat_split[[1]],control_split[[1]])
 cond_match_ls <- lapply(cond_match_ls,function(x) {ifelse(is.na(x),1,x)})
 nonmatch <- c(Inf)
 for (i in 1:length(cond_match_ls)) {if (i != cond_match_ls[i]) {nonmatch <- c(nonmatch,i)}}
-cond_match <- min(nonmatch)
+cond_match <- min(nonmatch)-1
 
 treat_str <- substr(treatment,cond_match,length(treat_split[[1]]))
 control_str <- substr(control_cond,cond_match,length(control_split[[1]]))
-common_str <- ifelse(cond_match==1,"",substr(treatment,1,cond_match-1))
+common_str <- ifelse(cond_match<=1,"",substr(treatment,1,cond_match))
 
 common <- gsub("_"," ",common_str)
 treat <-  gsub("_"," ",treat_str)

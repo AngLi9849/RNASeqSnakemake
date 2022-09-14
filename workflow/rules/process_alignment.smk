@@ -153,7 +153,14 @@ rule featurecounts:
               }}
             }}
            ' - |
-           sort -k1,1 >> {output.tab} ;
+           sort -k1,1 >> {output.tab}
+
+#          for i in $(cut -f2 {input.saf} | sort | uniq) ; do
+#            rm {input.bam}"$i".bam.bai ;
+#            rm {input.bam}"$i".bam ;
+#            rm {output.tab}"$i".chr.tab ;
+#          done ;
+
         else    
         featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
         fi

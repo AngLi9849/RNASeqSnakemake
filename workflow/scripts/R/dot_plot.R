@@ -24,7 +24,7 @@ dot_ymax <- max(dot_data$value) + 0.2*abs(max(dot_data$value)-min(dot_data$value
 dot_ymin <- min(dot_data$value)
 dot_p_y <- max(dot_data$value) + 0.1*abs(max(dot_data$value)-min(dot_data$value))
 
-dot_bin <- abs(max(dot_data$value) - min(dot_data$value))/(nrow(dot_data)/70)
+dot_bin <- abs(max(dot_data$value) - min(dot_data$value))/(nrow(dot_data)/50)
 dot <- ggplot(data = dot_data, aes(x=factor(condition,levels=c(control,treat)),y=value,fill=condition,colour=condition)) +
   geom_dotplot(
     aes(

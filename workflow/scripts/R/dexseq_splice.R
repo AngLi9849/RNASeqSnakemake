@@ -28,11 +28,11 @@ cond_match_ls <- match(treat_split[[1]],control_split[[1]])
 cond_match_ls <- lapply(cond_match_ls,function(x) {ifelse(is.na(x),1,x)})
 nonmatch <- c(Inf)
 for (i in 1:length(cond_match_ls)) {if (i != cond_match_ls[i]) {nonmatch <- c(nonmatch,i)}}
-cond_match <- min(nonmatch)
+cond_match <- min(nonmatch)-1
 
 treat_str <- substr(treatment,cond_match,length(treat_split[[1]]))
 control_str <- substr(control_cond,cond_match,length(control_split[[1]]))
-common_str <- ifelse(cond_match==1,"",substr(treatment,1,cond_match-1))
+common_str <- ifelse(cond_match<=1,"",substr(treatment,1,cond_match))
 
 common <- gsub("_"," ",common_str)
 treat <-  gsub("_"," ",treat_str)
@@ -94,7 +94,7 @@ temp$group_id <- "input"
 group_id <- temp$group_id
 
 coldata <- sample_table[,c("condition","replicate")]
-coldata
+
 splice_control <- splice_cts[,sample_table$condition==control_cond]
 unsplice_control <- unsplice_cts[,sample_table$condition==control_cond]
 coldata_control <- coldata[sample_table$condition==control_cond,]
@@ -108,11 +108,13 @@ unsplice_exp <- unsplice_cts[,sample_table$condition==treatment]
 splice_cts_exp <- cbind(splice_exp,splice_control)
 unsplice_cts_exp <- cbind(unsplice_exp,unsplice_control)
 
-coldata_exp <- rbind(coldata_control,coldata[sample_table$condition==treatment,])
+coldata_exp <- coldata[sample_table$condition==treatment,]
 
-coldata <- data.frame(lapply(coldata_exp,function(x) { gsub("[-_]",".",x) } ))
+coldata <- rbind(coldata_exp,coldata_control)
+coldata_samples <- rownames(coldata)
 
-coldata$condition <- factor(coldata$condition, levels=c(gsub("[-_]",".",control_cond),gsub("[-_]",".",treatment)))
+coldata <- data.frame(lapply(coldata,function(x) { gsub("[-_]",".",x) } ))
+rownames(coldata) <- coldata_samples
 
 control_cond
 treatment

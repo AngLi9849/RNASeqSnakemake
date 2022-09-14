@@ -1,12 +1,12 @@
 # Define Control Conditions and Normalisation Methods for each Treatment Condition in each Protocol.
 protocol              	treatment       	control         	sample_species                 	sample_lineage 	splice	trs_val	pairRep	spikein	spikein_species                	norm_feat	norm_gene 
-#Chromatin_RNA-Seq   	HNRNPU-AID_KO      	HCT116          	homo_sapiens                  	HCT116         	TRUE	FALSE	FALSE	FALSE	                        	GeneBody	
-#Nucleoplasm_RNA-Seq   	HNRNPU-AID_KO        	HCT116              	homo_sapiens                  	HCT116         	TRUE	TRUE	FALSE	FALSE	                         	mRNA	
-#Cytoplasm_RNA-Seq   	HNRNPU-AID_KO          	HCT116             	homo_sapiens                  	HCT116         	TRUE	TRUE	FALSE	FALSE	                         	mRNA     	
+Chromatin_RNA-Seq   	HNRNPU-AID_KO      	HCT116          	homo_sapiens                  	HCT116         	TRUE	FALSE	FALSE	FALSE	                        	GeneBody	
+Nucleoplasm_RNA-Seq   	HNRNPU-AID_KO        	HCT116              	homo_sapiens                  	HCT116         	TRUE	TRUE	FALSE	FALSE	                         	mRNA	
+Cytoplasm_RNA-Seq   	HNRNPU-AID_KO          	HCT116             	homo_sapiens                  	HCT116         	TRUE	TRUE	FALSE	FALSE	                         	mRNA     	
 TT-Seq           	HNRNPU-AID_KO      	HCT116          	homo_sapiens                  	HCT116         	TRUE	FALSE	TRUE	TRUE	saccharomyces_cerevisiae      	GeneBody  	
 TT-Seq             	HNRNPUL1-AID_KO        	HCT116           	homo_sapiens               	HCT116        	TRUE	FALSE	TRUE	TRUE	saccharomyces_cerevisiae     	GeneBody	
 TT-Seq            	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr  	homo_sapiens                   	HCT116         	TRUE	FALSE	TRUE	TRUE	saccharomyces_cerevisiae      	GeneBody	
-#Total_RNA-Seq   	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr	homo_sapiens                   	HCT116         	TRUE	TRUE	FALSE	FALSE	                              	mRNA         	
-#Total_RNA-Seq   	FUS-mAID_+5PhIAA_48hr 	FUS-mAID_+DMSO_48hr	homo_sapiens                   	HCT116         	TRUE	TRUE	FALSE	FALSE	                              	mRNA      	
-#Chromatin_RNA-Seq   	HB3261           	SC3504           	homo_sapiens                  	Lymphoblastoid	TRUE	TRUE	FALSE	FALSE	                        	GeneBody	
-#Chromatin_RNA-Seq   	HB3280            	SC3504           	homo_sapiens                  	Lymphoblastoid	TRUE	TRUE	FALSE	FALSE	                        	GeneBody	
+Total_RNA-Seq   	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr	homo_sapiens                   	HCT116         	TRUE	TRUE	FALSE	FALSE	                              	mRNA         	
+Total_RNA-Seq   	FUS-mAID_+5PhIAA_48hr 	FUS-mAID_+DMSO_48hr	homo_sapiens                   	HCT116         	TRUE	TRUE	FALSE	FALSE	                              	mRNA      	
+Chromatin_RNA-Seq   	HB3261           	SC3504           	homo_sapiens                  	Lymphoblastoid	TRUE	TRUE	FALSE	FALSE	                        	GeneBody	
+Chromatin_RNA-Seq   	HB3280            	SC3504           	homo_sapiens                  	Lymphoblastoid	TRUE	TRUE	FALSE	FALSE	                        	GeneBody	
