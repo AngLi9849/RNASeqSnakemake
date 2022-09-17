@@ -71,13 +71,52 @@ rule splice_site_featurecount:
     conda:
         "../envs/subread.yaml",
     params:
+        ram=int(0.75 * config["max_ram_gb"] * 1000000),
         unspl_overlap= config["splicing"]["splice_site_overhang"] + 1 ,
         strand=get_sample_strandedness,
         paired=lambda wildcards:("-p" if is_paired_end(wildcards.sample) else ""),
     shell:
         """
         featureCounts -s {params.strand} {params.paired} --minOverlap 1 -M -O -T {threads} -F SAF --verbose -a {input.saf} -o {output.splice} {input.splice_bam} &&
+        if [[ $(du {input.splice_bam} | cut -f1) -gt {params.ram} ]] ;
+        then
+          for i in $(cut -f2 {input.saf} | sort | uniq) ; do
+            samtools view -bh -@ 5 {input.unsplice_bam} $i > {input.unsplice_bam}"$i".bam &&
+            samtools index -b -@ 5 {input.unsplice_bam}"$i".bam {input.unsplice_bam}"$i".bam.bai &&
+            featureCounts -s {params.strand} {params.paired} --minOverlap {params.unspl_overlap} -M -O -T {threads} -F SAF --verbose -a {input.saf} -o {output.unsplice}"$i".chr.tab {input.unsplice_bam}"$i".bam ;
+          done &&
+
+          for i in $(cut -f2 {input.saf} | sort | uniq) ; do
+            cat {output.unsplice}"$i".chr.tab ;
+          done |
+
+          awk -F'\\t' -v OFS='\\t' '
+            FNR<3 {{
+              print >> "{output.unsplice}"
+            }}
+            FNR>2 && $1!="Geneid" && NF>5 {{
+              entry[$1]=$0 ;
+              count[$1]+=$7 ;
+            }}
+            END {{
+              for (i in entry) {{
+                $0=entry[i] ;
+                $7=count[i] ;
+                print ;
+              }}
+            }}
+           ' - |
+           sort -k1,1 >> {output.unsplice} &&
+
+#          for i in $(cut -f2 {input.saf} | sort | uniq) ; do
+#            rm {input.unsplice_bam}"$i".bam.bai ;
+#            rm {input.unsplice_bam}"$i".bam ;
+#            rm {output.tab}"$i".chr.tab ;
+#          done ;
+
+        else
         featureCounts -s {params.strand} {params.paired} --minOverlap {params.unspl_overlap} -M -O -T {threads} -F SAF --verbose -a {input.saf} -o {output.unsplice} {input.unsplice_bam}
+        fi
         """
 
 rule dexseq_splice_ratio:

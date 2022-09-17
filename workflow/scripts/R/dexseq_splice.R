@@ -113,8 +113,9 @@ coldata_exp <- coldata[sample_table$condition==treatment,]
 coldata <- rbind(coldata_exp,coldata_control)
 coldata_samples <- rownames(coldata)
 
-coldata <- data.frame(lapply(coldata,function(x) { gsub("[-_]",".",x) } ))
+coldata <- data.frame(lapply(coldata,function(x) { gsub("[\\+|-|_]",".",x) } ))
 rownames(coldata) <- coldata_samples
+coldata$condition <- factor(coldata$condition, levels=c(gsub("[\\+|-|_]",".",control_cond),gsub("[\\+|-|_]",".",treatment)))
 
 control_cond
 treatment
@@ -148,7 +149,7 @@ colnames(expr)[3] <- "baseMean"
 #expr <- expr[!is.na(expr$padj),]
 expr[11:13] <- genes[match(rownames(expr),genes$gene_id),2:4]
 expr$exon <- ifelse(expr$exon_count>1,"Multiexonic","Monoexonic")
-expr$change <- ifelse(expr$Rawlog2FoldChange>=0,"Upregulated","Downregulated")
+expr$change <- ifelse(expr$Rawlog2FoldChange>=0,"Increased","Decreased")
 expr$group <- toTitleCase(gsub("_"," ",paste(expr$exon,expr$biotype)))
 expr$group2<-paste(expr$change,expr$group)
 expr$log2FoldChange <- expr$Rawlog2FoldChange

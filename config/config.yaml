@@ -6,6 +6,7 @@ max_ram_gb: 64 # Highest ram available in a single machine
 # Conditions are compared in differential expression analysis.
 samples: config/samples.tsv
 experiments: config/experiments.tsv
+protocols: config/protocols.tsv
 feature_parameters: config/features.tsv
 references_info: config/references.tsv
 analysis_summary_plots: config/analysis.tsv

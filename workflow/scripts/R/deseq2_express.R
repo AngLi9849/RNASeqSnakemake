@@ -102,7 +102,7 @@ sample_table <- sample_table[match(samples,sample_table$sample_name),]
 rownames(sample_table) <- sample_table$sample_name
 
 dds_coldata <- sample_table[,c("condition","replicate")]
-coldata <- data.frame(lapply(dds_coldata,function(x) { gsub("[-_]",".",x) } ))
+coldata <- data.frame(lapply(dds_coldata,function(x) { gsub("[\\+|-|_]",".",x) } ))
 rownames(coldata) <- rownames(dds_coldata)
 
 names(cts) <- rownames(coldata)
@@ -146,7 +146,7 @@ resultsNames(dds)
 norm_counts <- counts(dds, normalized=T)
 
 # Generate log2FoldChange shrunk results table for each experiment condition
-contrast <- c("condition", gsub("[-_]",".",treatment), gsub("[-_]",".",control_cond))
+contrast <- c("condition", gsub("[\\+|-|_]",".",treatment), gsub("[\\+|-|_]",".",control_cond))
 res <- results(dds, contrast=contrast, parallel=parallel)
 #res <- lfcShrink(dds, contrast=contrast, res=res, type="ashr") # Adaptive Shrinkage messes with padj so abandoned
 expr <- data.frame(res@listData)

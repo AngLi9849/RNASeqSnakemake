@@ -5,8 +5,4 @@ dependencies:
   - bioconductor-deseq2 =1.34.0
   - r-ashr
   - r-essentials
-  - r-ggrepel
-  - r-ggtext
   - r-stringr
-  - r-officer
-  - r-rvg 

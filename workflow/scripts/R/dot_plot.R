@@ -23,6 +23,7 @@ dot_data$top50 <- ifelse(dot_data$rpkm>=quantile(dot_data$rpkm,0.5),dot_data$val
 dot_ymax <- max(dot_data$value) + 0.2*abs(max(dot_data$value)-min(dot_data$value))
 dot_ymin <- min(dot_data$value)
 dot_p_y <- max(dot_data$value) + 0.1*abs(max(dot_data$value)-min(dot_data$value))
+dot_data$condition <- factor(dot_data$condition, levels=c(control,treat))
 
 dot_bin <- abs(max(dot_data$value) - min(dot_data$value))/(nrow(dot_data)/50)
 dot <- ggplot(data = dot_data, aes(x=factor(condition,levels=c(control,treat)),y=value,fill=condition,colour=condition)) +
