@@ -86,7 +86,7 @@ def get_feature_md5(reference,feature):
         return hashlib.md5
     
 # Read protocol configurations into pandas data.frame
-protocols = (pd.read_csv(config["protocols"], sep="\t", dtype={"protocol": str}, comment="#"))
+protocols = (pd.read_csv(config["protocols"], sep="\t", dtype={"protocol": str,"dedup": str, "demulti": str}, comment="#"))
 protocols.columns=protocols.columns.str.strip()
 protocols = protocols.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 protocols = protocols.mask(protocols == '')
@@ -109,10 +109,25 @@ experiments["splice"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"splice"], axis=1)
 experiments["norm_feat"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"norm_feat"], axis=1)
+experiments["demultimap"]=experiments.apply(
+    lambda row: protocols.loc[row.protocol,"demulti"], axis=1)
+experiments["deduplicate"]=experiments.apply(
+    lambda row: protocols.loc[row.protocol,"dedup"], axis=1)
+experiments["sep_spl"]=experiments.apply(
+    lambda row: protocols.loc[row.protocol,"sep_spl"], axis=1)
+
+
+
+
 experiments["demulti"]=experiments.apply(
-    lambda row: "Demultimapped" if protocols.loc[row.protocol,"demulti"] else "", axis=1)
+    lambda row: ['','Demultimapped'] if row.demultimap=="BOTH" else ['Demultimapped'] if row.demultimap=="TRUE" else [''], axis=1)
 experiments["dedup"]=experiments.apply(
-    lambda row: "Deduplicated" if protocols.loc[row.protocol,"dedup"] else "", axis=1)
+    lambda row: ['','Deduplicated'] if row.deduplicate=="BOTH" else ['Deduplicated'] if row.deduplicate=="TRUE" else [''], axis=1)
+experiments["splice_prefix"]=experiments.apply(
+    lambda row: ['All','Spliced','Unspliced'] if row.sep_spl else ['All'],axis=1)
+experiments["demulti"]=experiments["demulti"].astype('object')
+experiments["dedup"]=experiments["dedup"].astype('object')
+experiments["splice_prefix"]=experiments["splice_prefix"].astype('object')
 
 
 experiments["norm_group"]=experiments.apply(
@@ -243,12 +258,14 @@ bw_samples=[]
 
 for i in range(0,len(experiments)):
     samps = get_experiment_samples(experiments.experiment[i])[["sample_name","unit_name","strandedness"]]
+    samps["experiment"]=experiments.experiment[i]
     samps["reference"] = get_source(experiments.experiment[i])
     samps["lineage"] = experiments.sample_lineage[i]
     samps["group"] = experiments.group_name[i]
     samps["spikein"]=experiments.normaliser[i]
-    samps["dedup"]=experiments.dedup[i]
-    samps["demulti"]=experiments.demulti[i]
+    samps["deduplicate"]=experiments.deduplicate[i]
+    samps["demultimap"]=experiments.demultimap[i]
+    samps["sep_spl"]=experiments.sep_spl[i]
     samps["norm_feat"]=experiments.norm_feat[i]
     samps["pairRep"]="paired" if experiments.pairRep[i] else "unpaired"
     samps["stranded"]=samps.apply(lambda row: "unstranded" if (row.strandedness=="no" or pd.isna(row.strandedness))  else "stranded", axis=1)
@@ -265,13 +282,73 @@ for i in range(0,len(experiments)):
 bw_samples = pd.concat(bw_samples).drop_duplicates()
 bw_samples=bw_samples.set_index(["sample_name","unit_name"], drop=False).sort_index()
 
+bw_samples["demulti"]=bw_samples.apply(
+    lambda row: ['','Demultimapped'] if row.demultimap=="BOTH" else ['Demultimapped'] if row.demultimap=="TRUE" else [''], axis=1)
+bw_samples["dedup"]=bw_samples.apply(
+    lambda row: ['','Deduplicated'] if row.deduplicate=="BOTH" else ['Deduplicated'] if row.deduplicate=="TRUE" else [''], axis=1)
+bw_samples["splice_prefix"]=bw_samples.apply(
+    lambda row: ['All','Spliced','Unspliced'] if row.sep_spl else ['All'], axis=1)
+bw_samples["demulti"]=bw_samples["demulti"].astype('object')
+bw_samples["dedup"]=bw_samples["dedup"].astype('object')
+bw_samples["splice_prefix"]=bw_samples["splice_prefix"].astype('object')
+
+results=[]
+
+for i in range(0,len(experiments)):
+    samps = get_experiment_samples(experiments.experiment[i])[["sample_name","unit_name","strandedness"]]
+    samps["experiment"] = experiments.experiment[i]
+    samps["reference"] = get_source(experiments.experiment[i])
+    samps["lineage"] = experiments.sample_lineage[i]
+    samps["diff_lineage"] = experiments.diff_lineage[i]
+    samps["group"] = experiments.group_name[i]
+    samps["spikein"] = experiments.normaliser[i]
+    samps["deduplicate"] = experiments.deduplicate[i]
+    samps["demultimap"] = experiments.demultimap[i]
+    samps["sep_spl"] = experiments.sep_spl[i]
+    samps["norm_feat"] = experiments.norm_feat[i]
+    samps["pairRep"] = "paired" if experiments.pairRep[i] else "unpaired"
+    samps["stranded"] = samps.apply(lambda row: "unstranded" if (row.strandedness=="no" or pd.isna(row.strandedness))  else "stranded", axis=1)
+    samps["demulti"] = ""
+    samps["dedup"] = ""
+    samps["splice_prefix"] = "All" 
+    samp_ls=None
+    samp_ls=[]
+    samp_ls.append(samps)
+    dedup=samps[(samps.deduplicate=="TRUE") | (samps.deduplicate=="BOTH")]
+    dedup["dedup"]="Deduplicated"
+    samp_ls.append(dedup)
+    demulti=samps[(samps.demultimap=="TRUE") | (samps.demultimap=="BOTH")]
+    demulti["demulti"]="Demultimapped"
+    samp_ls.append(demulti)
+    spliced=samps[samps.sep_spl==True]
+    spliced["splice_prefix"]="Spliced"
+    unspliced=spliced.copy(deep=True)
+    unspliced["splice_prefix"]="Unspliced"
+    samp_ls.append(spliced)
+    samp_ls.append(unspliced)
+    samps=pd.concat(samp_ls).drop_duplicates()
+    unstrand=samps[samps.stranded=="unstranded"]
+    unstrand["strand"]="unstranded"
+    fwd=samps[samps.stranded=="stranded"]
+    fwd["strand"]="fwd"
+    rev=fwd.copy(deep=True)
+    rev["strand"]="rev"
+    results.append(unstrand)
+    results.append(fwd)
+    results.append(rev)
+
+results = pd.concat(results).drop_duplicates()
+results = results.set_index(["sample_name","unit_name"], drop=False).sort_index()
+
+
+
 
 #Set variables for result filenames
 DEMULTI=['Demultimapped',''] if config["remove_multimappers"]=='BOTH' else 'Demultimapped' if config["remove_multimappers"] else ''
 DEDUP=['Deduplicated',''] if config["remove_duplicate_reads"]=='BOTH' else 'Deduplicated' if config["remove_duplicate_reads"] else ''
 SPLICE=['All','Spliced','Unspliced'] if config['seperate_spliced_reads'] else 'All'
 
-VALID=['validated'] if config['features']['validate_features'] else ['annotated']
+VALID='validated' if config['features']['validate_features'] else 'annotated'
 TAG=list(config['ensembl_tags'])
 STRAND_BIGWIG=""
 
@@ -295,8 +372,8 @@ def get_bams():
 
 def get_norm_bigwigs():
     bigwigs = expand(
-        "norm_bw/{sample.group}/{sample.reference}/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}ReadCount_normalised/{splice}Aligned{sample.demulti}{sample.dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{splice}.normalised.bigwig",
-        sample=bw_samples.itertuples(), splice=SPLICE
+        "norm_bw/{sample.group}/{sample.reference}/bigwigs/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}ReadCount_normalised/{sample.splice_prefix}Aligned{sample.demulti}{sample.dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{sample.splice_prefix}.normalised.bigwig",
+        sample=results.itertuples(), splice=SPLICE
     )
     return bigwigs
 
@@ -309,15 +386,15 @@ def get_feature_counts():
 
 def get_diffexp_docx():
     counts = expand(
-        "diff_reports/{exp.experiment}/{exp.reference}/differential_expression/{exp.paired}.{exp.normaliser}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{splice}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
-        exp=experiments.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples()
+        "diff_reports/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples()
     ),
     return counts
 
 def get_diffsplice_docx():
     counts = expand(
-        "diff_reports/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.paired}.{exp.normaliser}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.All_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
-        exp=experiments.itertuples(), valid=VALID, tag=TAG, splice=SPLICE, feature=features[features.dif_spl.tolist()].itertuples()
+        "diff_reports/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.All_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE, feature=features[features.dif_spl.tolist()].itertuples()
     ),
     return counts
 

@@ -102,7 +102,9 @@ rule stranded_genomecov:
  
 rule scale_bedgraph2bigwig:
     input:
-       scale = lambda w: "deseq2/{{norm_group}}/{{reference}}/All{{prefix}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+       scale = lambda w: "deseq2/{{norm_group}}/{{reference}}/All{{prefix}}.{lineage}_{valid}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+            lineage=results.loc[w.sample].loc[w.unit,"diff_lineage"][0],
+            valid=VALID,
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
         ),
        bedgraph = "bedgraph/{sample}/{unit}/{reference}/{splice}{prefix}.{strand}.bedgraph",

@@ -50,7 +50,7 @@ rule all:
         #get_bams(),
         #get_feature_counts()
         #"results/qc/multiqc_report.html",
-        #get_norm_bigwigs(),
+        get_norm_bigwigs(),
         #get_differential_plots(),
         #get_differential_splicing(),
         #get_meta_profiles(),
