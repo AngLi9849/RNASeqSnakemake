@@ -18,7 +18,7 @@ ma <- ggplot(data = expr_i, aes(x = baseMean, y = log2FoldChange)) +
     alpha=0.3,
     linetype=5
   ) +
-  xlab(toTitleCase(paste("Mean",feature, "Normalised", counting,sep=" "))) +
+  xlab(toTitleCase(paste("Mean", counting,sep=" "))) +
   ylab("log2 Fold Change") +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
@@ -41,6 +41,7 @@ ma_plot <- ma +
     alpha=1
   ) +
   ylab(paste("log2 Fold Change of", feature_i, difference,sep= " ")) +
+  xlab(toTitleCase(paste("Mean", feature_i, counting,sep=" "))) +  
   geom_text_repel(
     mapping=aes(label=ifelse((gene_name %in% goi), as.character(gene_name),ifelse((p_rank<=ma_n | lfc_rank <= ma_n) & padj < sig_p ,as.character(gene_name),NA))),
     size=ifelse(expr_i$gene_name %in% goi, 4.0, 3.0),
@@ -59,7 +60,7 @@ ma_caption <- paste(
  "Log2 fold change in ", difference, " of each ", feature_i, " is plotted against their mean normalised ", counting, ". Dot colours represent significant (p < " ,sig_p,") increases (", up_col, ") and decreases (", down_col, ").",sep=""
 )
 
-ma_plot_title <- paste(title, "MA Plot.")
+ma_plot_title <- paste(title_i, "MA Plot.")
 ma_plot_caption <- paste(
   ma_caption, " Names of top ", ma_n, " most significantly increased and decreased ", feature_i, " are labelled. ", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold.", ""),sep=""
 )

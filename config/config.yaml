@@ -180,6 +180,16 @@ GOI:
   - NEAT1
   - MALAT1
   - RNU1-1
+  - SAT1
+  - HNRNPH3
+  - MAT2A
+  - HNRNPU
+  - HNRNPUL1
+#  - POLR2A
+#  - SRSF9
+#  - SF3B2
+#  - LSM4
+#  - SNRPA
 
 # Gene Oncology Terms of Interest, requires ensembl annotation
 GO_terms:

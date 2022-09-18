@@ -1,6 +1,6 @@
-sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0)
-sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0)
-insig <- sum(expr_i$padj[expr_i$padj < undetect_p] >= sig_p)
+sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0,na.rm=T)
+sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0,na.rm=T)
+insig <- sum(expr_i$padj[expr_i$padj < undetect_p] >= sig_p,na.rm=T)
 undetect <- total_i - insuf_i - insig - sig_up - sig_down 
 
 
@@ -16,7 +16,7 @@ undetect_pc <- paste(signif(undetect/total_i*100,2), "%",sep="")
 insuf_pc <- paste(signif(insuf_i/total_i*100,2), "%",sep="")
 
 pie_data <- data.frame(
-  data1=c("Insufficient Reads", "Undetectable Change","Insignificant Change","Significant Increase","Significant Decrease"),
+  data1=c("Insufficient Reads", "Unchanged","Insignificant","Increase","Decrease"),
   data2=c(insuf_i,undetect,insig,sig_up,sig_down),
   data3=c(void_col,background_col,insig_col,up_col,down_col)
 )

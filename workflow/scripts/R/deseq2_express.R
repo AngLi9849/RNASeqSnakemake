@@ -113,7 +113,7 @@ sample_table[,c("sample_name","condition")]
 mean_level <- data.frame(
   lapply(c(control_cond,treatment), function(x) {
     apply(rpkm[,match(sample_table$sample_name[sample_table$condition==x],names(rpkm))],1,FUN=mean)}))
-names(mean_level) <- c(control,treat)
+names(mean_level) <- c(control_cond,treatment)
 
 levels <- rpkm
 

@@ -104,15 +104,15 @@ experiments["experiment"] = experiments.apply( lambda row: \
 experiments = (experiments.set_index(["experiment"], drop=False).sort_index())
 
 experiments["trs_val"]=experiments.apply(
-    lambda row: protocol.loc[row.protocol,"trs_val"], axis=1)
+    lambda row: protocols.loc[row.protocol,"trs_val"], axis=1)
 experiments["splice"]=experiments.apply(
-    lambda row: protocol.loc[row.protocol,"splice"], axis=1)
+    lambda row: protocols.loc[row.protocol,"splice"], axis=1)
 experiments["norm_feat"]=experiments.apply(
-    lambda row: protocol.loc[row.protocol,"norm_feat"], axis=1)
+    lambda row: protocols.loc[row.protocol,"norm_feat"], axis=1)
 experiments["demulti"]=experiments.apply(
-    lambda row: "Demultimaped" if protocol.loc[row.protocol,"demulti"] else "", axis=1)
+    lambda row: "Demultimapped" if protocols.loc[row.protocol,"demulti"] else "", axis=1)
 experiments["dedup"]=experiments.apply(
-    lambda row: "Deduplicated" if protocol.loc[row.protocol,"dedup"] else "", axis=1)
+    lambda row: "Deduplicated" if protocols.loc[row.protocol,"dedup"] else "", axis=1)
 
 
 experiments["norm_group"]=experiments.apply(

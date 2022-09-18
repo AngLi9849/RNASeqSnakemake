@@ -1,6 +1,6 @@
 protocol         	dedup	demulti	splice	trs_val	norm_feat
-Chromatin_RNA-Seq   	TRUE	FALSE	TRUE	FALSE	GeneBody
-Nucleoplasm_RNA-Seq 	TRUE	FALSE	TRUE	TRUE	mRNA
-Cytoplasm_RNA-Seq   	TRUE	FALSE	TRUE	TRUE	mRNA
-Total_RNA-Seq     	TRUE	FALSE	TRUE	TRUE	mRNA
-TT-Seq            	TRUE	FALSE	TRUE	FALSE	GeneBody
+Chromatin_RNA-Seq   	TRUE	TRUE	TRUE	TRUE	GeneBody
+Nucleoplasm_RNA-Seq 	FALSE	FALSE	TRUE	TRUE	mRNA
+Cytoplasm_RNA-Seq   	FALSE	FALSE	TRUE	TRUE	mRNA
+Total_RNA-Seq     	TRUE	TRUE	TRUE	TRUE	mRNA
+TT-Seq            	TRUE	TRUE	TRUE	FALSE	GeneBody

@@ -176,7 +176,7 @@ head(splice_ratio,10)
 splice_ratio_mean <- data.frame(lapply(c(control_cond,treatment),function(x) {
     apply(splice_ratio[,colnames(splice_ratio) %in% sample_table$sample_name[sample_table$condition==x]],1,FUN=mean)
   }))
-names(splice_ratio_mean) <- c(control,treat)
+names(splice_ratio_mean) <- c(control_cond,treatment)
 splice_ratio_mean <- splice_ratio_mean[rownames(splice_ratio_mean) %in% expr$featureID,]
 head(splice_ratio_mean,10)
 

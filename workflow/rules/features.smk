@@ -75,10 +75,20 @@ rule feature_nuc_info:
         bedtools nuc -C -s -fi {input.fasta} -bed {input.bed} |
         awk -F'\\t' -v OFS='\\t' '
         FNR > 1 {{
-          print $4, $15, $16, $17, $18, $19, $20, $21, $22
+          a[$4] += $17 ; 
+          c[$4] += $18 ; 
+          g[$4] += $19 ;
+          t[$4] += $20 ; 
+          n[$4] += $21 ;
+          other[$4] += $22 ;
+          len[$4] += $23 ; 
+        }}
+        END {{
+          for (i in len) {{
+            print i, (a[i]+t[i])/len[i], (g[i]+c[i])/len[i], a[i], c[i], g[i], t[i], n[i], other[i]
+          }}
         }}' - |
-        sort - |
-        uniq - |
+        sort -k1,1 - |
         sed  '1 i\\featureID\\tAT\\tGC\\tA\\tC\\tG\\tT\\tN\\tOther' > {output.info}
         """
 

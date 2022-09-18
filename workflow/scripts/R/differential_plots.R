@@ -70,6 +70,8 @@ common <- gsub("_"," ",common_str)
 treat <-  gsub("_"," ",treat_str)
 control <- gsub("_"," ",control_str)
 
+names(mean_level) <- c(control,treat)
+
 spikein <- gsub("_"," ",as.character(snakemake@wildcards[["spikein"]]))
 
 contrast <- list(c(control,treat))
@@ -121,29 +123,15 @@ doc <- body_add(doc,fpar(ftext(analysis_heading, prop=heading_2)),style = "headi
 min_mean
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(c(""),unique(expr$group[expr$biotype %in% biotypes]))
-#for (i in i_group) {
+for (i in i_group) {
 
-i <- "Multiexonic Protein Coding"
+#i <- "Multiexonic Protein Coding"
 
 if (i =="") {
   expr_i <- expr
 } else {
   expr_i <- expr[expr$group==i,]
 }
-
-total_i <- nrow(expr_i)
-
-min_rpkm <- quantile(expr_i$rpkm[expr_i$baseMean > 0],min_rpkm_pc/100)
-
-insuf_i <- sum((expr_i$baseMean < min_mean) | (expr_i$rpkm < min_rpkm))
-
-expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$rpkm >= min_rpkm),]
-
-expr_i$padj <- ifelse(is.na(expr_i$padj),expr_i$pvalue,expr_i$padj)
-
-expr_i$log10P <- -log10(expr_i$padj)
-
-mean_level_i <- mean_level[rownames(mean_level) %in% expr_i$featureID,]
 
 if (diff=="splicing_ratio") {
 splice_sum_i <- apply(cts[(cts$state=="spliced" & cts$id %in% expr_i$featureID),1:(ncol(cts)-2)],2,sum)
@@ -154,10 +142,22 @@ sum_i <- data.frame(splice_sum_i/(splice_sum_i + 2*unsplice_sum_i),check.names=F
 } else {
 sum_i <- data.frame(lapply(cts[rownames(cts) %in% expr_i$featureID,],sum))
 }
-splice_sum_i
-unsplice_sum_i
 
-sum_i
+
+total_i <- nrow(expr_i)
+
+min_rpkm <- quantile(expr_i$rpkm[expr_i$baseMean > 0],min_rpkm_pc/100)
+
+insuf_i <- sum( (expr_i$baseMean < min_mean) | (expr_i$rpkm < min_rpkm) | (is.na(expr_i$pvalue)) )
+
+expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$rpkm >= min_rpkm),]
+
+expr_i$padj <- ifelse(is.na(expr_i$padj),expr_i$pvalue,expr_i$padj)
+expr_i <- expr_i[!is.na(expr_i$padj),]
+
+expr_i$log10P <- -log10(expr_i$padj)
+
+mean_level_i <- mean_level[rownames(mean_level) %in% expr_i$featureID,]
 
 # Set file name and path
 feature_i <- ifelse(i=="", feature, paste(tolower(i),feature))
@@ -255,7 +255,7 @@ doc <- body_add(doc,fpar(values=c,fp_p = fp_par(padding.top=(caption_size/2))))
 
 }
 
-#}
+}
 
 print(doc, target = snakemake@output[["docx"]])
 
