@@ -2,7 +2,6 @@ sink(log)
 sink(log, type="message")
 
 # Import Plotting Parameters
-descript <- as.character(snakemake@params[["descript"]])
 
 ma_n <- as.numeric(snakemake@config[["differential_plots"]][["ma_gene_name_numbers"]])
 volc_n <- as.numeric(snakemake@config[["differential_plots"]][["volcano_gene_name_numbers"]])
@@ -15,14 +14,6 @@ void_col <- "black"
 
 sig_p <- as.numeric(snakemake@config[["differential_analysis"]][["significant_p"]])
 undetect_p <- as.numeric(snakemake@config[["differential_analysis"]][["undetect_p"]]) 
-
-if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"]])) {
-  min_mean <- max(expr$baseMean[is.na(expr$padj)])
-} else {
-  min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
-}
-
-min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_rpkm_percentile"]])
 
 plot_dpi <- as.numeric(snakemake@config[["differential_plots"]][["dpi"]])
 tick_size <- as.numeric(snakemake@config[["differential_plots"]][["font_sizes"]][["axis_ticks"]])

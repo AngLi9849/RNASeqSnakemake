@@ -27,7 +27,7 @@ violin <- ggplot(data = violin_data, aes(x=factor(condition, levels=c(control,tr
   geom_boxplot(width=0.1) +
   stat_pvalue_manual(data = test_p_i, label = "p.signif") +
   scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,treat)], labels = c(control,treat) ) +
-  ylab(paste("Normalised",toTitleCase(difference_unit))) +
+  ylab(paste("Mean",toTitleCase(difference_unit))) +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),

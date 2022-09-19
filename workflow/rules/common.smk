@@ -317,9 +317,11 @@ for i in range(0,len(experiments)):
     dedup=samps[(samps.deduplicate=="TRUE") | (samps.deduplicate=="BOTH")]
     dedup["dedup"]="Deduplicated"
     samp_ls.append(dedup)
+    samps=pd.concat(samp_ls).drop_duplicates()
     demulti=samps[(samps.demultimap=="TRUE") | (samps.demultimap=="BOTH")]
     demulti["demulti"]="Demultimapped"
     samp_ls.append(demulti)
+    samps=pd.concat(samp_ls).drop_duplicates()
     spliced=samps[samps.sep_spl==True]
     spliced["splice_prefix"]="Spliced"
     unspliced=spliced.copy(deep=True)
@@ -340,7 +342,18 @@ for i in range(0,len(experiments)):
 results = pd.concat(results).drop_duplicates()
 results = results.set_index(["sample_name","unit_name"], drop=False).sort_index()
 
+feat_res=[]
 
+dif_exp=features[features.dif_exp==True]
+dif_exp["diff"]="expression"
+dif_spl=features[features.dif_spl==True]
+dif_spl["diff"]="splicing_ratio"
+
+feat_res.append(dif_exp)
+feat_res.append(dif_spl)
+
+feat_res=pd.concat(feat_res).drop_duplicates()
+feat_res = feat_res.set_index(["feature_name"], drop=False).sort_index()
 
 
 #Set variables for result filenames
@@ -386,17 +399,24 @@ def get_feature_counts():
 
 def get_diffexp_docx():
     counts = expand(
-        "diff_reports/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        "diff_plots/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples()
     ),
     return counts
 
 def get_diffsplice_docx():
     counts = expand(
-        "diff_reports/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.All_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        "diff_plots/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.All_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE, feature=features[features.dif_spl.tolist()].itertuples()
     ),
     return counts
+
+def get_differential_reports():
+    docx = expand(
+        "diff_reports/{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}/{exp.experiment}/{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}.{exp.norm_feat}_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
+        exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE
+    ),
+    return docx
 
 def get_differential_exp():
     diff_exp = expand(
@@ -453,9 +473,13 @@ def feature_descript(wildcards):
             str(experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]).capitalize().replace("_"," ") + " " + \
             str( references.loc[experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["ensembl_build"] )  + " release " + \
             str(references.loc[experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["ensembl_release"]) + \
-            " genome with transcript support level " + \
-            str(features.loc[wildcards.feature].squeeze(axis=0)["tsl"]) + \
-            " or better" ),
+            " genome" + \
+            ("." if wildcards.valid=="validated" \
+                else \
+                " with transcript support level " + \
+                str(features.loc[wildcards.feature].squeeze(axis=0)["tsl"]) + \
+                " or better." )
+            ),
     )
     return descript
  

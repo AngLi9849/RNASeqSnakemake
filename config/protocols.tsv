@@ -1,6 +1,6 @@
-protocol         	dedup	demulti	sep_spl	splice	trs_val	norm_feat
-Chromatin_RNA-Seq   	BOTH	BOTH	TRUE	TRUE	TRUE	GeneBody
-Nucleoplasm_RNA-Seq 	FALSE	FALSE	FALSE	TRUE	TRUE	mRNA
-Cytoplasm_RNA-Seq   	FALSE	FALSE	FALSE	TRUE	TRUE	mRNA
-Total_RNA-Seq     	BOTH	BOTH	TRUE	TRUE	TRUE	mRNA
-TT-Seq            	BOTH	BOTH	TRUE	TRUE	FALSE	GeneBody
+protocol         	dedup	demulti	sep_spl	splice	trs_val	norm_feat	feature_of_interest
+Chromatin_RNA-Seq   	TRUE	TRUE	TRUE	TRUE	TRUE	GeneBody	GeneBody,mRNA,PROMPT,TSS,PROMPT-TSS
+Nucleoplasm_RNA-Seq 	TRUE	TRUE	FALSE	TRUE	TRUE	mRNA     	GeneBody,mRNA
+Cytoplasm_RNA-Seq   	TRUE	TRUE	FALSE	TRUE	TRUE	mRNA     	mRNA
+Total_RNA-Seq     	TRUE	TRUE	TRUE	TRUE	TRUE	mRNA     	GeneBody,mRNA
+TT-Seq            	TRUE	TRUE	TRUE	TRUE	FALSE	GeneBody     	GeneBody,mRNA,PROMPT,TSS,PROMPT-TSS

@@ -120,7 +120,8 @@ sum_list <- c(sum_list,"ma","volcano")
 doc <- read_docx(snakemake@input[["docx"]])
 analysis_heading <- paste( "Differential", toTitleCase(difference))
 doc <- body_add(doc,fpar(ftext(analysis_heading, prop=heading_2)),style = "heading 2")
-min_mean
+
+min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_rpkm_percentile"]])
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(c(""),unique(expr$group[expr$biotype %in% biotypes]))
 for (i in i_group) {
@@ -143,6 +144,12 @@ sum_i <- data.frame(splice_sum_i/(splice_sum_i + 2*unsplice_sum_i),check.names=F
 sum_i <- data.frame(lapply(cts[rownames(cts) %in% expr_i$featureID,],sum))
 }
 
+if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"]])) {
+  min_mean <- max(expr$baseMean[is.na(expr$padj)])
+} else {
+  min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
+}
+
 
 total_i <- nrow(expr_i)
 
@@ -155,6 +162,15 @@ expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$rpkm >= min_rpkm),]
 expr_i$padj <- ifelse(is.na(expr_i$padj),expr_i$pvalue,expr_i$padj)
 expr_i <- expr_i[!is.na(expr_i$padj),]
 
+if (nrow(expr_i)==0) {
+
+doc <- body_add(doc,fpar(ftext(paste("Insufficient evidence."),prop=plain)))
+doc <- body_add(doc,run_pagebreak())
+
+next
+
+} else {
+
 expr_i$log10P <- -log10(expr_i$padj)
 
 mean_level_i <- mean_level[rownames(mean_level) %in% expr_i$featureID,]
@@ -165,7 +181,7 @@ feature_i <- ifelse(i=="", feature, paste(tolower(i),feature))
 file_i <- gsub("_"," ",paste(experiment, feature_i, analysis ,sep=" "))
 
 # Write heading for this analysis group
-group_heading <- gsub("_"," ",toTitleCase(ifelse(i=="","Overview",i)))
+group_heading <- gsub("_"," ",toTitleCase(ifelse(i=="","All",i)))
 doc <- body_add(doc,fpar(ftext(group_heading, prop=heading_3)),style = "heading 3")
 
 # Start figure counting from 1
@@ -254,7 +270,7 @@ doc <- body_add(doc,fpar(values=c,fp_p = fp_par(padding.top=(caption_size/2))))
 }
 
 }
-
+}
 }
 
 print(doc, target = snakemake@output[["docx"]])

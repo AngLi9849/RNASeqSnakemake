@@ -51,7 +51,7 @@ rule all:
         #get_feature_counts()
         #"results/qc/multiqc_report.html",
         get_norm_bigwigs(),
-        #get_differential_plots(),
+        get_differential_reports(),
         #get_differential_splicing(),
         #get_meta_profiles(),
         #"resources/annotations/ensembl_homo_sapiens_genome.gtf.basic_features.bed"
@@ -83,8 +83,8 @@ rule all:
         #"resources/annotations/homo_sapiens.HCT116.rmats.ret_int.bed",
         #"matrices/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.fwd/genome_annotated.plot-095b4d96d6e4d066a112a711bfe0b4fb.basic.GeneBody.sense_main.1000bins.matrix.gz",
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104_genome.plot-095b4d96d6e4d066a112a711bfe0b4fb.annotated_basic.GeneBody.sense.before.bed"
-        get_diffexp_docx(),
-        get_diffsplice_docx(),
+        #get_diffexp_docx(),
+        #get_diffsplice_docx(),
         #"resources/templates/Arial.docx"
         #"test.tsv"
         #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/SplicedAligned.HCT116_validated.custom-7e5ff750dfd4716388d8ebad286d805e.basic.GeneBodyReads.lengths.tsv"

@@ -62,7 +62,7 @@ dot <- ggplot(data = dot_data, aes(x=factor(condition,levels=c(control,treat)),y
   ) +
   scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,treat)], labels = c(control,treat)) +
   scale_colour_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,treat)], labels = c(control,treat)) +
-  ylab("Splicing Ratio") +
+  ylab(paste("Mean",toTitleCase(difference_unit))) +
   stat_compare_means(comparisons = contrast, label = "p.signif", label.y=dot_p_y, method="t.test") +
   scale_y_continuous(limits = c(dot_ymin, dot_ymax)) +
   theme(
