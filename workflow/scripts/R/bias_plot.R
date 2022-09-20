@@ -1,12 +1,20 @@
-expr_bias <- expr_i[abs(expr_i$padj) < sig_p,]
+expr_bias1 <- expr_i[,c("change","log2FoldChange","padj")]
+expr_bias1$change <- "All"
+expr_bias1$abslog2FoldChange <- expr_bias1$log2FoldChange
+expr_bias1$density <- 0.01/expr_bias$padj
+
+expr_bias <- expr_i[abs(expr_i$padj) < sig_p,c("change","log2FoldChange","padj")]
+
 expr_bias$change <- paste("Significantly", expr_bias$change)
 expr_bias$abslog2FoldChange <- abs(expr_bias$log2FoldChange)
+
 
 
 FCmin=quantile(expr_bias$log2FoldChange,0.001,na.rm=TRUE)
 FCmax=quantile(expr_bias$log2FoldChange,0.999,na.rm=TRUE)
 
 expr_bias$density <- 0.01/expr_bias$padj
+expr_bias <- rbind(expr_bias1,expr_bias)
 
 GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2FoldChange)) +
   geom_point(
@@ -26,12 +34,21 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2Fol
     label.y.npc= 1,
     size=3,
     colour="black") +
+  geom_hline(
+    yintercept=0,
+    alpha=0.3,
+    linetype=5
+  ) +
+  geom_vline(
+    xintercept=0.5,
+    alpha=0.3,
+    linetype=5
   scale_x_continuous(limits=c(0.25,0.75),breaks=c(0,0.25,0.5,0.75,1),labels=scales::percent) + 
   facet_wrap(
-    ~factor(change,levels=c("Significantly Increased","Significantly Decreased")), scales="free"
+    ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
   ) +
-  xlab(paste("GC Content (%)",sep=" ")) +
-  ylab("|log2 Fold Change|") +
+  xlab(paste(feature_i,"GC Content (%)",sep=" ")) +
+  ylab("log2 Fold Change") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 
         strip.background=element_rect(colour="white",fill="white",size=0.1), 
@@ -67,9 +84,9 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$ab
     colour="black") +
   scale_x_log10() + 
   facet_wrap(
-    ~factor(change,levels=c("Significantly Increased","Significantly Decreased")), scales="free"
+    ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
   ) +
-  xlab(paste(feature, "Length (bps)",sep=" ")) +
+  xlab(paste(feature_i, "Length (bps)",sep=" ")) +
   ylab("|log2 Fold Change|") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 
@@ -108,9 +125,9 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog
     colour="black") +
   scale_x_log10() + 
   facet_wrap(
-    ~factor(change,levels=c("Significantly Increased","Significantly Decreased")), scales="free"
+    ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
   ) +
-  xlab(paste("Mean Expression Levels (RPKM)",sep=" ")) +
+  xlab(paste(feature_i, "Mean Expression Levels (RPKM)",sep=" ")) +
   ylab("|log2 Fold Change|") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 
