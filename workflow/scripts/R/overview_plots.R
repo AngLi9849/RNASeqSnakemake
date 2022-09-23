@@ -48,7 +48,7 @@ sum_bar_data$condition <- factor(sum_bar_data$condition,levels=c(control,treat))
 
 sum_bar <- ggplot(data = sum_bar_data, aes(fill=condition, y=mean, x = group)) +
   geom_col(width=0.6,position=position_dodge(0.7),colour = "black") +
-  geom_errorbar(aes(ymin=mean-SD,ymax=mean+SD),width=0.3,position=position_dodge(0.7)) +
+  geom_errorbar(aes(ymin=SD_min,ymax=mean+SD),width=0.3,position=position_dodge(0.7)) +
   scale_fill_manual("Conditions",values=sum_bar_data$Colours, labels = bar_cond) + 
   scale_x_discrete(breaks=sum_bar_data$group) +
   scale_y_continuous(limits=c(0,bar_max),breaks=c(0,bar_brks)) +

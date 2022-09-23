@@ -252,7 +252,6 @@ rule feature_rpkm:
               $2=five[$8,$6] ;
               $3=three[$8,$6] ;
               $5=len[$8,$6] ;
-              print >> "test.bed" ;
               print
             }} ;
             id=$8
@@ -269,7 +268,8 @@ rule feature_rpkm:
             }} 
           }}
           FNR < NR {{
-            print $1, $2, $3, $4, sum[$4]*1000000000/($5*total), $6, $8, $9
+# chr start end root length strand rpkm feature_id parent
+            print $1, $2, $3, $4, $5, $6,sum[$4]*1000000000/($5*total), $8, $11
           }}' {input.counts} - > {output.bed}
         """
 

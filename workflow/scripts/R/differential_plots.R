@@ -301,6 +301,8 @@ if ( (plot_n-1) == length(plots)) {
 }
 }
 
+sum_bar_data
+
 head(sum_bar_data,5)
 head(sum_pie_data,5)
 head(sum_violin_data,5)

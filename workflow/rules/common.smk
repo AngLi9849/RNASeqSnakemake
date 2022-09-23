@@ -81,10 +81,26 @@ def get_root_feature(feature):
         else:
             return str(features.loc[feature].squeeze(axis=0)["feature"])
 
-def get_feature_md5(reference,feature):
-    if f in features["feature_name"].tolist() :
-        return hashlib.md5
-    
+def get_feature_validity(feature):
+    feat=features.loc[feature].squeeze(axis=0)["feature"]
+    if not pd.isna(features.loc[feature].squeeze(axis=0)["annotation_bed"]):
+        return "provided"
+    else:
+        if feat in features["feature_name"].tolist():
+            return get_feature_validity(feat)
+        else:
+            if not config["features"]["validate_features"]:
+                return "annotated"
+            else:
+                return "validated"
+
+features["valid"] = features.apply(lambda row:
+    get_feature_validity(row.feature_name)
+    , axis=1)
+features["type"] = features.apply(lambda row:
+    get_feature_type(row.feature_name)
+    , axis=1)
+
 # Read protocol configurations into pandas data.frame
 protocols = (pd.read_csv(config["protocols"], sep="\t", dtype={"protocol": str,"dedup": str, "demulti": str}, comment="#"))
 protocols.columns=protocols.columns.str.strip()
@@ -234,19 +250,6 @@ lineage=lineage.set_index(["species","lineage"], drop=False).sort_index()
 def get_reference_species(reference):
     species=lineage[lineage.reference==reference].species[0]
     return species
-
-def get_feature_validity(feature):
-    feat=features.loc[feature].squeeze(axis=0)["feature"]
-    if not pd.isna(features.loc[feature].squeeze(axis=0)["annotation_bed"]):
-        return "provided"
-    else:
-        if feat in features["feature_name"].tolist():
-            return get_feature_validity(feat)
-        else:
-            if not config["features"]["validate_features"]:
-                return "annotated"
-            else:
-                return "validated"
 
 # Define keywords for obtaining sample-specific bigwigs
 bw_samples=[]

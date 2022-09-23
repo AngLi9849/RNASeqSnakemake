@@ -64,6 +64,7 @@ names(total_sum)=c("internal","spikein")
 # Import Counts table and extract sample names involved
 cts <- read.table(snakemake@input[["counts"]], sep='\t', header=TRUE, row.names="gene", check.names=FALSE, stringsAsFactors=FALSE)
 cts <- cts[ , order(names(cts))]
+norm_counts <- cts
 samples <- names(cts)
 
 # Import size factors
@@ -145,7 +146,12 @@ dds <- nbinomWaldTest(dds)
 resultsNames(dds)
 
 # Save Normalised Counts to tsv file
-norm_counts <- counts(dds, normalized=T)
+#norm_counts <- counts(dds, normalized=T)
+
+norm_counts <- data.frame(lapply(names(norm_counts),function(x) {norm_counts[,paste(x)]*size_table$scale_factor[size_table$sample_name==x]}),check.names=F)
+
+names(norm_counts) <- samples
+row.names(norm_counts) <- cts_names
 
 # Generate log2FoldChange shrunk results table for each experiment condition
 contrast <- c("condition", gsub("[\\+|-|_]",".",treatment), gsub("[\\+|-|_]",".",control_cond))

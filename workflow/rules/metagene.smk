@@ -94,14 +94,14 @@ rule expressed_non_overlapping_feature:
         rpkm = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
         range = "resources/annotations/{reference}_{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_range.bed",
         genetab = "resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
-        background = lambda wildcards: "featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{valid}.{type}.{{tag}}.{base}.rpkm.bed".format(
-            type = get_feature_type(features.loc[wildcards.feature,"bkgrd"]),
-            valid = get_feature_validity(features.loc[wildcards.feature,"bkgrd"]),
-            base = features.loc[wildcards.feature,"bkgrd"],
+        background = lambda wildcards: expand("featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{feat.valid}.{feat.type}.{{tag}}.{feat.feature_name}.rpkm.bed".format(
+        feat=features.loc[str(eatures.loc[wildcards.feature,"bkgrd"]).split(",")].itertuples()
         ),
     output:
         biotype_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.{sig}sig2noise.biotype_non_overlap.bed",
-        all_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.{sig}sig2noise.all_non_overlap.bed",
+        all_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.max_{sig_max}.min_{sig_min}.sig2noise.all_non_overlap.bed",
+    params:
+        biotype=lambda wildcards: features.loc[wildcards.feature,"biotype"]
     threads: 1
     conda:
         "../envs/bedtools.yaml"
@@ -110,11 +110,18 @@ rule expressed_non_overlapping_feature:
         rmem="4G",
     shell:
         """
-        bedtools intersect -a {input.rpkm} -b {input.background} -s -wa -wb |
-        awk -F'\\t' -v OFS='\\t' '{{
-          if ($5 >= {wildcards.sig}*$13) {{
-            print $1, $2, $3, $4, $5, $6, $7, $8 
+        cat {input.background} |        
 
+        awk -F'\\t' -v OFS='\\t'
+          FNR==NR {{
+
+        bedtools intersect -a {input.rpkm} -b - -s -wao |
+        awk -F'\\t' -v OFS='\\t' '
+            $9!=$18 {{
+              noise=(($16*$14)-($7*$19))/$14 ; 
+              if (noise*{wildcards.sig_max}>$7 || noise*{wildcards.sig_min} < $7) {{
+                print $1, $2, $3, $4, $5, $6, $7, $8 
+        
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
             biotype[$1] = $3
