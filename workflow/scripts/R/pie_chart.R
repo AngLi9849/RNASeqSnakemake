@@ -2,7 +2,7 @@ sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0,na.rm=T)
 sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0,na.rm=T)
 insig <- sum(expr_i$padj[expr_i$padj < undetect_p] >= sig_p,na.rm=T)
 undetect <- total_i - insuf_i - insig - sig_up - sig_down 
-
+total_i <- total_i - insuf_i
 
 sig_up
 sig_down
@@ -18,19 +18,39 @@ insuf_pc <- paste(signif(insuf_i/total_i*100,2), "%",sep="")
 pie_data <- data.frame(
   data1=c("Insufficient Reads", "Unchanged","Insignificant","Increase","Decrease"),
   data2=c(insuf_i,undetect,insig,sig_up,sig_down),
+  data3=c(insuf_pc,undetect_pc,insig_pc,sig_up_pc,sig_down_pc),
   data3=c(void_col,background_col,insig_col,up_col,down_col)
 )
 
-names(pie_data) <- c("Category","Numbers","Colours")
-pie_label <- paste(total_i,feature_i)
+
+
+names(pie_data) <- c("Category","Numbers","Percent","Colours")
+pie_label <- paste(total_i,"Evidenced")
 pie_data$Percent <- paste(signif(pie_data$Numbers/total_i*100,2), "%")
 pie_data$Label <- paste(pie_data$Numbers,pie_data$Category)
+
+pie_data <- pie_data[pie_data$Category != "Insufficient Reads",]
+
 
 
 pie_data <- pie_data %>%
   mutate(csum = rev(cumsum(rev(Numbers))),
          pos = Numbers/2 + lead(csum, 1),
          pos = if_else(is.na(pos), Numbers/2, pos))
+
+pie_data_i <- pie_data
+pie_data_i$group <- group_label
+pie_data_i$pos <- pie_data_i$pos/total_i
+
+if (exists("sum_pie_data")) {
+
+sum_pie_data <- rbind(sum_pie_data,pie_data_i)
+
+} else {
+
+sum_pie_data <- pie_data_i
+
+}
 
 
 pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
@@ -71,7 +91,7 @@ pie_caption <- paste(
   sig_down, " significantly decreased (", sig_down_pc, ", ", down_col, "), and ",
   insig, " changed insignificantly (", insig_pc, ", p >= ", sig_p, "). ",
   "Changes were not detected in ", undetect, " (", undetect_pc, ", p >= ", undetect_p, "), and ",
-  insuf_i, " were insufficiently evidenced (", insuf_pc ,", counted less than ", round(min_mean,2), " reads per sample", rpkm_lim, 
+  insuf_i, " were insufficiently evidenced (", "counted less than ", round(min_mean,2), " reads per sample", rpkm_lim, 
   sep="")
 
 

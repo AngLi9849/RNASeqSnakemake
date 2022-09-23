@@ -11,6 +11,8 @@ violin_data <- data.frame(
 
 names(violin_data) <- c("value","condition")
 
+violin_data$condition <- factor(violin_data$condition, levels=c(control,treat))
+
 if (difference=="expression levels") {
 violin_ymax <- 10^(log10(abs(max(violin_data$value)))^1.2)
 violin_p_y <- log10(abs(max(violin_data$value)))^1.1
@@ -22,7 +24,23 @@ violin_p_y <- max(violin_data$value) + 0.1*abs(max(violin_data$value)-min(violin
 test_p_i <- compare_means(formula=value ~ condition, data = violin_data, comparisons = compare, method="t.test", paired = TRUE)
 test_p_i$y.position <- c(violin_p_y)
 
-violin <- ggplot(data = violin_data, aes(x=factor(condition, levels=c(control,treat)), y=value)) +
+violin_data_i <- violin_data
+violin_data_i$group <- group_label
+
+violin_control_mean <- median(violin_data_i$value[violin_data_i$condition==control])
+violin_data_i$value <- violin_data_i$value/violin_control_mean 
+violin_data_i$Colours <- condition_col[match(violin_data_i$condition,names(condition_col))]
+if (exists("sum_violin_data")) {
+
+sum_violin_data <- rbind(sum_violin_data,violin_data_i)
+
+} else {
+
+sum_violin_data <- violin_data_i
+
+}
+
+violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +
   geom_violin(trim=FALSE,aes(fill=condition)) +
   geom_boxplot(width=0.1) +
   stat_pvalue_manual(data = test_p_i, label = "p.signif") +

@@ -7,6 +7,7 @@ max_ram_gb: 64 # Highest ram available in a single machine
 samples: config/samples.tsv
 experiments: config/experiments.tsv
 protocols: config/protocols.tsv
+gene_sets: config/gene_sets.tsv
 feature_parameters: config/features.tsv
 references_info: config/references.tsv
 analysis_summary_plots: config/analysis.tsv
@@ -84,6 +85,7 @@ differential_plots:
     dot: "workflow/scripts/R/dot_plot.R"
     pie: "workflow/scripts/R/pie_chart.R"
     bias: "workflow/scripts/R/bias_plot.R"   
+    overview: "workflow/scripts/R/overview_plots.R"
   # Resolution of output files. Typically publications require at least 300 dpi.
   dpi: 400
   # Number of most significantly changed and most changed gene names to show in ma and volcano plots
@@ -142,7 +144,7 @@ biotypes:
 #  - IG_V_gene
 #  - IG_V_pseudogene
   - lncRNA
-  - miRNA
+#  - miRNA
 #  - misc_RNA
 #  - Mt_rRNA
 #  - Mt_tRNA

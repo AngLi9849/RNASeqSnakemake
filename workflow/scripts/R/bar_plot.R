@@ -10,6 +10,22 @@ bar_max <- (max(bar_data$mean) + max(bar_data$SD))
 bar_min <- (min(bar_data$mean) - max(bar_data$SD))
 bar_brks <- signif(c(bar_max/2,bar_max),2)
 
+bar_data_i <- bar_data
+bar_data_i$SD_pc <- (bar_data_i$SD/bar_data_i$mean)
+bar_data_i$mean <- bar_data_i$mean/(bar_data_i$mean[bar_data_i$condition==control])
+bar_data_i$SD <- bar_data_i$mean*bar_data_i$SD_pc
+bar_data_i$group <- group_label
+
+if (exists("sum_bar_data")) {
+
+sum_bar_data <- rbind(sum_bar_data,bar_data_i)
+
+} else {
+
+sum_bar_data <- bar_data_i
+
+}
+
 bar <- ggplot(data = bar_data, aes(x=factor(condition,levels=c(control,treat)), y=mean, fill = condition)) + 
   geom_col(width=0.6,colour = "black") + 
   geom_errorbar(aes(ymin=mean-SD,ymax=mean+SD),width=0.2,position=position_dodge()) +

@@ -92,6 +92,12 @@ protocols = protocols.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 protocols = protocols.mask(protocols == '')
 protocols = (protocols.set_index(["protocol"], drop=False).sort_index())
 
+# Read gene_sets
+gene_sets = (pd.read_csv(config["gene_sets"], sep="\t", dtype={"set_name": str, "genes": str}, comment="#"))
+gene_sets.columns=gene_sets.columns.str.strip()
+gene_sets = gene_sets.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+gene_sets = gene_sets.mask(gene_sets == '')
+gene_sets = (gene_sets.set_index(["set_name"], drop=False).sort_index())
 
 # Read experimentss config table into pandas dataframe
 experiments = (pd.read_csv(config["experiments"], sep="\t", dtype={"protocol": str, "sample_lineage" : str}, comment="#"))
@@ -116,19 +122,8 @@ experiments["deduplicate"]=experiments.apply(
 experiments["sep_spl"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"sep_spl"], axis=1)
 
-
-
-
-experiments["demulti"]=experiments.apply(
-    lambda row: ['','Demultimapped'] if row.demultimap=="BOTH" else ['Demultimapped'] if row.demultimap=="TRUE" else [''], axis=1)
-experiments["dedup"]=experiments.apply(
-    lambda row: ['','Deduplicated'] if row.deduplicate=="BOTH" else ['Deduplicated'] if row.deduplicate=="TRUE" else [''], axis=1)
-experiments["splice_prefix"]=experiments.apply(
-    lambda row: ['All','Spliced','Unspliced'] if row.sep_spl else ['All'],axis=1)
-experiments["demulti"]=experiments["demulti"].astype('object')
-experiments["dedup"]=experiments["dedup"].astype('object')
-experiments["splice_prefix"]=experiments["splice_prefix"].astype('object')
-
+experiments["GOI"]=experiments.apply(lambda row: \
+     gene_sets.loc[list(set( [x.strip(' ') for x in str(row.gene_sets).split(",")] ).intersection(gene_sets.set_name.tolist())),"genes"].str.cat() if not pd.isna(row.gene_sets) else "" , axis=1)
 
 experiments["norm_group"]=experiments.apply(
     lambda row: sorted(
@@ -308,19 +303,19 @@ for i in range(0,len(experiments)):
     samps["norm_feat"] = experiments.norm_feat[i]
     samps["pairRep"] = "paired" if experiments.pairRep[i] else "unpaired"
     samps["stranded"] = samps.apply(lambda row: "unstranded" if (row.strandedness=="no" or pd.isna(row.strandedness))  else "stranded", axis=1)
-    samps["demulti"] = ""
-    samps["dedup"] = ""
+    samps["demulti"] = samps.apply(lambda row: "Demultimapped" if (row.demultimap=="TRUE")  else "", axis=1)
+    samps["dedup"] = samps.apply(lambda row: "Deduplicated" if (row.deduplicate=="TRUE")  else "", axis=1)
     samps["splice_prefix"] = "All" 
     samp_ls=None
     samp_ls=[]
     samp_ls.append(samps)
-    dedup=samps[(samps.deduplicate=="TRUE") | (samps.deduplicate=="BOTH")]
-    dedup["dedup"]="Deduplicated"
-    samp_ls.append(dedup)
+    dedup_both=samps[samps.deduplicate=="BOTH"]
+    dedup_both["dedup"]="Deduplicated"
+    samp_ls.append(dedup_both)
     samps=pd.concat(samp_ls).drop_duplicates()
-    demulti=samps[(samps.demultimap=="TRUE") | (samps.demultimap=="BOTH")]
-    demulti["demulti"]="Demultimapped"
-    samp_ls.append(demulti)
+    demulti_both=samps[(samps.demultimap=="BOTH")]
+    demulti_both["demulti"]="Demultimapped"
+    samp_ls.append(demulti_both)
     samps=pd.concat(samp_ls).drop_duplicates()
     spliced=samps[samps.sep_spl==True]
     spliced["splice_prefix"]="Spliced"
@@ -354,7 +349,6 @@ feat_res.append(dif_spl)
 
 feat_res=pd.concat(feat_res).drop_duplicates()
 feat_res = feat_res.set_index(["feature_name"], drop=False).sort_index()
-
 
 #Set variables for result filenames
 DEMULTI=['Demultimapped',''] if config["remove_multimappers"]=='BOTH' else 'Demultimapped' if config["remove_multimappers"] else ''
@@ -413,7 +407,7 @@ def get_diffsplice_docx():
 
 def get_differential_reports():
     docx = expand(
-        "diff_reports/{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}/{exp.experiment}/{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}.{exp.norm_feat}_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
+        "diff_reports/experiment_reports/{exp.experiment}/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}.{exp.norm_feat}_normalised.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE
     ),
     return docx
@@ -460,7 +454,7 @@ def get_part_bin_number(wildcards):
 
 def feature_descript(wildcards):
     descript = ( str(wildcards.feature) + " is based on " + "{v}"  + " " + str(wildcards.tag) + " {root}s" + "{ref}." ).format(
-        v="annotated" if wildcards.valid=="annotated" else ( str( experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_lineage"] ) + "validated" ) if wildcards.valid=="validated" else "provided",
+        v="annotated" if wildcards.valid=="annotated" else ( str( experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_lineage"] ) + " validated" ) if wildcards.valid=="validated" else "provided",
         root=get_root_feature(wildcards.feature),
         ref="" if wildcards.valid=="provided" \
             else \
@@ -474,11 +468,11 @@ def feature_descript(wildcards):
             str( references.loc[experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["ensembl_build"] )  + " release " + \
             str(references.loc[experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_species"]].squeeze(axis=0)["ensembl_release"]) + \
             " genome" + \
-            ("." if wildcards.valid=="validated" \
+            ("" if wildcards.valid=="validated" \
                 else \
                 " with transcript support level " + \
                 str(features.loc[wildcards.feature].squeeze(axis=0)["tsl"]) + \
-                " or better." )
+                " or better" )
             ),
     )
     return descript

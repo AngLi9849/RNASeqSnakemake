@@ -1,9 +1,9 @@
-expr_bias1 <- expr_i[,c("change","log2FoldChange","padj")]
+expr_bias1 <- expr_i
 expr_bias1$change <- "All"
 expr_bias1$abslog2FoldChange <- expr_bias1$log2FoldChange
-expr_bias1$density <- 0.01/expr_bias$padj
+expr_bias1$density <- 0.01/expr_bias1$padj
 
-expr_bias <- expr_i[abs(expr_i$padj) < sig_p,c("change","log2FoldChange","padj")]
+expr_bias <- expr_i[abs(expr_i$padj) < sig_p,]
 
 expr_bias$change <- paste("Significantly", expr_bias$change)
 expr_bias$abslog2FoldChange <- abs(expr_bias$log2FoldChange)
@@ -43,6 +43,7 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2Fol
     xintercept=0.5,
     alpha=0.3,
     linetype=5
+  ) + 
   scale_x_continuous(limits=c(0.25,0.75),breaks=c(0,0.25,0.5,0.75,1),labels=scales::percent) + 
   facet_wrap(
     ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
@@ -97,6 +98,7 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$ab
         axis.line=element_line(colour="black",size=0.1), 
         axis.line.x.top=element_line(colour="black",size=0.1), 
         axis.line.y.right=element_line(colour="black",size=0.1),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
         axis.title.y = element_text(size=9),
         axis.title.x = element_text(size=9)
   )
@@ -138,6 +140,7 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog
         axis.line=element_line(colour="black",size=0.1), 
         axis.line.x.top=element_line(colour="black",size=0.1), 
         axis.line.y.right=element_line(colour="black",size=0.1),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
         axis.title.y = element_text(size=9),
         axis.title.x = element_text(size=9)
   )

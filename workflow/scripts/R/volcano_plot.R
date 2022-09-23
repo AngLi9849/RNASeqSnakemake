@@ -59,7 +59,7 @@ volcano_caption <- paste(
 
 volcano_plot_title <- paste(title_i, "Volcano Plot.")
 volcano_plot_caption <- paste(
-  volcano_caption, " Names of top ", volc_n, " most significantly increased and decreased are labelled. ", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold", ""),sep=""
+  volcano_caption, " Names of top ", volc_n, " most significantly increased and decreased are labelled. ", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold.", ""),sep=""
 )
 
  

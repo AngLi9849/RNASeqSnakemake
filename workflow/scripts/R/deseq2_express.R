@@ -73,14 +73,16 @@ size_factors <- as.numeric(size_table$size_factor)
 names(size_factors) <- size_table$sample_name
 
 # Calculate expression levels by rpkm
-norm_sum <- total_sum[,c("internal")]*size_table$scale_factor[match(rownames(total_sum),size_table$sample_name)]
-
+#norm_sum <- total_sum[,c("internal")]*size_table$scale_factor[match(rownames(total_sum),size_table$sample_name)]
+norm_sum <- total_sum[,c("internal")]
 norm_sum <- data.frame(internal=norm_sum)
 rownames(norm_sum) <- rownames(total_sum)
 norm_sum
 
+mean_sum <- mean(norm_sum$internal)
+
 rpkm <- data.frame(lapply(names(cts), function(x) {
-  cts[,paste(x)]*size_table$scale_factor[size_table$sample_name==x]/norm_sum[paste(x),"internal"]
+  cts[,paste(x)]*size_table$scale_factor[size_table$sample_name==x]/mean_sum
 }))
 
 names(rpkm) <- names(cts)
@@ -154,13 +156,12 @@ expr <- data.frame(res@listData)
 rownames(expr) <- res@rownames
 #expr <- expr[!is.na(expr$padj),]
 expr[7:9] <- genes[match(rownames(expr),genes$gene_id),2:4]
-expr$exon <- ifelse(expr$exon_count>1,"Multiexonic","Monoexonic")
+expr$exon <- ifelse(expr$exon_count>1,"multiexonic","monoexonic")
 expr$change <- ifelse(expr$log2FoldChange>=0,"Increased","Decreased")
-expr$group <- toTitleCase(gsub("_"," ",paste(expr$exon,expr$biotype)))
+expr$group <- gsub("_"," ",paste(expr$exon,expr$biotype))
 expr$group2<-paste(expr$change,expr$group)
 #expr$log10P <- -log10(expr$padj)
 expr$featureID <- rownames(expr)
-
 expr$Length <- count_length$Length[match(rownames(expr),count_length$gene)]
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
 expr$rpkm <- expr$baseMean*1000000000/(expr$Length*mean(norm_sum$internal))

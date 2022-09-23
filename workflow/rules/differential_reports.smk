@@ -17,6 +17,8 @@ rule differential_plots:
     output:
         docx="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
     params:
+        genesets=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["gene_sets"]).split(","),
+        goi= lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["GOI"]).split(","),
         protocol = lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["protocol"],
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
         treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],
@@ -45,7 +47,7 @@ rule feature_reports:
         valid=VALID,
         )
     output:
-        docx="feature_reports/{experiment}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
+        docx="diff_reports/features/{experiment}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
     params:
         protocol = lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["protocol"],
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
@@ -71,13 +73,13 @@ rule differential_report:
             c=str(config["differential_plots"]["word_docx"]["font_colour"]),
         ),
         plots=lambda wildcards: list(dict.fromkeys(expand(
-            "feature_reports/{{experiment}}/{exp.reference}/{{pair}}.{{spikein}}_{{normaliser}}ReadCount_normalised/{{experiment}}.{{splice}}_{{prefix}}.{{lineage}}_{valid}.custom-{feat.prefix_md5}.{{tag}}.{feat.feature_name}.docx",
+            "diff_reports/features/{{experiment}}/{exp.reference}/{{pair}}.{{spikein}}_{{normaliser}}ReadCount_normalised/{{experiment}}.{{splice}}_{{prefix}}.{{lineage}}_{valid}.custom-{feat.prefix_md5}.{{tag}}.{feat.feature_name}.docx",
             exp=results[results.experiment==wildcards.experiment].itertuples(),
             feat=feat_res.itertuples(),
             valid=VALID,
         )))
     output:
-        docx="diff_reports/{splice}_{prefix}/{experiment}/{lineage}.{tag}.{pair}.{spikein}.{normaliser}_normalised/{experiment}.{splice}_{prefix}.differential_report.docx"
+        docx="diff_reports/experiment_reports/{experiment}/{experiment}.{lineage}.{tag}.{pair}.{spikein}.{normaliser}_normalised.{splice}_{prefix}.differential_report.docx"
     threads: 1
     resources:
         mem="16G",

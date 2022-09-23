@@ -34,11 +34,12 @@ tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
 valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
 feature <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]]))
 descript <- as.character(snakemake@params[["descript"]])
+descript
 
 #Add Feature section heading and
 doc <- read_docx(snakemake@input[["docx"]])
 doc <- body_add(doc,fpar(ftext(feature, prop=heading_1)),style = "heading 1")
-doc <- body_add(doc,fpar(ftext(feature, prop=plain)),style = "Normal")
+doc <- body_add(doc,fpar(ftext(descript, prop=plain)),style = "Normal")
 doc <- body_add(doc,run_pagebreak())
 
 for (i in plot_list) {

@@ -84,7 +84,16 @@ counted <- gsub("_"," ",paste(tolower(splice), tolower(prefix), feature, countin
 norm <- gsub("_"," ",paste(spikein, normaliser, "read count", sep=" "))
 
 biotypes <- c(snakemake@config[["biotypes"]])
-goi <- c(snakemake@config[["GOI"]])
+
+genesets <- c(snakemake@params[["genesets"]])
+gene_sets <- read.csv(snakemake@config[["gene_sets"]],header=T, sep='\t', check.names=FALSE)
+names(gene_sets) <- unlist(lapply(names(gene_sets),trimws))
+gene_sets <- data.frame(lapply(gene_sets,trimws))
+rownames(gene_sets) <- gene_sets$set_name
+
+goi <- unlist(lapply(unlist(strsplit(paste(gene_sets[genesets,]$genes,collapse=","),",")),trimws))
+
+#goi <- c(snakemake@params[["GOI"]])
 
 #  Import sample config, size factors and count table and conduct DESeq2 Differential Expression Analysis
 rep_pair <- as.logical(snakemake@params[["paired"]])
@@ -108,9 +117,17 @@ title <- gsub("_"," ",paste(experiment, toTitleCase(analysis),sep=" "))
 source(snakemake@config[["differential_plots"]][["scripts"]][["initialise"]])
 expr$colour <- ifelse(expr$padj < sig_p, ifelse(expr$log2FoldChange < 0, down_col, up_col), insig_col)
 
+for (i in unique(expr$biotype[!is.na(expr$exon)])) {
+  print(paste(i, unique(expr$exon[!is.na(expr$exon) & expr$biotype==i]),length(unique(expr$exon[!is.na(expr$exon) & expr$biotype==i]))))
+  if (length(unique(expr$exon[!is.na(expr$exon) & expr$biotype==i]))==1) {
+    expr$group[expr$biotype==i] <- gsub("_", " ", i)
+  }
+}
+
+head(expr[expr$biotype=="snRNA",],5)
+
 analysis_plots <- read.csv(snakemake@config[["analysis_summary_plots"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 analysis_plots
-diff
 sum_list <- as.list(colnames(analysis_plots)[analysis_plots[rownames(analysis_plots)==diff,]==TRUE])
 sum_list
 sum_list <- c(sum_list,"ma","volcano")
@@ -118,21 +135,22 @@ sum_list <- c(sum_list,"ma","volcano")
 
 # Initialise Word Document
 doc <- read_docx(snakemake@input[["docx"]])
-analysis_heading <- paste( "Differential", toTitleCase(difference))
-doc <- body_add(doc,fpar(ftext(analysis_heading, prop=heading_2)),style = "heading 2")
-
 min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_rpkm_percentile"]])
+
+
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(c(""),unique(expr$group[expr$biotype %in% biotypes]))
 for (i in i_group) {
 
-#i <- "Multiexonic Protein Coding"
+#i <- "multiexonic protein coding"
 
 if (i =="") {
   expr_i <- expr
 } else {
   expr_i <- expr[expr$group==i,]
 }
+
+head(expr_i, 5)
 
 if (diff=="splicing_ratio") {
 splice_sum_i <- apply(cts[(cts$state=="spliced" & cts$id %in% expr_i$featureID),1:(ncol(cts)-2)],2,sum)
@@ -141,8 +159,10 @@ splice_sum_i
 unsplice_sum_i
 sum_i <- data.frame(splice_sum_i/(splice_sum_i + 2*unsplice_sum_i),check.names=F)
 } else {
-sum_i <- data.frame(lapply(cts[rownames(cts) %in% expr_i$featureID,],sum))
+sum_i <- data.frame(lapply(cts[rownames(cts) %in% expr_i$featureID,],sum),check.names=F)
+sum_i <- t(sum_i)
 }
+head(sum_i,5)
 
 if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"]])) {
   min_mean <- max(expr$baseMean[is.na(expr$padj)])
@@ -162,6 +182,16 @@ expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$rpkm >= min_rpkm),]
 expr_i$padj <- ifelse(is.na(expr_i$padj),expr_i$pvalue,expr_i$padj)
 expr_i <- expr_i[!is.na(expr_i$padj),]
 
+
+feature_i <- ifelse(i=="", feature, paste(i,feature))
+
+# Write heading for this analysis group
+group_heading <- gsub("_"," ",toTitleCase(ifelse(i=="","All",i)))
+doc <- body_add(doc,fpar(ftext(group_heading, prop=heading_3)),style = "heading 3")
+
+group_label <- gsub("exonic ","exonic\n",group_heading)
+
+head(expr_i,5)
 if (nrow(expr_i)==0) {
 
 doc <- body_add(doc,fpar(ftext(paste("Insufficient evidence."),prop=plain)))
@@ -176,13 +206,7 @@ expr_i$log10P <- -log10(expr_i$padj)
 mean_level_i <- mean_level[rownames(mean_level) %in% expr_i$featureID,]
 
 # Set file name and path
-feature_i <- ifelse(i=="", feature, paste(tolower(i),feature))
-
 file_i <- gsub("_"," ",paste(experiment, feature_i, analysis ,sep=" "))
-
-# Write heading for this analysis group
-group_heading <- gsub("_"," ",toTitleCase(ifelse(i=="","All",i)))
-doc <- body_add(doc,fpar(ftext(group_heading, prop=heading_3)),style = "heading 3")
 
 # Start figure counting from 1
 fig_num <- run_autonum(seq_id = "Figure", pre_label = "Figure ", post_label = ". ", prop=title_bold ,tnd=3, tns="-", bkm = "plot", start_at = 1)
@@ -207,8 +231,8 @@ expr_i$colour <- ifelse(expr_i$padj < sig_p, ifelse(expr_i$log2FoldChange < 0, d
 title_i <- gsub("_"," ",paste(experiment, feature_i, "Differential", toTitleCase(difference),sep=" "))
 
 # Summary Plots =============================================
-for ( i in sum_list ) {{
-source(snakemake@config[["differential_plots"]][["scripts"]][[paste(i)]])
+for ( s in sum_list ) {{
+source(snakemake@config[["differential_plots"]][["scripts"]][[paste(s)]])
 }}
 # Metagene ===================================================
 #if (diff=="expression") {{
@@ -260,7 +284,7 @@ if (p=="summary") {
 doc <- body_add(doc,value=plot_p,width = 6, height = 8.5, res= plot_dpi,style = "centered")
 doc <- body_add(doc,run_pagebreak())
 } else {
-doc <- body_add(doc,value=plot_p,width = 6, height = 6, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=plot_p,width = 6, height = 7, res= plot_dpi,style = "centered")
 }
 
 doc <- body_add(doc,title_p)
@@ -269,9 +293,43 @@ for (c in caption_p) {
 doc <- body_add(doc,fpar(values=c,fp_p = fp_par(padding.top=(caption_size/2))))
 }
 
+if ( (plot_n-1) == length(plots)) {
+  doc <- body_add(doc,run_pagebreak())
+}
+
 }
 }
 }
+
+head(sum_bar_data,5)
+head(sum_pie_data,5)
+head(sum_violin_data,5)
+
+source(snakemake@config[["differential_plots"]][["scripts"]][["overview"]])
+#doc <- cursor_begin(doc)
+
+
+
+
+print(doc,target=snakemake@output[["docx"]])
+
+doc <- read_docx(snakemake@input[["docx"]])
+analysis_heading <- paste( "Differential", toTitleCase(feature), toTitleCase(difference))
+doc <- body_add(doc,fpar(ftext(analysis_heading, prop=heading_2)),style = "heading 2")
+
+doc <- body_add(doc,fpar(ftext("Overview", prop=heading_3)),style = "heading 3")
+#doc <- body_add(doc,value=overview,width = 6, height = 9, res= plot_dpi,style = "centered")
+doc <- body_add(doc,fpar(ftext("A", prop=bold)),style = "Normal")
+doc <- body_add(doc,value=sum_pie,width = 6, height = 2.7, res= plot_dpi,style = "centered")
+
+doc <- body_add(doc,fpar(ftext("B", prop=bold)),style = "Normal")
+doc <- body_add(doc,value=sum_bar,width = 6, height = 2.7, res= plot_dpi,style = "centered")
+
+doc <- body_add(doc,fpar(ftext("C", prop=bold)),style = "Normal")
+doc <- body_add(doc,value=sum_violin,width = 6, height = 2.7, res= plot_dpi,style = "centered")
+
+doc <- body_add(doc,run_pagebreak())
+doc <- body_add(doc,block_pour_docx(snakemake@output[["docx"]]))
 
 print(doc, target = snakemake@output[["docx"]])
 

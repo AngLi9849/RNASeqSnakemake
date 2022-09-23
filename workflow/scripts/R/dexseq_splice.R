@@ -148,9 +148,9 @@ colnames(expr)[10] <- "Rawlog2FoldChange"
 colnames(expr)[3] <- "baseMean"
 #expr <- expr[!is.na(expr$padj),]
 expr[11:13] <- genes[match(rownames(expr),genes$gene_id),2:4]
-expr$exon <- ifelse(expr$exon_count>1,"Multiexonic","Monoexonic")
+expr$exon <- ifelse(expr$exon_count>1,"multiexonic","monoexonic")
 expr$change <- ifelse(expr$Rawlog2FoldChange>=0,"Increased","Decreased")
-expr$group <- toTitleCase(gsub("_"," ",paste(expr$exon,expr$biotype)))
+expr$group <- gsub("_"," ",paste(expr$exon,expr$biotype))
 expr$group2<-paste(expr$change,expr$group)
 expr$log2FoldChange <- expr$Rawlog2FoldChange
 expr$featureID <- rownames(expr)
