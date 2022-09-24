@@ -89,19 +89,25 @@ rule compute_raw_matrix:
         rm {params.temp}
         """
 
+
 rule expressed_non_overlapping_feature:
     input:
         rpkm = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
-        range = "resources/annotations/{reference}_{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_range.bed",
+        sense = "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.sense.bed",
         genetab = "resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
-        background = lambda wildcards: expand("featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{feat.valid}.{feat.type}.{{tag}}.{feat.feature_name}.rpkm.bed".format(
-        feat=features.loc[str(eatures.loc[wildcards.feature,"bkgrd"]).split(",")].itertuples()
-        ),
+        noise = lambda wildcards: expand("featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{feat.valid}.{feat.type}.{{tag}}.{feat.feature_name}.rpkm.bed",
+            feat=features.loc[str(features.loc[wildcards.feature,"noise"]).split(",")].itertuples()
+        ) ,
     output:
-        biotype_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.{sig}sig2noise.biotype_non_overlap.bed",
-        all_bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{sense}.max_{sig_max}.min_{sig_min}.sig2noise.all_non_overlap.bed",
+        bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.non_overlap.bed",
     params:
-        biotype=lambda wildcards: features.loc[wildcards.feature,"biotype"]
+        compat_bt=lambda wildcards: features.loc[wildcards.feature,"comp_bt"],
+        bef= lambda wildcards: features.loc[wildcards.feature,"plotbef"],
+        aft= lambda wildcards: features.loc[wildcards.feature,"plotaft"],
+        sig_min= lambda wildcards: features.loc[wildcards.feature,"s2n_min"],
+        sig_max= lambda wildcards: features.loc[wildcards.feature,"s2n_max"],        
+        range = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.range.bed",        
+        temp="featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.temp.bed"
     threads: 1
     conda:
         "../envs/bedtools.yaml"
@@ -110,43 +116,77 @@ rule expressed_non_overlapping_feature:
         rmem="4G",
     shell:
         """
-        cat {input.background} |        
+        cat {input.sense} |
 
-        awk -F'\\t' -v OFS='\\t'
+        awk -F'\\t' -v OFS='\\t' ' 
           FNR==NR {{
+            strand[$8]=$6
+          }}
+          FNR<NR {{
+            print $0, "range" ;
+            start=$2 ; 
+            end=$3 ;
+            if ( ( {params.bef}!=0 && strand[$8]=="+" ) || ({params.aft}!=0 && strand[$8]=="-") ) {{
+              before=(strand[$8]=="+")?{params.bef}:{params.aft} ; 
+              $2=(start>=before)?start-before:0 ; 
+              $3=start ;
+              print $0, "outer"
+            }} ; 
+            if ( ( {params.aft}!=0 && strand[$8]=="+" ) || ({params.bef}!=0 && strand[$8]=="-") ) {{
+              $2=end ;
+              $3=end + ( (strand[$8]=="+")?{params.aft}:{params.bef} ) ;
+              print $0, "outer"
+            }} ;
+          }}' - {input.rpkm} > {params.range} &&
 
-        bedtools intersect -a {input.rpkm} -b - -s -wao |
-        awk -F'\\t' -v OFS='\\t' '
-            $9!=$18 {{
-              noise=(($16*$14)-($7*$19))/$14 ; 
-              if (noise*{wildcards.sig_max}>$7 || noise*{wildcards.sig_min} < $7) {{
-                print $1, $2, $3, $4, $5, $6, $7, $8 
-        
+        cat {input.noise} |        
+
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
-            biotype[$1] = $3
+            biotype[$1]=$3 ; 
           }}
           FNR < NR {{
-            $9 = biotype[$4] ;
-            print
-          }}' {input.genetab} {input.rpkm} |
-        sort -k1,1 -k2,2n | 
-        bedtools merge -s -i - -c 4, 6,7,8,9 -o count, distinct,collapse,collapse,distinct |
-         
-        bedtools intersect -a {input.rpkm} -b {input.background} -s - 
+            if (biotype[$4] != "") {{
+              print $0, biotype[$4] ; 
+            }} else {{
+              print $0, "NA"
+            }}
+          }}
+        ' {input.genetab} - |
+ 
+        bedtools intersect -a {params.range} -b - -s -wao > {params.temp} &&
+
+        awk -F'\\t' -v OFS='\\t' '
+          BEGIN {{
+            print "__UNLIST__"
+          }}
+          FNR ==NR && ($10=="range") && ($21 != 0) && ($9 != $19) && (("{params.compat_bt}" != "nan" && "{params.compat_bt}" !~ $20) || "{params.compat_bt}" == "nan" ) {{
+              noise=(($17*$15)-($7*$21))/$15 ; 
+              print noise ; 
+              if ( ({params.sig_max} > {params.sig_min} && noise*{params.sig_max} < $7 ) || noise*{params.sig_min} > $7) {{
+                print $8;
+                checked[$18]=1 ;
+              }}
+            }}
+          FNR < NR && ($10=="outer") && ($21 != 0) && ($9 != $19) && (("{params.compat_bt}" != "nan" && "{params.compat_bt}" !~ $20) || "{params.compat_bt}" == "nan" ) {{
+            if ( (checked[$18] != 1) && (({params.sig_max} > {params.sig_min} && $17*{params.sig_max}<$7) || $17*{params.sig_min} > $7) ) {{
+                print $8 ;
+            }}
+          }}' {params.temp} {params.temp} > "test.list.txt" && 
+  
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{ 
-            
-        awk -F'\\t' -v OFS='\\t' '
-          FNR==NR {{
-            biotype[$1] = $2 ;
-            mean[$1] = $3 ;
+            unlist[$1]=1 ;
           }}
-          FNR < NR && mean[$4] >= 1 {{
-            print $1, $2, $3, $8, mean[$4], $6, biotype[$4]
-          }}' - {input.bed} |
-        bedtools merge -s -i - -c 5,6,7 -o collapse,collapse,distinct |
-        """  
+          FNR < NR {{
+            if (unlist[$8]==1) {{
+              next
+            }} else {{
+              print $0
+            }}
+          }}' "test.list.txt" {input.rpkm} > {output.bed}
+        """ 
+
 
 rule sort_raw_matrices:         
     input:

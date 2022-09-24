@@ -123,7 +123,7 @@ rule custom_feature:
         group=lambda wildcards: features.loc[wildcards.feature,"group"],
         sect=lambda wildcards: features.loc[wildcards.feature,"section"],
         sense=lambda wildcards: str(features.loc[wildcards.feature,"sense"]),
-        no_first=lambda wildcards: features.loc[wildcards.feature,"no_frst"],
+        no_frst=lambda wildcards: features.loc[wildcards.feature,"no_drst"],
         no_last=lambda wildcards: features.loc[wildcards.feature,"no_last"],
         min_len=lambda wildcards: features.loc[wildcards.feature,"min_len"],
         tsl=lambda wildcards: features.loc[wildcards.feature,"tsl"],
@@ -248,13 +248,13 @@ rule feature_rpkm:
             three[$8,$6]=(three[$8,$6]>=$3)?three[$8,$6]:$3 ;
           }}
           FNR < NR {{
-            if ( id != $8 ) {{
+            if ( id != $8":"$6 ) {{
               $2=five[$8,$6] ;
               $3=three[$8,$6] ;
               $5=len[$8,$6] ;
               print
             }} ;
-            id=$8
+            id=$8":"$6
           }}' {input.bed} - |         
         awk -F'\\t' -v OFS='\\t' '
           BEGIN {{
