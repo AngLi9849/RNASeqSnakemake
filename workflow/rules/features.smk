@@ -223,12 +223,12 @@ rule custom_feature:
         """ 
 
 
-rule feature_rpkm:
+rule feature_rpk:
     input:
         counts = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.counts.tsv",
         bed = "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.bed",
     output:
-        bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
+        bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpk.bed",
     threads: 1
     conda:
         "../envs/bedtools.yaml"
@@ -238,7 +238,7 @@ rule feature_rpkm:
     shell:
         """
         sort -k6,6 -k8,8 -k2,2n {input.bed} |
-        awk -F'\\t' -v OFS='\\t' '
+        awk -F'\\t' -v OFS='\\t' -v OFMT='%f' '
           BEGIN {{
             id=""
           }}
@@ -256,7 +256,7 @@ rule feature_rpkm:
             }} ;
             id=$8":"$6
           }}' {input.bed} - |         
-        awk -F'\\t' -v OFS='\\t' '
+        awk -F'\\t' -v OFS='\\t' -v OFMT='%f' '
           BEGIN {{
             total=0
           }}
@@ -269,7 +269,7 @@ rule feature_rpkm:
           }}
           FNR < NR {{
 # chr start end root length strand rpkm feature_id parent
-            print $1, $2, $3, $4, $5, $6,sum[$4]*1000000000/($5*total), $8, $11
+            print $1, $2, $3, $4, $5, $6,sum[$4]*1000000000/$5, $8, $11
           }}' {input.counts} - > {output.bed}
         """
 

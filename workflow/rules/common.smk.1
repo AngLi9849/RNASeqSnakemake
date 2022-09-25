@@ -96,12 +96,12 @@ def get_feature_validity(feature):
 
 def get_part_bin_number(feature,part):
     row=features.loc[feature]
-    if part == "main" :
+    if port == "main" :
         return int(row.bin_n)
     else :
         opposite="plotbef" if part=="plotaft" else "plotaft"
         main_bin=int(row.bin_n)
-        main_is_int=not ( ("x" in str(row.len_bef)) or ("x" in str(row.len_aft)) or str(row.section)=="body" )
+        main_is_int=if not ( ("x" in str(row.len_bef)) or ("x" in str(row.len_aft)) or str(row.section)=="body" )
         r = 1 if pd.isna(row.befaftr) else float(row.befaftr)
         if ("x" in str(row.plotbef)) and ("x" in str(row.plotaft)) :
             bef = float(re.search(r".*(?<!x)",str(row.plotbef)).group())
@@ -132,12 +132,9 @@ features["type"] = features.apply(lambda row:
     get_feature_type(row.feature_name)
     , axis=1)
 
-features["plotbef_bin"]=features.apply(lambda row: 
-    get_part_bin_number(row.feature_name,"plotbef")
-    , axis=1)
-features["plotaft_bin"]=features.apply(lambda row: 
-    get_part_bin_number(row.feature_name,"plotaft")
-    , axis=1)
+features["plotbef_bin"]=features.apply(lambda row: get_part_bin_number(row.feature_name,"plotbef")
+features["plotaft_bin"]=features.apply(lambda row: get_part_bin_number(row.feature_name,"plotaft")
+
 
 # Read protocol configurations into pandas data.frame
 protocols = (pd.read_csv(config["protocols"], sep="\t", dtype={"protocol": str,"dedup": str, "demulti": str}, comment="#"))

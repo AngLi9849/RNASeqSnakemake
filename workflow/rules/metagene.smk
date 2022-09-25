@@ -72,6 +72,7 @@ rule compute_raw_matrix:
     params:
         strand = lambda wildcards:  "+" if (wildcards.strand == "fwd") else "-" if (wildcards.strand == "rev") else "+-",
         temp = "temp/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{strand}.bed",
+        temp_gz = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.temp.gz",
     threads: 4
     resources:
         mem="10G",
@@ -85,27 +86,31 @@ rule compute_raw_matrix:
             print
           }}
         ' {input.bed} > {params.temp} &&
-        computeMatrix scale-regions -S {input.bigwig} -R {params.temp} -p {threads} --skipZeros --metagene --binSize 1 --averageTypeBins mean --regionBodyLength {wildcards.bin} --sortRegions descend --sortUsing region_length -o {output.matrix} &&
+        computeMatrix scale-regions -S {input.bigwig} -R {params.temp} -p {threads} --metagene --binSize 1 --averageTypeBins mean --regionBodyLength {wildcards.bin} --sortRegions descend --sortUsing region_length -o {params.temp_gz} &&
+        zcat {params.temp_gz} |
+        tail -n +2 |
+        cut -f4,7- |
+        sort -k1,1 |
+        gzip - > {output.matrix} &&
+        rm {params.temp_gz} 
         rm {params.temp}
         """
 
 
-rule expressed_non_overlapping_feature:
+rule feature_signal2background:
     input:
-        rpkm = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.bed",
+        rpk = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpk.bed",
         sense = "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.sense.bed",
         genetab = "resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
-        noise = lambda wildcards: expand("featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{feat.valid}.{feat.type}.{{tag}}.{feat.feature_name}.rpkm.bed",
-            feat=features.loc[str(features.loc[wildcards.feature,"noise"]).split(",")].itertuples()
+        background = lambda wildcards: expand("featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{feat.valid}.{feat.type}.{{tag}}.{feat.feature_name}.rpk.bed",
+            feat=features.loc[str(features.loc[wildcards.feature,"backgrd"]).split(",")].itertuples()
         ) ,
     output:
-        bed = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.non_overlap.bed",
+        tab = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.sig2bg.tab",
     params:
         compat_bt=lambda wildcards: features.loc[wildcards.feature,"comp_bt"],
         bef= lambda wildcards: features.loc[wildcards.feature,"plotbef"],
         aft= lambda wildcards: features.loc[wildcards.feature,"plotaft"],
-        sig_min= lambda wildcards: features.loc[wildcards.feature,"s2n_min"],
-        sig_max= lambda wildcards: features.loc[wildcards.feature,"s2n_max"],        
         range = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.range.bed",        
         temp="featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.temp.bed"
     threads: 1
@@ -137,15 +142,15 @@ rule expressed_non_overlapping_feature:
               $3=end + ( (strand[$8]=="+")?{params.aft}:{params.bef} ) ;
               print $0, "outer"
             }} ;
-          }}' - {input.rpkm} > {params.range} &&
+          }}' - {input.rpk} > {params.range} &&
 
-        cat {input.noise} |        
+        cat {input.background} |        
 
         awk -F'\\t' -v OFS='\\t' '
           FNR==NR {{
             biotype[$1]=$3 ; 
           }}
-          FNR < NR {{
+          FNR < NR && ($7 >0 ) {{
             if (biotype[$4] != "") {{
               print $0, biotype[$4] ; 
             }} else {{
@@ -156,49 +161,54 @@ rule expressed_non_overlapping_feature:
  
         bedtools intersect -a {params.range} -b - -s -wao > {params.temp} &&
 
-        awk -F'\\t' -v OFS='\\t' '
+        awk -F'\\t' -v OFS='\\t' -v OFMT='%f' '
           BEGIN {{
-            print "__UNLIST__"
+            print "featureID", "sig2bg", "bg2noi"
           }}
-          FNR ==NR && ($10=="range") && ($21 != 0) && ($9 != $19) && (("{params.compat_bt}" != "nan" && "{params.compat_bt}" !~ $20) || "{params.compat_bt}" == "nan" ) {{
-              noise=(($17*$15)-($7*$21))/$15 ; 
-              print noise ; 
-              if ( ({params.sig_max} > {params.sig_min} && noise*{params.sig_max} < $7 ) || noise*{params.sig_min} > $7) {{
-                print $8;
-                checked[$18]=1 ;
+          {{
+            if ( ($7!=0) && ($21 != 0) && ($9 != $19) && (("{params.compat_bt}" != "nan" && "{params.compat_bt}" !~ $20) || "{params.compat_bt}" == "nan" ) ) {{
+              if ($10=="range") {{
+                background=(($17*$15)-($7*$21))/$15 ;
+                signal=(($7*$5)-($17*$21))/$5 ;
+                sig_bg=signal/background;
+                sb[$8]=((sb[$8]-0)>=sig_bg || sb[$8]=="Inf" )?sig_bg:sb[$8] ;
+                bs[$8]=(signal-0>0)? ( ( (bs[$8]-0) >= (background/signal) )?(bs[$8]-0):background/signal ) : ( (bs[$8]-0>0)? bs[$8] : "Inf"  ) ;
+              }} else if ($10=="outer") {{
+                sig_bg=$7/$17 ;
+                sb[$8]=((sb[$8]-0)>=sig_bg || sb[$8]=="Inf")?sig_bg:sb[$8] ;
+                bs[$8]=($7-0>0)? ( ( (bs[$8]-0) >= ($17/$7) )?(bs[$8]-0):$17/$7 ) :( (bs[$8]-0>0)? bs[$8] : "Inf" ) ;
               }}
-            }}
-          FNR < NR && ($10=="outer") && ($21 != 0) && ($9 != $19) && (("{params.compat_bt}" != "nan" && "{params.compat_bt}" !~ $20) || "{params.compat_bt}" == "nan" ) {{
-            if ( (checked[$18] != 1) && (({params.sig_max} > {params.sig_min} && $17*{params.sig_max}<$7) || $17*{params.sig_min} > $7) ) {{
-                print $8 ;
-            }}
-          }}' {params.temp} {params.temp} > "test.list.txt" && 
-  
-        awk -F'\\t' -v OFS='\\t' '
-          FNR==NR {{ 
-            unlist[$1]=1 ;
-          }}
-          FNR < NR {{
-            if (unlist[$8]==1) {{
-              next
             }} else {{
-              print $0
+              sb[$8]=((sb[$8]-0)>0)?sb[$8]:( ($7==0)?0:"Inf" ) ; 
             }}
-          }}' "test.list.txt" {input.rpkm} > {output.bed}
+          }}
+          END {{
+            for ( i in sb ) {{
+              print i, sb[i], (bs[i]=="Inf")?"Inf":bs[i]-0
+            }}
+          }}' {params.temp} > {output.tab} 
         """ 
 
 
 rule sort_raw_matrices:         
     input:
-        matrix = lambda wildcards : expand(
-          "matrices/{{sample}}/{unit.unit}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_{{part}}.{{bin}}bins.matrix.gz",
-          unit = samples.loc[wildcards.sample_name].itertuples(),
+        bef = lambda wildcards : "workflow/null.txt" if features.loc[wildcards.feature,"plotbef"]==0 else expand(
+          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotbef.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
+          bin= get_part_bin_number(wildcards.feature,"plotbef"),
+        ), 
+        body = lambda wildcards : expand(
+          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_main.{bin}bins.matrix.gz",
+          strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
+          bin = get_part_bin_number(wildcards.feature,"main"),
+        ),
+        aft = lambda wildcards : "workflow/null.txt" if features.loc[wildcards.feature,"plotaft"]==0 else expand(
+          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotaft.{bin}bins.matrix.gz",
+          strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
+          bin= get_part_bin_number(wildcards.feature,"plotaft"),
         ),
     output:
-        matrix = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.gz",
-    log:
-        "logs/matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.gz",
+        matrix = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.matrix.gz",
     threads: 1
     conda:
         "../envs/bedtools.yaml"
@@ -207,6 +217,5 @@ rule sort_raw_matrices:
         rmem="4G",
     shell:
         """
-        awk -F'\\t' -v OFS='\\t' '
-          {{print}}
+        
         """  

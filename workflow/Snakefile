@@ -65,7 +65,7 @@ rule all:
         #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.HCT116_validated.custom-{md5}.basic.GeneBody.rpkm.bed".format(
         #    md5=features.loc["GeneBody","prefix_md5"]
         #),
-        "featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.HCT116_validated.custom-{md5}.basic.GeneBody.plot-{plot_md5}.non_overlap.bed".format(
+        "featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.HCT116_validated.custom-{md5}.basic.GeneBody.plot-{plot_md5}.sig2bg.tab".format(
             plot_md5=features.loc["GeneBody","plot_md5"],
             md5=features.loc["GeneBody","prefix_md5"]
         ),
