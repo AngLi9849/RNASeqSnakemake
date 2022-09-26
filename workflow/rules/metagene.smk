@@ -63,15 +63,15 @@ rule feature_metagene_annotations:
 
 rule compute_raw_matrix:
     input:        
-        bed= "resources/annotations/{reference}_{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_{part}.bed",
-        bigwig = "bigwigs/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
+        bed= "resources/annotations/{reference}/{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_{part}.bed",
+        bigwig = "raw_bw/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
     output:
         matrix="matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.gz",
     log:
         "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.log",
     params:
         strand = lambda wildcards:  "+" if (wildcards.strand == "fwd") else "-" if (wildcards.strand == "rev") else "+-",
-        temp = "temp/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{strand}.bed",
+        temp = "resources/annotations/{reference}/{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_{part}.{strand}.bed",
         temp_gz = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.temp.gz",
     threads: 4
     resources:
@@ -92,7 +92,7 @@ rule compute_raw_matrix:
         cut -f4,7- |
         sort -k1,1 |
         gzip - > {output.matrix} &&
-        rm {params.temp_gz} 
+        rm {params.temp_gz} && 
         rm {params.temp}
         """
 
@@ -167,17 +167,9 @@ rule feature_signal2background:
           }}
           {{
             if ( ($7!=0) && ($21 != 0) && ($9 != $19) && (("{params.compat_bt}" != "nan" && "{params.compat_bt}" !~ $20) || "{params.compat_bt}" == "nan" ) ) {{
-              if ($10=="range") {{
-                background=(($17*$15)-($7*$21))/$15 ;
-                signal=(($7*$5)-($17*$21))/$5 ;
-                sig_bg=signal/background;
-                sb[$8]=((sb[$8]-0)>=sig_bg || sb[$8]=="Inf" )?sig_bg:sb[$8] ;
-                bs[$8]=(signal-0>0)? ( ( (bs[$8]-0) >= (background/signal) )?(bs[$8]-0):background/signal ) : ( (bs[$8]-0>0)? bs[$8] : "Inf"  ) ;
-              }} else if ($10=="outer") {{
-                sig_bg=$7/$17 ;
-                sb[$8]=((sb[$8]-0)>=sig_bg || sb[$8]=="Inf")?sig_bg:sb[$8] ;
-                bs[$8]=($7-0>0)? ( ( (bs[$8]-0) >= ($17/$7) )?(bs[$8]-0):$17/$7 ) :( (bs[$8]-0>0)? bs[$8] : "Inf" ) ;
-              }}
+              sig_bg=$7/$17 ;
+              sb[$8]=((sb[$8]-0)>=sig_bg || sb[$8]=="Inf")?sig_bg:sb[$8] ;
+              bs[$8]=($7-0>0)? ( ( (bs[$8]-0) >= ($17/$7) )?(bs[$8]-0):$17/$7 ) :( (bs[$8]-0>0)? bs[$8] : "Inf" ) ;
             }} else {{
               sb[$8]=((sb[$8]-0)>0)?sb[$8]:( ($7==0)?0:"Inf" ) ; 
             }}
@@ -192,20 +184,20 @@ rule feature_signal2background:
 
 rule sort_raw_matrices:         
     input:
-        bef = lambda wildcards : "workflow/null.txt" if features.loc[wildcards.feature,"plotbef"]==0 else expand(
+        bef = lambda wildcards : "workflow/null.txt" if int(features.loc[wildcards.feature,"plotbef"])==0 else expand(
           "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotbef.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
-          bin= get_part_bin_number(wildcards.feature,"plotbef"),
+          bin= features.loc[wildcards.feature,"plotbef_bin"],
         ), 
         body = lambda wildcards : expand(
           "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_main.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
-          bin = get_part_bin_number(wildcards.feature,"main"),
+          bin = features.loc[wildcards.feature,"bin_n"],
         ),
-        aft = lambda wildcards : "workflow/null.txt" if features.loc[wildcards.feature,"plotaft"]==0 else expand(
+        aft = lambda wildcards : "workflow/null.txt" if int(features.loc[wildcards.feature,"plotaft"])==0 else expand(
           "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotaft.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
-          bin= get_part_bin_number(wildcards.feature,"plotaft"),
+          bin= features.loc[wildcards.feature,"plotaft_bin"],
         ),
     output:
         matrix = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.matrix.gz",
@@ -217,5 +209,5 @@ rule sort_raw_matrices:
         rmem="4G",
     shell:
         """
-        
+        zcat {input.bef} {input.body} {input.aft} | gzip - > {output.matrix}
         """  

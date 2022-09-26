@@ -65,10 +65,10 @@ rule all:
         #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.HCT116_validated.custom-{md5}.basic.GeneBody.rpkm.bed".format(
         #    md5=features.loc["GeneBody","prefix_md5"]
         #),
-        "featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.HCT116_validated.custom-{md5}.basic.GeneBody.plot-{plot_md5}.sig2bg.tab".format(
-            plot_md5=features.loc["GeneBody","plot_md5"],
-            md5=features.loc["GeneBody","prefix_md5"]
-        ),
+        #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.HCT116_validated.custom-{md5}.basic.GeneBody.plot-{plot_md5}.sig2bg.tab".format(
+#            plot_md5=features.loc["GeneBody","plot_md5"],
+#            md5=features.loc["GeneBody","prefix_md5"]
+#        ),
         #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/SplicedAligned.HCT116_validated.custom-7e5ff750dfd4716388d8ebad286d805e.basic.GeneBody.star.SpliceSite.counts.tsv"
         #"resources/annotations/MANE_homo_sapiens.GRCh38.104/genome.gtf.bed12"
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.fasta",
@@ -87,7 +87,9 @@ rule all:
         #"rmats/prep/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/",
         #"rmats/post/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/temp",
         #"resources/annotations/homo_sapiens.HCT116.rmats.ret_int.bed",
-        #"matrices/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.fwd/genome_annotated.plot-095b4d96d6e4d066a112a711bfe0b4fb.basic.GeneBody.sense_main.1000bins.matrix.gz",
+        "matrices/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.stranded/HCT116_validated.plot-{md5}.basic.GeneBody.sense.matrix.gz".format(
+            md5=features.loc["GeneBody","plot_md5"],
+),
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104_genome.plot-095b4d96d6e4d066a112a711bfe0b4fb.annotated_basic.GeneBody.sense.before.bed"
         #get_diffexp_docx(),
         #get_diffsplice_docx(),

@@ -47,7 +47,7 @@ rule unstranded_genomecov:
     output:
         bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.unstranded.bedgraph",
         txt="bedgraph/{sample}/{unit}/{reference}/{prefix}.BaseCoverage.txt",
-        bw="bigwigs/{sample}/{unit}/{reference}/{prefix}.unstranded.raw.bigwig",
+        bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.unstranded.raw.bigwig",
     params:
         bin_size=config["bigwig_bin_size"]
     resources:
