@@ -28,6 +28,8 @@ if (snakemake@threads > 1) {
 expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+sense_ls <- c(snakemake@input[["sense_mx"]])
+
 
 # Import snakemake parameters and inputs
 # Identify analysis

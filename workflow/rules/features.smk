@@ -123,7 +123,7 @@ rule custom_feature:
         group=lambda wildcards: features.loc[wildcards.feature,"group"],
         sect=lambda wildcards: features.loc[wildcards.feature,"section"],
         sense=lambda wildcards: str(features.loc[wildcards.feature,"sense"]),
-        no_frst=lambda wildcards: features.loc[wildcards.feature,"no_drst"],
+        no_frst=lambda wildcards: features.loc[wildcards.feature,"no_frst"],
         no_last=lambda wildcards: features.loc[wildcards.feature,"no_last"],
         min_len=lambda wildcards: features.loc[wildcards.feature,"min_len"],
         tsl=lambda wildcards: features.loc[wildcards.feature,"tsl"],

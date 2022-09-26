@@ -51,7 +51,7 @@ rule all:
         #get_feature_counts()
         #"results/qc/multiqc_report.html",
         #get_norm_bigwigs(),
-        #get_differential_reports(),
+        get_differential_reports(),
         #get_differential_splicing(),
         #get_meta_profiles(),
         #"resources/annotations/ensembl_homo_sapiens_genome.gtf.basic_features.bed"
@@ -87,9 +87,9 @@ rule all:
         #"rmats/prep/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/",
         #"rmats/post/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/temp",
         #"resources/annotations/homo_sapiens.HCT116.rmats.ret_int.bed",
-        "matrices/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.stranded/HCT116_validated.plot-{md5}.basic.GeneBody.sense.sorted_matrix.gz".format(
-            md5=features.loc["GeneBody","plot_md5"],
-),
+        #"matrices/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.stranded/HCT116_validated.plot-{md5}.basic.GeneBody.sense.sorted_matrix.gz".format(
+        #    md5=features.loc["GeneBody","plot_md5"],
+#),
         #"resources/annotations/ensembl_homo_sapiens.GRCh38.104_genome.plot-095b4d96d6e4d066a112a711bfe0b4fb.annotated_basic.GeneBody.sense.before.bed"
         #get_diffexp_docx(),
         #get_diffsplice_docx(),
