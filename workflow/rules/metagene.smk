@@ -178,36 +178,41 @@ rule feature_signal2background:
             for ( i in sb ) {{
               print i, sb[i], (bs[i]=="Inf")?"Inf":bs[i]-0
             }}
-          }}' {params.temp} > {output.tab} 
+          }}' {params.temp} > {output.tab} &&
+        rm {params.range} &&
+        rm {params.temp}
         """ 
 
 
 rule sort_raw_matrices:         
     input:
-        bef = lambda wildcards : "workflow/null.txt" if int(features.loc[wildcards.feature,"plotbef"])==0 else expand(
+        bef = lambda wildcards : [] if features.loc[wildcards.feature,"plotbef_bin"]==0 else expand(
           "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotbef.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
           bin= features.loc[wildcards.feature,"plotbef_bin"],
         ), 
-        body = lambda wildcards : expand(
+        main = lambda wildcards : expand(
           "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_main.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
           bin = features.loc[wildcards.feature,"bin_n"],
         ),
-        aft = lambda wildcards : "workflow/null.txt" if int(features.loc[wildcards.feature,"plotaft"])==0 else expand(
+        aft = lambda wildcards : [] if features.loc[wildcards.feature,"plotaft_bin"]==0 else expand(
           "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotaft.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
           bin= features.loc[wildcards.feature,"plotaft_bin"],
         ),
     output:
-        matrix = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.matrix.gz",
+        matrix = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.sorted_matrix.gz",
     threads: 1
-    conda:
-        "../envs/bedtools.yaml"
+    resources:
+        mem="16G",
+        rmem="12G",
+    params:
+        bef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
+        main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
+        aft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
     resources:
         mem="6G",
         rmem="4G",
-    shell:
-        """
-        zcat {input.bef} {input.body} {input.aft} | gzip - > {output.matrix}
-        """  
+    script:
+        "../scripts/py/sort_matrices.py"

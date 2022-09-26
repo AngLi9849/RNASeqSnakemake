@@ -139,6 +139,10 @@ features["plotaft_bin"]=features.apply(lambda row:
     get_part_bin_number(row.feature_name,"plotaft")
     , axis=1)
 
+features["antisense"]=features.apply(lambda row:
+    not (pd.isna(row.sense) or len(str(row.sense))==1) 
+    , axis=1)
+
 # Read protocol configurations into pandas data.frame
 protocols = (pd.read_csv(config["protocols"], sep="\t", dtype={"protocol": str,"dedup": str, "demulti": str}, comment="#"))
 protocols.columns=protocols.columns.str.strip()
