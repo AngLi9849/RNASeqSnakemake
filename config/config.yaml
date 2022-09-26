@@ -78,7 +78,7 @@ differential_plots:
     initialise: "workflow/scripts/R/initialise_plots.R"
     ma: "workflow/scripts/R/ma_plot.R"
     volcano: "workflow/scripts/R/volcano_plot.R"
-    meta: "workflow/scripts/R/metagene_plot.R"
+    meta: "workflow/scripts/R/meta_plots.R"
     heat: "workflow/scripts/R/heatmap.R"
     bar: "workflow/scripts/R/bar_plot.R"
     violin: "workflow/scripts/R/violin_plot.R"
@@ -115,12 +115,8 @@ differential_plots:
       font_colour: black
 
 metagene:
-  signal_to_noise_ratio: 20
-  plot_per_gene: TRUE
-  plot_sum: TRUE
-  bin_number: 1000 # main body bin number
-  anamoly_trim: 0.05
-  before_after_ratio: 0.4 # Regions occupied by "plotbef" and "plotaft" in the plot as a ratio to main body 
+  norm_per_gene: TRUE # Plot meta profiles with genes normalised or not, if FALSE, more abundant genes will weight more in the metaplot
+  anomaly_trim: 0.05
   
 # Ensembl Tags of interest, hashtag out those that are not
 # Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line

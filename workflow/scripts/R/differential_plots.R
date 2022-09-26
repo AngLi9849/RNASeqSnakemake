@@ -28,8 +28,18 @@ if (snakemake@threads > 1) {
 expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
-sense_ls <- c(snakemake@input[["sense_mx"]])
 
+sense_ls <- snakemake@input[["sense_mx"]]
+antisense_ls <- snakemake@input[["sense_mx"]]
+sig_bg <- read.csv(snakemake@input[["sig_bg"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+sig <- as.numeric(snakemake@params[["sig"]])
+bg <- as.numeric(snakemake@params[["bg"]])
+
+sense_dirs <- ifelse(length(antisense_ls)>0, c("sense","antisense"),c("sense"))
+
+meta_features <- rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] 
+head(meta_features,10)
+mx_samples <- c(snakemake@params[["samples"]])
 
 # Import snakemake parameters and inputs
 # Identify analysis
@@ -139,6 +149,32 @@ sum_list <- c(sum_list,"ma","volcano")
 doc <- read_docx(snakemake@input[["docx"]])
 min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_rpkm_percentile"]])
 
+# Initialise metagene if needed
+if ("meta" %in% sum_list | difference=="expression levels") {
+# Import size factors
+size_table <- read.csv(snakemake@input[["size_table"]],header=T,sep="\t",check.names=F)
+size_table <- size_table[match(mx_samples,size_table$sample_name),]
+
+# Import metaplot params and matrices
+plotbef_bin <- snakemake@params[["plotbef_bin"]]
+plotaft_bin <- snakemake@params[["plotaft_bin"]]
+base_feat <- as.character(snakemake@params[["base"]])
+bef_bin <- snakemake@params[["bef_bin"]]
+main_bin <- snakemake@params[["main_bin"]]
+section <- snakemake@params[["section"]]
+len_bef_n <- as.numeric(snakemake@params[["len_bef"]])
+len_aft_n <- as.numeric(snakemake@params[["len_aft"]])
+len_bef <- paste("-",as.character(snakemake@params[["len_bef"]]),sep="")
+len_aft <- paste("+",as.character(snakemake@params[["len_aft"]]),sep="")
+
+for ( i in sense_dirs ) {
+mx_ls <- get(paste(i,"_ls",sep=""))
+mx <- lapply(mx_ls,function(x) {read.table(x,sep='\t',header=T,row.names=1,check.names=FALSE)})
+mx <- lapply(mx,function(x) {x[rownames(x) %in% meta_features,]})
+mx <- lapply(1:length(mx),function(x) {as.data.frame(mx[[x]])*size_table$scale_factor[size_table$sample_name==mx_samples[x]]})
+names(mx) <- mx_samples
+assign(paste(i,"_mx",sep=""),mx)
+}
 
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(c(""),unique(expr$group[expr$biotype %in% biotypes]))

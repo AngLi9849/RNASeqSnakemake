@@ -24,9 +24,9 @@ aft = None if aft_ls==[] else pd.concat(aft_ls)
 
 ls=[bef,main,aft]
 
-start = 0 - snakemake.params.bef_bin
+start = 0 - snakemake.params.plotbef_bin - snakemake.params.bef_bin
 
-end = 0 + snakemake.params.main_bin + snakemake.params.aft_bin
+end = 0 + snakemake.params.main_bin + snakemake.params.plotaft_bin - snakemake.params.bef_bin
 
 mx=pd.concat(ls,axis=1)
 
@@ -34,7 +34,9 @@ mx.columns = range(start,end)
 
 mx.index.name = "id"
 
-mx.to_csv(snakemake.output.matrix, sep='\t', header=True, index=True, compression='gzip')
+mx.to_csv(snakemake.output.sum_mx, sep='\t', header=True, index=True, compression='gzip')
 
+norm_mx = mx.div(mx.sum(axis=1),axis=0)*(mx.sum().sum()/len(mx))
 
+norm_mx.to_csv(snakemake.output.norm_mx, sep='\t', header=True, index=True, compression='gzip')
 

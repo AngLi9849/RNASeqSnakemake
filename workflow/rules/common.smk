@@ -52,7 +52,7 @@ features = features.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 features = features.mask( features == '')
 features = (features.set_index(["feature_name"], drop=False).sort_index())
 feat_prefix = features.iloc[:, features.columns.get_loc("region"): features.columns.get_loc("bin_n")]
-feat_plot = features.iloc[:,features.columns.get_loc("region"): features.columns.get_loc("annotation_bed")]
+feat_plot = features.iloc[:,features.columns.get_loc("region"): features.columns.get_loc("s2b_min")]
 features["prefix"] = feat_prefix.apply(lambda row: 
     ''.join([str(a)+ "_" + str(b) + "." for a,b in zip(row.index.tolist(), row.tolist())]) 
     , axis=1) 
@@ -94,6 +94,10 @@ def get_feature_validity(feature):
             else:
                 return "validated"
 
+features["sense_dir"]=features.apply(lambda row:
+    -1 if str(row.sense)[0]=="-" else 1
+    , axis=1)
+
 def get_part_bin_number(feature,part):
     row=features.loc[feature]
     if part == "main" :
@@ -125,18 +129,39 @@ def get_part_bin_number(feature,part):
             part_bin = ( main_bin * r * int(row[part]) / ( int(row[part]) + int(row[opposite]) ) )
     return int(part_bin)
 
+def get_bef_bin_number(feature):
+    row=features.loc[feature]
+    if row.section == "body" :
+        return 0
+    else :
+        opposite="len_aft"
+        main_bin=int(row.bin_n)
+        main_is_int=not ( ("x" in str(row.len_bef)) or ("x" in str(row.len_aft)) or str(row.section)=="body" )
+        if ("x" in str(row.len_bef)) and ("x" in str(row.len_aft)) :
+            bef = float(re.search(r".*(?<!x)",str(row.len_bef)).group())
+            aft = float(re.search(r".*(?<!x)",str(row.len_aft)).group())
+            part_num = bef if row.sense_dir==1 else aft
+            part_bin = part_num * main_bin / (bef + aft)
+        elif main_is_int :
+            main_len= int(row.len_bef) + int(row.len_aft)
+            bef = int(row.len_bef) if row.sense_dir==1 else int(row.len_aft)
+            part_bin = (main_bin * bef / main_len)
+    return int(part_bin)
+
 features["valid"] = features.apply(lambda row:
     get_feature_validity(row.feature_name)
     , axis=1)
 features["type"] = features.apply(lambda row:
     get_feature_type(row.feature_name)
     , axis=1)
-
 features["plotbef_bin"]=features.apply(lambda row: 
     get_part_bin_number(row.feature_name,"plotbef")
     , axis=1)
 features["plotaft_bin"]=features.apply(lambda row: 
     get_part_bin_number(row.feature_name,"plotaft")
+    , axis=1)
+features["bef_bin"]=features.apply(lambda row:
+    get_bef_bin_number(row.feature_name)
     , axis=1)
 
 features["antisense"]=features.apply(lambda row:
@@ -412,7 +437,7 @@ USAGE=[""]
 
 BIOTYPE=list(config["biotypes"])
 
-SCORE=["sum","per_gene"] if config["metagene"]["plot_sum"] else "per_gene"
+SCORE=["sum","per_gene"] if config["metagene"]["norm_per_gene"] else "per_gene"
 
 #Functions for generating results
 def get_bams():

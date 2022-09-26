@@ -23,13 +23,13 @@ rule feature_metagene_annotations:
         """
         sort -k6,6 -k1,1 -k8,8 -k2,2n -k3,3n {input.bed} | 
         awk -F'\\t' -v OFS='\\t' -v id='' '
-          FNR==NR {{
+          FNR==NR && NF>=6 {{
             len[$8] += $5 ; 
             five[$8]=(five[$8]<=1)?$2:((five[$8] <= $2)?five[$8]:$2) ;
             three[$8]=(three[$8]>=$3)?three[$8]:$3 ;
             print $1, $2, $3, $8, $5, $6 >> "{output.main}" ;
           }}
-          FNR < NR {{
+          FNR < NR && NF>=6 {{
             if ( id != $8 ) {{
               l=len[$8] ;
               bef=(match("{params.before}","([^x]*)x",b))? int(l*b) : {params.before} ;
@@ -91,9 +91,7 @@ rule compute_raw_matrix:
         tail -n +2 |
         cut -f4,7- |
         sort -k1,1 |
-        gzip - > {output.matrix} &&
-        rm {params.temp_gz} && 
-        rm {params.temp}
+        gzip - > {output.matrix}
         """
 
 
@@ -163,7 +161,7 @@ rule feature_signal2background:
 
         awk -F'\\t' -v OFS='\\t' -v OFMT='%f' '
           BEGIN {{
-            print "featureID", "sig2bg", "bg2noi"
+            print "featureID", "sig2bg", "bg2sig"
           }}
           {{
             if ( ($7!=0) && ($21 != 0) && ($9 != $19) && (("{params.compat_bt}" != "nan" && "{params.compat_bt}" !~ $20) || "{params.compat_bt}" == "nan" ) ) {{
@@ -202,15 +200,17 @@ rule sort_raw_matrices:
           bin= features.loc[wildcards.feature,"plotaft_bin"],
         ),
     output:
-        matrix = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.sorted_matrix.gz",
+        sum_mx = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.sum_matrix.gz",
+        norm_mx = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.norm_matrix.gz",
     threads: 1
     resources:
         mem="16G",
         rmem="12G",
     params:
-        bef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
+        bef_bin =lambda wildcards : features.loc[wildcards.feature,"bef_bin"],
+        plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
-        aft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
+        plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
     resources:
         mem="6G",
         rmem="4G",
