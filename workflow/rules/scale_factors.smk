@@ -86,14 +86,14 @@ rule total_read_count_size_factors:
               if (FNR==1) {{
                 internal_mean=(internal_sum/n) ; 
                 spikein_mean=(spikein_sum/n) ; 
-                print "sample_name", "counts", "size_factor" >> "{output.internal}" ;
-                print "sample_name", "counts", "size_factor" >> "{output.spikein}" ;
+                print "sample_name", "counts", "size_factor", "scale_factor" >> "{output.internal}" ;
+                print "sample_name", "counts", "size_factor", "scale_factor" >> "{output.spikein}" ;
               }}
               else {{
                 internal_size = (internal_mean==0)?0:(internal/internal_mean) ;
                 spikein_size = (spikein_mean==0)?0:(spikein/spikein_mean) ;
-                print sample, internal, internal_size >> "{output.internal}" ;
-                print sample, spikein, spikein_size >> "{output.spikein}" ;
+                print sample, internal, internal_size, (internal_size-0)==0?0:(1/internal_size) >> "{output.internal}" ;
+                print sample, spikein, spikein_size, (spikein_size-0)==0?0:(1/spikein_size) >> "{output.spikein}" ;
               }} ;
               sample = $1 ; internal = $2 ; spikein = $3 ;
             }}
@@ -104,8 +104,8 @@ rule total_read_count_size_factors:
           END {{
             internal_size = (internal_mean==0)?0:(internal/internal_mean) ;
             spikein_size = (spikein_mean==0)?0:(spikein/spikein_mean) ;
-            print sample, internal, internal_size >> "{output.internal}" ;
-            print sample, spikein, spikein_size >> "{output.spikein}" ;
+            print sample, internal, internal_size, (internal_size-0)==0?0:(1/internal_size) >> "{output.internal}" ;
+            print sample, spikein, spikein_size, (spikein_size-0)==0?0:(1/spikein_size) >> "{output.spikein}" ;
           }}' {output.summary} {output.summary} 
         """
 
