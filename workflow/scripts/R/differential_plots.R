@@ -29,16 +29,10 @@ expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', chec
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 
-sense_ls <- snakemake@input[["sense_mx"]]
-antisense_ls <- snakemake@input[["sense_mx"]]
 sig_bg <- read.csv(snakemake@input[["sig_bg"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 sig <- as.numeric(snakemake@params[["sig"]])
 bg <- as.numeric(snakemake@params[["bg"]])
 
-sense_dirs <- ifelse(length(antisense_ls)>0, c("sense","antisense"),c("sense"))
-
-meta_features <- rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] 
-head(meta_features,10)
 mx_samples <- c(snakemake@params[["samples"]])
 
 # Import snakemake parameters and inputs
@@ -48,12 +42,28 @@ difference <- as.character(diff)
 analysis <- paste("differential", difference, "analysis")
 
 if (difference == "expression") {
+
   difference <- "expression levels"
   difference_unit <- "expression levels (RPKM)"
+
+  mx_df <- read.csv(snakemake@input[["mx_data"]],header=T, sep='\t', check.names=FALSE)
+  plotbef_bin <- snakemake@params[["plotbef_bin"]]
+  plotaft_bin <- snakemake@params[["plotaft_bin"]]
+  base <- as.character(snakemake@params[["base"]])
+  bef_bin <- snakemake@params[["bef_bin"]]
+  main_bin <- snakemake@params[["main_bin"]]
+  section <- snakemake@params[["section"]]
+  len_bef_n <- as.numeric(snakemake@params[["len_bef"]])
+  len_aft_n <- as.numeric(snakemake@params[["len_aft"]])
+  len_bef <- paste("-",as.character(snakemake@params[["len_bef"]]),sep="")
+  len_aft <- paste("+",as.character(snakemake@params[["len_aft"]]),sep="")
+
 } else {
   difference <- gsub("_"," ",difference)
   difference_unit <- gsub("_"," ",difference)
 }
+
+head(expr,10)
 
 # Import wildcards as text
 prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
@@ -120,6 +130,9 @@ rownames(sample_table) <- sample_table$sample_name
 condition_col <- as.character(sample_table$colour[match(c(control_cond,treatment),sample_table$condition)])
 names(condition_col) <-c(control,treat)
 
+sample_table$cond_abbr <- c(control,treat)[match(sample_table$condition, c(control_cond,treatment))]
+sample_table$sample_abbr <- paste(sample_table$cond_abbr," Rep",sample_table$replicate,sep="")
+
 condition_col
 compare <- list(c(control,treat))
 
@@ -128,6 +141,8 @@ title <- gsub("_"," ",paste(experiment, toTitleCase(analysis),sep=" "))
 # Initialise Plotting
 source(snakemake@config[["differential_plots"]][["scripts"]][["initialise"]])
 expr$colour <- ifelse(expr$padj < sig_p, ifelse(expr$log2FoldChange < 0, down_col, up_col), insig_col)
+
+head(expr,10)
 
 for (i in unique(expr$biotype[!is.na(expr$exon)])) {
   print(paste(i, unique(expr$exon[!is.na(expr$exon) & expr$biotype==i]),length(unique(expr$exon[!is.na(expr$exon) & expr$biotype==i]))))
@@ -148,33 +163,6 @@ sum_list <- c(sum_list,"ma","volcano")
 # Initialise Word Document
 doc <- read_docx(snakemake@input[["docx"]])
 min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_rpkm_percentile"]])
-
-# Initialise metagene if needed
-if ("meta" %in% sum_list | difference=="expression levels") {
-# Import size factors
-size_table <- read.csv(snakemake@input[["size_table"]],header=T,sep="\t",check.names=F)
-size_table <- size_table[match(mx_samples,size_table$sample_name),]
-
-# Import metaplot params and matrices
-plotbef_bin <- snakemake@params[["plotbef_bin"]]
-plotaft_bin <- snakemake@params[["plotaft_bin"]]
-base_feat <- as.character(snakemake@params[["base"]])
-bef_bin <- snakemake@params[["bef_bin"]]
-main_bin <- snakemake@params[["main_bin"]]
-section <- snakemake@params[["section"]]
-len_bef_n <- as.numeric(snakemake@params[["len_bef"]])
-len_aft_n <- as.numeric(snakemake@params[["len_aft"]])
-len_bef <- paste("-",as.character(snakemake@params[["len_bef"]]),sep="")
-len_aft <- paste("+",as.character(snakemake@params[["len_aft"]]),sep="")
-
-for ( i in sense_dirs ) {
-mx_ls <- get(paste(i,"_ls",sep=""))
-mx <- lapply(mx_ls,function(x) {read.table(x,sep='\t',header=T,row.names=1,check.names=FALSE)})
-mx <- lapply(mx,function(x) {x[rownames(x) %in% meta_features,]})
-mx <- lapply(1:length(mx),function(x) {as.data.frame(mx[[x]])*size_table$scale_factor[size_table$sample_name==mx_samples[x]]})
-names(mx) <- mx_samples
-assign(paste(i,"_mx",sep=""),mx)
-}
 
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(c(""),unique(expr$group[expr$biotype %in% biotypes]))
@@ -203,7 +191,7 @@ sum_i <- t(sum_i)
 head(sum_i,5)
 
 if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"]])) {
-  min_mean <- max(expr$baseMean[is.na(expr$padj)])
+  min_mean <- max(expr_i$baseMean[is.na(expr_i$padj)])
 } else {
   min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
 }
@@ -269,9 +257,9 @@ expr_i$colour <- ifelse(expr_i$padj < sig_p, ifelse(expr_i$log2FoldChange < 0, d
 title_i <- gsub("_"," ",paste(experiment, feature_i, "Differential", toTitleCase(difference),sep=" "))
 
 # Summary Plots =============================================
-for ( s in sum_list ) {{
+for ( s in sum_list ) {
 source(snakemake@config[["differential_plots"]][["scripts"]][[paste(s)]])
-}}
+}
 # Metagene ===================================================
 #if (diff=="expression") {{
 #source(snakemake@config[["differential_plots"]][["scripts"]][["meta"]])
@@ -299,7 +287,12 @@ summary_caption <- unlist(list(summary_caption,summary_captions))
 
 summary_caption
 
+if (difference == "expression levels") {
+plots <- list("summary","bias","ma_plot","volcano_plot","meta_plot")
+} else {
 plots <- list("summary","bias","ma_plot","volcano_plot")
+}
+
 plot_n <- 1
 
 # Loop for each plot listed
@@ -322,7 +315,7 @@ if (p=="summary") {
 doc <- body_add(doc,value=plot_p,width = 6, height = 8.5, res= plot_dpi,style = "centered")
 doc <- body_add(doc,run_pagebreak())
 } else {
-doc <- body_add(doc,value=plot_p,width = 6, height = 7, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=plot_p,width = 6, height = 7.5, res= plot_dpi,style = "centered")
 }
 
 doc <- body_add(doc,title_p)

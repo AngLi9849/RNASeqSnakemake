@@ -174,7 +174,7 @@ rule feature_signal2background:
           }}
           END {{
             for ( i in sb ) {{
-              print i, sb[i], (bs[i]=="Inf")?"Inf":bs[i]-0
+              print i, (bs[i]=="Inf")?0:((bs[i]==0)?"Inf":(1/bs[i])), (bs[i]=="Inf")?"Inf":bs[i]-0
             }}
           }}' {params.temp} > {output.tab} &&
         rm {params.range} &&
@@ -200,19 +200,16 @@ rule sort_raw_matrices:
           bin= features.loc[wildcards.feature,"plotaft_bin"],
         ),
     output:
-        sum_mx = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.sum_matrix.gz",
-        norm_mx = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.norm_matrix.gz",
+        sum_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.sum_matrix.gz",
+        norm_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.norm_matrix.gz",
     threads: 1
     resources:
-        mem="16G",
-        rmem="12G",
+        mem="20G",
+        rmem="16G",
     params:
         bef_bin =lambda wildcards : features.loc[wildcards.feature,"bef_bin"],
         plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
         plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
-    resources:
-        mem="6G",
-        rmem="4G",
     script:
         "../scripts/py/sort_matrices.py"

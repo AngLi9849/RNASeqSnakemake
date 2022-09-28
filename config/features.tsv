@@ -4,7 +4,7 @@ PROMPT-TSS          	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	star
 PROMPT              	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	start	-	0	0	1500	0	500	200	200		0	0	20	0	GeneBody	              	lncRNA	
 TSS                 	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	start	+	0	0	0	3000	500	500	500		0	0	20	0	GeneBody	             		
 #TTS-Postgene        	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	end	+	0	0	500	2000	1000	0	0		0	0	20	0	GeneBody	             		
-mRNA                	TRUE	FALSE	FALSE	FALSE	FALSE	gene	intron	gene	gene	FALSE	10	3	body	+	0	0	0	0	1000	500	500	0.3	0	0			mRNA         	protein_coding		
+mRNA                	TRUE	FALSE	FALSE	FALSE	FALSE	gene	intron	gene	gene	FALSE	10	3	body	+	0	0	0	0	1000	500	500	0.3	0	0	50	0	mRNA         	protein_coding		
 #Transcript        	TRUE	TRUE	FALSE	FALSE	FALSE	gene		gene	trscrpt	FALSE	10	3	body	+	0	0	0	0	1000	500	500		0	0			        	           		
 #Exon                	FALSE	TRUE	FALSE	TRUE	TRUE	gene		gene	exon	FALSE	10	3	body	+	1	1	0	0	1000	300	300		0	0			        	           		
 #Exon_5prime         	FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	exon	FALSE	0	3	start	+	1	1	500	500	1000	100	100		0	0			         	           		

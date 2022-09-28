@@ -51,6 +51,9 @@ rule all:
         #get_feature_counts()
         #"results/qc/multiqc_report.html",
         #get_norm_bigwigs(),
+        #get_mx_data(),
+        #get_diffexp_docx(),
+        #get_diffsplice_docx(),
         get_differential_reports(),
         #get_differential_splicing(),
         #get_meta_profiles(),

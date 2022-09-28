@@ -482,6 +482,13 @@ def get_differential_reports():
     ),
     return docx
 
+def get_mx_data():
+    counts = expand(
+        "meta_data/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.mx_data.tab",
+        exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples()
+    ),
+    return counts
+
 def get_differential_exp():
     diff_exp = expand(
         "results/{contrast.experiment}/differential_expression/{contrast.contrast}/{contrast.normaliser}_normalised.{splice}Aligned{demulti}{dedup.{feature}",

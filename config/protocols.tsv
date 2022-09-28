@@ -1,6 +1,6 @@
 protocol         	dedup	demulti	sep_spl	splice	trs_val	dif_exp	dif_spl	norm_feat	feature_of_interest
 Chromatin_RNA-Seq   	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE	GeneBody	GeneBody,mRNA,PROMPT,TSS,PROMPT-TSS
-Nucleoplasm_RNA-Seq 	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE	mRNA     	GeneBody,mRNA
-Cytoplasm_RNA-Seq   	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE	mRNA     	mRNA
-Total_RNA-Seq     	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE	mRNA     	GeneBody,mRNA
+Nucleoplasm_RNA-Seq 	TRUE	TRUE	FALSE	TRUE	TRUE	TRUE	TRUE	mRNA     	GeneBody,mRNA
+Cytoplasm_RNA-Seq   	TRUE	TRUE	FALSE	TRUE	TRUE	TRUE	TRUE	mRNA     	mRNA
+Total_RNA-Seq     	TRUE	TRUE	FALSE	TRUE	TRUE	TRUE	TRUE	mRNA     	GeneBody,mRNA
 TT-Seq            	TRUE	TRUE	TRUE	TRUE	FALSE	TRUE	TRUE	GeneBody     	GeneBody,mRNA,PROMPT,TSS,PROMPT-TSS

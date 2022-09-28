@@ -15,6 +15,12 @@ for i in snakemake.input.main:
 
 main = None if main_ls==[] else pd.concat(main_ls)
 
+
+main_x_sum=main.sum(axis=1)
+
+main_mean = main_x_sum[main_x_sum!=0].median() if snakemake.config['metagene']['norm_to_median'] else main_x_sum[main_x_sum!=0].mean()
+
+
 aft_ls=[]
 
 for i in snakemake.input.aft:
@@ -22,7 +28,7 @@ for i in snakemake.input.aft:
 
 aft = None if aft_ls==[] else pd.concat(aft_ls)
 
-ls=[bef,main,aft]
+ls=[bef,main,aft] if snakemake.wildcards.sense=="sense" else [aft,main,bef]
 
 start = 0 - snakemake.params.plotbef_bin - snakemake.params.bef_bin
 
@@ -36,7 +42,8 @@ mx.index.name = "id"
 
 mx.to_csv(snakemake.output.sum_mx, sep='\t', header=True, index=True, compression='gzip')
 
-norm_mx = mx.div(mx.sum(axis=1),axis=0)*(mx.sum().sum()/len(mx))
+norm_mx = mx.div(main_x_sum,axis=0)*(main_mean)
+norm_mx = norm_mx.fillna(0)
 
 norm_mx.to_csv(snakemake.output.norm_mx, sep='\t', header=True, index=True, compression='gzip')
 
