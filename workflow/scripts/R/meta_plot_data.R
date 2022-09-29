@@ -40,6 +40,9 @@ sense_dirs <- c("sense","antisense")
 sense_dirs <- c("sense")
 }
 
+
+plot_median <- as.logical(snakemake@config[["metagene"]][["plot_median"]])
+
 head(sig_bg,10)
 meta_features <- rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] 
 head(meta_features,10)
@@ -170,7 +173,12 @@ ls <- (rownames(mx[[1]]) %in% rownames(expr_i))
 ls[1:20]
 mx <- lapply(mx,function(x) {x[rownames(x) %in% expr_i$featureID,]} )
 head(mx[[1]][,1:10],10)
+
+if (plot_median) {
+mx_mean <- data.frame(lapply(mx, function(x) {apply(x,2,function(y) {median(y,na.rm=F)})}),check.names=F)
+} else {
 mx_mean <- data.frame(lapply(mx, function(x) {apply(x,2,function(y) {mean(y,na.rm=F,trim=meta_trim)})}),check.names=F)
+}
 head(mx_mean,10)
 
 pos <- as.numeric(rownames(mx_mean))

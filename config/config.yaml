@@ -118,6 +118,7 @@ metagene:
   norm_per_gene: TRUE # Plot meta profiles with genes normalised or not, if FALSE, more abundant genes will weight more in the metaplot
   norm_to_median: TRUE # Else per-gene normalisation will be based on the mean
   anomaly_trim: 0.05
+  plot_median: FALSE #Otherwise plot mean
   
 # Ensembl Tags of interest, hashtag out those that are not
 # Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line

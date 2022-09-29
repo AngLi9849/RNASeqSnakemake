@@ -57,7 +57,7 @@ sum_bar <- ggplot(data = sum_bar_data, aes(fill=condition, y=mean, x = group)) +
     alpha=0.3,
     linetype=5
   ) +
-  ylab(paste("Normalised",toTitleCase(difference))) +
+  ylab(paste("Total",toTitleCase(difference))) +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),

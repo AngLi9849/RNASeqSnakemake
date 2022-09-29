@@ -1,8 +1,10 @@
+#1                 	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16	17	18	19	20	21	22	23	24	25	26	27	28	     	29           	30	31 
 feature_name        	dif_exp	dif_use	dif_enr	dif_spl	dif_var	region	exclude	group	feature	force	min_len	tsl	section	sense	no_frst	no_last	len_bef	len_aft	bin_n	plotbef	plotaft	befaftr	5_unscl	3_unscl	s2b_min	b2s_min	backgrd       	biotype 	comp_bt	annotation_bed
 GeneBody            	TRUE	FALSE	FALSE	TRUE	FALSE	gene		gene	gene	FALSE	0	3	body	+	0	0	0	0	1000	1500	1500	0.3	0	0	50	0	GeneBody	         		
 PROMPT-TSS          	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	start	+-	0	0	1500	3000	1000	500	500		0	0	20	0	GeneBody	        	lncRNA	
 PROMPT              	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	start	-	0	0	1500	0	500	200	200		0	0	20	0	GeneBody	              	lncRNA	
 TSS                 	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	start	+	0	0	0	3000	500	500	500		0	0	20	0	GeneBody	             		
+TSS_500bps          	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	start	+	0	0	0	500	500	250	250		0	0	50	0	GeneBody	             		
 #TTS-Postgene        	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	end	+	0	0	500	2000	1000	0	0		0	0	20	0	GeneBody	             		
 mRNA                	TRUE	FALSE	FALSE	FALSE	FALSE	gene	intron	gene	gene	FALSE	10	3	body	+	0	0	0	0	1000	500	500	0.3	0	0	50	0	mRNA         	protein_coding		
 #Transcript        	TRUE	TRUE	FALSE	FALSE	FALSE	gene		gene	trscrpt	FALSE	10	3	body	+	0	0	0	0	1000	500	500		0	0			        	           		
@@ -15,7 +17,7 @@ mRNA                	TRUE	FALSE	FALSE	FALSE	FALSE	gene	intron	gene	gene	FALSE	10
 #5UTR_Intron         	TRUE	TRUE	TRUE	TRUE	TRUE	gene		5UTR	intron	FALSE	10	3	body	+	0	0	0	0	1000	500	500		0	0			          	             		
 #HCT_Enh            	FALSE	FALSE	FALSE	FALSE	FALSE					FALSE	0	0		+	0	0	0	0	1000	0	0		0	0			           	             		config/additionals/HCT116_Enhancers.bed
 #HCT116_Enhancer   	TRUE	FALSE	FALSE	FALSE	FALSE	chr		HCT_Enh	HCT_Enh	FALSE	10	0	body	+-	0	0	0	0	1000	500	500		0	0			          	              		
-# # Base Features: gene exon intron skip_ex ret_int trscrpt CDS 5UTR 3UTR
-# # comp_bt: compatible biotype, overlapping allowed
-# # s2b: signal to noise ratio, b2s : noise to signal
-# first,last,no_drst,no_last : index numbers, 0 or blank means all
+# Base Features: gene exon intron skip_ex ret_int trscrpt CDS 5UTR 3UTR
+# comp_bt: compatible biotype, overlapping allowed
+# s2b: signal to noise ratio, b2s : noise to signal
+#first,last,no_drst,no_last : index numbers, 0 or blank means all

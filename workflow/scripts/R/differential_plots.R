@@ -43,6 +43,9 @@ analysis <- paste("differential", difference, "analysis")
 
 if (difference == "expression") {
 
+
+  is_antisense <- snakemake@params[["is_antisense"]]==-1
+
   difference <- "expression levels"
   difference_unit <- "expression levels (RPKM)"
 
@@ -53,10 +56,41 @@ if (difference == "expression") {
   bef_bin <- snakemake@params[["bef_bin"]]
   main_bin <- snakemake@params[["main_bin"]]
   section <- snakemake@params[["section"]]
-  len_bef_n <- as.numeric(snakemake@params[["len_bef"]])
-  len_aft_n <- as.numeric(snakemake@params[["len_aft"]])
+  len_bef_n <- if (is_antisense) (as.numeric(snakemake@params[["len_aft"]]) ) else (as.numeric(snakemake@params[["len_bef"]]) ) 
+  len_aft_n <- if (is_antisense) ( as.numeric(snakemake@params[["len_bef"]]) ) else (as.numeric(snakemake@params[["len_aft"]]) )
   len_bef <- paste("-",as.character(snakemake@params[["len_bef"]]),sep="")
   len_aft <- paste("+",as.character(snakemake@params[["len_aft"]]),sep="")
+  plot_median <- as.logical(snakemake@config[["metagene"]][["plot_median"]])
+  meta_y <- ifelse(plot_median,"Median","Mean")
+
+
+
+if (section=="body") {
+xbrks <- c(0,main_bin)
+names(xbrks) <- c("Start","End")
+
+xbrk_short <- c(0,main_bin)
+names(xbrk_short) <- c("Start","End")
+
+} else {
+bef_brk_len <- signif(len_bef_n*1.5,1)/2
+bef_brk <- paste(ifelse(is_antisense,"+","-"), as.character(bef_brk_len), sep="")
+bef_brk_pos <- floor(signif(bef_bin*1.5,1)/2)
+
+
+aft_brk_len <- signif(len_aft_n*1.5,1)/2
+aft_brk <- paste(ifelse(is_antisense,"-","+"), as.character(aft_brk_len), sep="")
+aft_brk_pos <- floor(signif((main_bin-bef_bin)*1.5,1)/2)
+
+
+
+xbrk_short <- c(0)
+names(xbrk_short) <- c(toTitleCase(paste(base,section)))
+
+xbrks <-  c(if(len_bef_n>0) (0-bef_brk_pos) else NULL,0,if(len_aft_n>0) (aft_brk_pos) else NULL)
+names(xbrks) <- c(if(len_bef_n>0)(bef_brk) else NULL,toTitleCase(paste(base,section)),if(len_aft_n>0) (aft_brk) else NULL)
+
+}
 
 } else {
   difference <- gsub("_"," ",difference)
@@ -64,6 +98,20 @@ if (difference == "expression") {
 }
 
 head(expr,10)
+snakemake@params[["is_antisense"]]
+is_antisense
+len_aft_n
+aft_brk
+aft_brk_pos
+
+len_bef_n
+bef_brk
+bef_brk_pos
+
+
+xbrks
+xbrk_short
+
 
 # Import wildcards as text
 prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
@@ -365,4 +413,3 @@ doc <- body_add(doc,run_pagebreak())
 doc <- body_add(doc,block_pour_docx(snakemake@output[["docx"]]))
 
 print(doc, target = snakemake@output[["docx"]])
-

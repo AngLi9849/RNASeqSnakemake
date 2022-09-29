@@ -1,7 +1,7 @@
 expr_bias1 <- expr_i
 expr_bias1$change <- "All"
 expr_bias1$abslog2FoldChange <- expr_bias1$log2FoldChange
-expr_bias1$density <- 0.01/expr_bias1$padj
+expr_bias1$density <- 1
 
 expr_bias <- expr_i[abs(expr_i$padj) < sig_p,]
 

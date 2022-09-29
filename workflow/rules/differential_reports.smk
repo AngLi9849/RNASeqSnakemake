@@ -98,16 +98,17 @@ rule differential_plots:
         sig=lambda wildcards : features.loc[wildcards.feature,"s2b_min"],
         bg=lambda wildcards : features.loc[wildcards.feature,"b2s_min"],
         section=lambda wildcards : features.loc[wildcards.feature,"section"],
-        before=lambda wildcards : features.loc[wildcards.feature,"len_bef"],
-        after=lambda wildcards : features.loc[wildcards.feature,"len_aft"],
+        len_bef=lambda wildcards : features.loc[wildcards.feature,"len_bef"],
+        len_aft=lambda wildcards : features.loc[wildcards.feature,"len_aft"],
         bef_bin=lambda wildcards : features.loc[wildcards.feature,"bef_bin"],
         main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
         plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],        
         base=lambda wildcards : features.loc[wildcards.feature,"feature"],
+        is_antisense=lambda wildcards : features.loc[wildcards.feature,"sense_dir"]
     resources:
-        mem="326G",
-        rmem="24G",
+        mem="486G",
+        rmem="32G",
     conda:
         "../envs/differential.yaml"
     log:
