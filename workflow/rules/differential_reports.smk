@@ -1,21 +1,19 @@
 rule heatmap_data:
     input:
-        sense_mx = lambda wildcards: list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.sense.{norm}_matrix.gz",
+        sense_mx = lambda wildcards: list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.sense.sum_matrix.gz",
             sample=results[results.experiment==wildcards.experiment].itertuples(),
             plot_md5=features.loc[wildcards.feature,"plot_md5"],
-            norm="norm" if config["metagene"]["norm_per_gene"] else "sum",
         ))),
-        antisense_mx=lambda wildcards: [] if not features.loc[wildcards.feature,"antisense"] else list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.antisense.{norm}_matrix.gz",
+        antisense_mx=lambda wildcards: [] if not features.loc[wildcards.feature,"antisense"] else list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.antisense.sum_matrix.gz",
             sample=results[results.experiment==wildcards.experiment].itertuples(),
             plot_md5=features.loc[wildcards.feature,"plot_md5"],
-            norm="norm" if config["metagene"]["norm_per_gene"] else "sum",
         ))),
         size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
     output:
-        heat_data="heatmap_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.heat_data.tab",
+        heat_data="heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.heat_data.tab.gz",
     resources:
         mem="48G",
         rmem="32G",
@@ -27,6 +25,10 @@ rule heatmap_data:
         main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
         plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
+        control_mx="heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.control_mx.tab.gz",
+        treat_mx="heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.treat_mx.tab.gz",
+        fc_mx="heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.dc_mx.tab.gz",
+        mean_mx="heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.mean_mx.tab.gz",
     log:
         "logs/heatmap_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
     threads: 1
@@ -103,6 +105,10 @@ rule differential_plots:
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
+        base_bed==lambda wildcards: ("resources/annotations/{source}/{{lineage}}.{s}.{{valid}}_{{tag}}.{f}.bed".format(
+            s=features.loc[features.loc[wildcards.feature,"feature"],"type"] if (features.loc[wildcards.feature,"feature"] in features["feature_name"].tolist()) else "gtf",
+            f=features.loc[wildcards.feature,"feature"]
+        ) ), 
         bed=lambda w: "resources/annotations/{source}/{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
             source=  str( get_sample_source(w.experiment) ),
         ),

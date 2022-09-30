@@ -95,19 +95,19 @@ rule feature_nuc_info:
 rule custom_feature:
     input:
         region=lambda wildcards: ("{{prefix}}.{s}.{{type}}.{f}.bed".format(
-            s="custom" if (features.loc[wildcards.feature,"region"] in features["feature_name"].tolist()) else "gtf",
+            s=features.loc[features.loc[wildcards.feature,"feature"],"type"] if (features.loc[wildcards.feature,"region"] in features["feature_name"].tolist()) else "gtf",
             f=features.loc[wildcards.feature,"region"]
         )),
         exclude=lambda wildcards: ("{{prefix}}.{s}.{{type}}.{f}.bed".format(
-            s="custom" if (features.loc[wildcards.feature,"exclude"] in features["feature_name"].tolist()) else "gtf",
+            s=features.loc[features.loc[wildcards.feature,"feature"],"type"] if (features.loc[wildcards.feature,"exclude"] in features["feature_name"].tolist()) else "gtf",
             f=features.loc[wildcards.feature,"exclude"]
         )),
         group=lambda wildcards: ("{{prefix}}.{s}.{{type}}.{f}.bed".format(
-            s="custom" if (features.loc[wildcards.feature,"group"] in features["feature_name"].tolist()) else "gtf",
+            s=features.loc[features.loc[wildcards.feature,"feature"],"type"] if (features.loc[wildcards.feature,"group"] in features["feature_name"].tolist()) else "gtf",
             f=features.loc[wildcards.feature,"group"]
         )),
         feature=lambda wildcards: ("{{prefix}}.{s}.{{type}}.{f}.bed".format(
-            s="custom" if (features.loc[wildcards.feature,"feature"] in features["feature_name"].tolist()) else "gtf",
+            s=features.loc[features.loc[wildcards.feature,"feature"],"type"] if (features.loc[wildcards.feature,"feature"] in features["feature_name"].tolist()) else "gtf",
             f=features.loc[wildcards.feature,"feature"]
         )),
     threads: 1

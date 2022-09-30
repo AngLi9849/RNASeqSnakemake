@@ -119,6 +119,9 @@ metagene:
   norm_to_median: TRUE # Else per-gene normalisation will be based on the mean
   anomaly_trim: 0.05
   plot_median: FALSE #Otherwise plot mean
+
+heatmap:
+  bin_number: 100
   
 # Ensembl Tags of interest, hashtag out those that are not
 # Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line

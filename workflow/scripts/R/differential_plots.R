@@ -32,8 +32,20 @@ cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', ch
 sig_bg <- read.csv(snakemake@input[["sig_bg"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 sig <- as.numeric(snakemake@params[["sig"]])
 bg <- as.numeric(snakemake@params[["bg"]])
+section <- snakemake@params[["section"]]
 
 mx_samples <- c(snakemake@params[["samples"]])
+
+base_bed <- read.csv(snakemake@input[["lfc"]],header=F, sep='\t', check.names=FALSE)[,c(5,8)]
+names(base_bed) <- c("Length","baseID")
+
+if (section!="body" & as.logical(snakemake@params[["main_int"]])) { 
+
+expr$Length <- base_bed$Length[match(rownames(expr),base_bed$baseID)]
+
+}
+
+expr$Length[1:10]
 
 # Import snakemake parameters and inputs
 # Identify analysis

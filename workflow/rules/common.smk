@@ -167,6 +167,10 @@ features["bef_bin"]=features.apply(lambda row:
 features["antisense"]=features.apply(lambda row:
     not (pd.isna(row.sense) or len(str(row.sense))==1) 
     , axis=1)
+features["is_main_int"]=features.apply(lambda row:
+    not ( ("x" in str(row.len_bef)) or ("x" in str(row.len_aft)) or str(row.section)=="body" )
+    , axis=1)
+
 
 # Read protocol configurations into pandas data.frame
 protocols = (pd.read_csv(config["protocols"], sep="\t", dtype={"protocol": str,"dedup": str, "demulti": str}, comment="#"))
@@ -482,9 +486,16 @@ def get_differential_reports():
     ),
     return docx
 
-def get_mx_data():
+def get_meta_data():
     counts = expand(
         "meta_data/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.mx_data.tab",
+        exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples()
+    ),
+    return counts
+
+def get_heat_data():
+    counts = expand(
+        "heat_data/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.heat_data.tab.gz",
         exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples()
     ),
     return counts
