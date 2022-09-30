@@ -33,13 +33,16 @@ sig_bg <- read.csv(snakemake@input[["sig_bg"]],header=T,row.names = 1, sep='\t',
 sig <- as.numeric(snakemake@params[["sig"]])
 bg <- as.numeric(snakemake@params[["bg"]])
 section <- snakemake@params[["section"]]
+base <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@params[["base"]])))
 
 mx_samples <- c(snakemake@params[["samples"]])
 
 base_bed <- read.csv(snakemake@input[["lfc"]],header=F, sep='\t', check.names=FALSE)[,c(5,8)]
 names(base_bed) <- c("Length","baseID")
 
-if (section!="body" & as.logical(snakemake@params[["main_int"]])) { 
+use_base_length <- (section!="body" & as.logical(snakemake@params[["main_int"]])) 
+
+if (use_base_length) { 
 
 expr$Length <- base_bed$Length[match(rownames(expr),base_bed$baseID)]
 
@@ -64,7 +67,6 @@ if (difference == "expression") {
   mx_df <- read.csv(snakemake@input[["mx_data"]],header=T, sep='\t', check.names=FALSE)
   plotbef_bin <- snakemake@params[["plotbef_bin"]]
   plotaft_bin <- snakemake@params[["plotaft_bin"]]
-  base <- as.character(snakemake@params[["base"]])
   bef_bin <- snakemake@params[["bef_bin"]]
   main_bin <- snakemake@params[["main_bin"]]
   section <- snakemake@params[["section"]]
@@ -276,6 +278,11 @@ expr_i <- expr_i[!is.na(expr_i$padj),]
 
 
 feature_i <- ifelse(i=="", feature, paste(i,feature))
+base_i <- ifelse(i=="", paste("base", base), paste("base", i,base)) 
+
+title_feature_i <- gsub("(?<!\\w)(.)","\\U\\1", feature_i, perl = TRUE)
+title_base_i <- gsub("(?<!\\w)(.)","\\U\\1", base_i, perl = TRUE)
+
 
 # Write heading for this analysis group
 group_heading <- gsub("_"," ",toTitleCase(ifelse(i=="","All",i)))
@@ -337,6 +344,12 @@ source(snakemake@config[["differential_plots"]][["scripts"]][[paste(s)]])
 # GC, Length and RPKM Bias ===================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["bias"]])
 
+
+# Heatmap
+if (difference != "splicing ratio") {
+source(snakemake@config[["differential_plots"]][["scripts"]][["heat"]])
+}
+
 # Summary ====================================================
 
 sum_plot_list <- lapply(sum_list,function(x) {get(x)})
@@ -353,10 +366,10 @@ summary_caption <- unlist(list(summary_caption,summary_captions))
 
 summary_caption
 
-if (difference == "expression levels") {
-plots <- list("summary","bias","ma_plot","volcano_plot","meta_plot")
-} else {
+if (difference == "splicing ratio") {
 plots <- list("summary","bias","ma_plot","volcano_plot")
+} else {
+plots <- list("summary","bias","ma_plot","volcano_plot","meta_plot","heatmaps")
 }
 
 plot_n <- 1

@@ -63,5 +63,5 @@ fc_mx.index.name="featureID"
 
 fc_long = pd.melt(fc_mx.reset_index(), id_vars=fc_mx.index.name, value_vars=fc_mx.columns.tolist())
 
-fc_long.to_csv(snakemake.output.heat_data, sep='\t', header=True, index=False, compression='gzip')
+fc_long.to_csv(snakemake.output.heat_data, sep='\t', header=True, index=False)
 

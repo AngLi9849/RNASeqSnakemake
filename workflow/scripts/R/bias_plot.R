@@ -65,6 +65,8 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2Fol
 
 # Length to Log2foldChange with P-Value Color scale
 
+
+
 Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$abslog2FoldChange)) +
   geom_point(
     size=0.5,
@@ -87,7 +89,7 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$ab
   facet_wrap(
     ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
   ) +
-  xlab(paste(feature_i, "Length (bps)",sep=" ")) +
+  xlab(paste(ifelse(use_base_length,title_base_i,title_feature_i), "Length (bps)",sep=" ")) +
   ylab("|log2 Fold Change|") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 
@@ -129,7 +131,7 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog
   facet_wrap(
     ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
   ) +
-  xlab(paste(feature_i, "Mean Expression Levels (RPKM)",sep=" ")) +
+  xlab(paste(ifelse(use_base_length,title_base_i,title_feature_i), "Mean Expression Levels (RPKM)",sep=" ")) +
   ylab("|log2 Fold Change|") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 
