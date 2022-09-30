@@ -117,7 +117,7 @@ xbrk_short
 prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
 tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
 valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
-feature <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]]))
+feature <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]])))
 
 experiment <- gsub("_"," ",as.character(snakemake@wildcards[["experiment"]]))
 treatment <- as.character(snakemake@params[["treat"]])
@@ -244,10 +244,16 @@ if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"
   min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
 }
 
+config_min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
+
+
 
 total_i <- nrow(expr_i)
 
 min_rpkm <- quantile(expr_i$rpkm[expr_i$baseMean > 0],min_rpkm_pc/100)
+meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= config_min_mean & expr_i$baseMean >= min_rpkm])
+
+
 
 insuf_i <- sum( (expr_i$baseMean < min_mean) | (expr_i$rpkm < min_rpkm) | (is.na(expr_i$pvalue)) )
 

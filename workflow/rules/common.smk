@@ -477,7 +477,7 @@ def get_diffsplice_docx():
 
 def get_differential_reports():
     docx = expand(
-        "diff_reports/experiment_reports/{exp.experiment}/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}.{exp.norm_feat}_normalised.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
+        "diff_reports/experiment_reports/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}.{exp.norm_feat}_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE
     ),
     return docx

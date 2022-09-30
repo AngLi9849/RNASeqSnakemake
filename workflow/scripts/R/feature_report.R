@@ -32,7 +32,7 @@ plot_list <- snakemake@input[["plots"]]
 prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
 tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
 valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
-feature <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]]))
+feature <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]])))
 descript <- as.character(snakemake@params[["descript"]])
 descript
 

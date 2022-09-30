@@ -1,5 +1,7 @@
 mx_data <- mx_df[mx_df$i_group == i,]
 
+meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID) 
+
 
 sample_colours <- as.character(unique(mx_data$colour))
 sample_names <- as.character(unique(mx_data$Sample))
@@ -17,6 +19,9 @@ mx_data$Sample <- gsub("_"," ",mx_data$Sample)
 head(mx_data,10)
 
 heat_colours <- c("dodgerblue","blue","black","red","orange")
+
+mx_data$Condition <- factor(mx_data$Condition, levels=c(control, treat))
+mx_data$cond_group <- factor(mx_data$cond_group, levels=c(paste(control,"sense"),paste(treat,"sense"),paste(control,"antisense"),paste(treat,"antisense")))
 
 meta <- ggplot(mx_data,mapping=aes(x=Position,y=value,group=cond_group,colour=Condition)) +
   geom_smooth(
@@ -51,7 +56,10 @@ meta <- ggplot(mx_data,mapping=aes(x=Position,y=value,group=cond_group,colour=Co
   ) +
   scale_x_continuous(
     limits=xlim,
-    breaks=xbrk_short,
+    breaks=xbrks,
+  ) +
+  labs(
+    subtitle=paste("n=",meta_gene_n,sep="")
   ) +
   xlab(feature) +
   ylab(paste(meta_y,"Coverage")) +
@@ -90,7 +98,7 @@ meta_plot <- meta +
     limits=xlim,
     breaks=xbrks,
   ) +  
-  ylab("Normalised Coverage Depth") + 
+  ylab(paste("Normalised",meta_y, "Coverage Depth")) + 
   facet_wrap(vars(rep),ncol=1,strip.position="top") + 
   theme(
     legend.position = "right"
@@ -98,7 +106,7 @@ meta_plot <- meta +
     
 
 meta_caption <- paste(
-  "Normalised coverage over ", feature_i, " in ", experiment, "." 
+  "Normalised coverage over ",meta_gene_n," ", feature_i, " in ", experiment, "." 
 , sep="" )
 
 meta_plot_title <- paste(gsub("(?<!\\w)(.)","\\U\\1", feature_i, perl = TRUE),"Coverage Profiles.")

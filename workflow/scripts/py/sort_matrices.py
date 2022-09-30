@@ -38,7 +38,7 @@ mx=pd.concat(ls,axis=1)
 
 mx.columns = range(start,end)
 
-mx.index.name = "id"
+mx.index.name = snakemake.wildcards.sample
 
 mx.to_csv(snakemake.output.sum_mx, sep='\t', header=True, index=True, compression='gzip')
 

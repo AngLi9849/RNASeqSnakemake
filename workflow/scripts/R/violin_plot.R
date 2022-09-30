@@ -21,9 +21,6 @@ violin_ymax <- max(violin_data$value) + 0.2*abs(max(violin_data$value)-min(violi
 violin_p_y <- max(violin_data$value) + 0.1*abs(max(violin_data$value)-min(violin_data$value))
 }
 
-test_p_i <- compare_means(formula=value ~ condition, data = violin_data, comparisons = compare, method="t.test", paired = TRUE)
-test_p_i$y.position <- c(violin_p_y)
-
 violin_data_i <- violin_data
 violin_data_i$group <- group_label
 
@@ -43,7 +40,6 @@ sum_violin_data <- violin_data_i
 violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +
   geom_violin(trim=FALSE,aes(fill=condition)) +
   geom_boxplot(width=0.1) +
-  stat_pvalue_manual(data = test_p_i, label = "p.signif") +
   scale_fill_manual("Conditions",values=condition_col[names(condition_col) %in% c(control,treat)], labels = c(control,treat) ) +
   ylab(paste("Mean",toTitleCase(difference_unit))) +
   theme(
@@ -66,8 +62,20 @@ violin <- violin + scale_y_log10(limits = c(violin_ymin, violin_ymax))
 violin <- violin + scale_y_continuous(limits = c(0, violin_ymax))
 }
 
-test_p_i <- compare_means(formula=value ~ condition, data = violin_data, comparisons = compare, method="t.test", paired = TRUE)
-
 violin_caption <- paste(
-  "Distribution of normalised ", difference, " of ", nrow(mean_level_i), " expressed ",  feature_i, " presented as violin and box plot. Indicated significance of comparison is computed with ", as.character(test_p_i$method[1]), " method. (p=", test_p_i$p.format[1] , ", ", test_p_i$p.signif[1],")", sep=""
-  )
+  "Distribution of normalised ", difference, " of ", nrow(mean_level_i), " expressed ",  feature_i, " presented as violin and box plot.", 
+sep="") 
+
+if (nrow(mean_level_i) > 20) {
+  test_p_i <- compare_means(formula=value ~ condition, data = violin_data, comparisons = compare, method="t.test", paired = TRUE)
+  test_p_i$y.position <- c(violin_p_y)
+
+
+violin <- violin + stat_pvalue_manual(data = test_p_i, label = "p.signif")
+
+violin_caption <- paste( 
+  violin_caption, 
+  "Indicated significance of comparison is computed with ", as.character(test_p_i$method[1]), " method. (p=", test_p_i$p.format[1] , ", ", test_p_i$p.signif[1],")", sep=""
+)
+
+}
