@@ -122,7 +122,8 @@ metagene:
 
 heatmap:
   bin_number: 100
-  
+  heat_colours: royalblue,blue,white,goldenrod,red #Colours for representing lowest to highest log2 foldchange from -4 to 4 , middle one will represent 0
+  min_fc_cov: 5 # minimum mean read depth in a bin to calculate fold change, belowe this threshold, fold change is set to zero 
 # Ensembl Tags of interest, hashtag out those that are not
 # Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line
 ensembl_tags:

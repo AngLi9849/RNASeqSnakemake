@@ -53,8 +53,10 @@ for l in [snakemake.input.sense_mx,snakemake.input.antisense_mx]:
 control_mx = pd.concat(control_ls)
 treat_mx = pd.concat(treat_ls)
 mean_mx = (control_mx + treat_mx)/2
+mask_mx = (mean_mx > snakemake.config['heatmap']['min_fc_cov'])*1
 fc_mx = (treat_mx / mean_mx).fillna(1)
 fc_mx = fc_mx-1
+fc_mx = fx_mx * mask_mx
 
 mx_bin = len(fc_mx.columns)
 fc_mx.columns = range(0-start_pos,mx_bin - start_pos)
@@ -62,6 +64,7 @@ fc_mx.columns = range(0-start_pos,mx_bin - start_pos)
 fc_mx.index.name="featureID"
 
 fc_long = pd.melt(fc_mx.reset_index(), id_vars=fc_mx.index.name, value_vars=fc_mx.columns.tolist())
+fc_long.columns=['featureID','Position','heat']
 
 fc_long.to_csv(snakemake.output.heat_data, sep='\t', header=True, index=False)
 

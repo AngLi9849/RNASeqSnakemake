@@ -56,7 +56,7 @@ diff <- as.character(snakemake@wildcards[["difference"]])
 difference <- as.character(diff)
 analysis <- paste("differential", difference, "analysis")
 
-if (difference == "expression") {
+if (difference != "splicing_ratio") {
 
 
   is_antisense <- snakemake@params[["is_antisense"]]==-1
@@ -76,8 +76,8 @@ if (difference == "expression") {
   len_aft <- paste("+",as.character(snakemake@params[["len_aft"]]),sep="")
   plot_median <- as.logical(snakemake@config[["metagene"]][["plot_median"]])
   meta_y <- ifelse(plot_median,"Median","Mean")
-
-
+  meta_bin <- plotbef_bin + plotaft_bin + main_bin
+  
 
 if (section=="body") {
 xbrks <- c(0,main_bin)
@@ -96,15 +96,22 @@ aft_brk_len <- signif(len_aft_n*1.5,1)/2
 aft_brk <- paste(ifelse(is_antisense,"-","+"), as.character(aft_brk_len), sep="")
 aft_brk_pos <- floor(signif((main_bin-bef_bin)*1.5,1)/2)
 
-
-
-xbrk_short <- c(0)
-names(xbrk_short) <- c(toTitleCase(paste(base,section)))
-
-xbrks <-  c(if(len_bef_n>0) (0-bef_brk_pos) else NULL,0,if(len_aft_n>0) (aft_brk_pos) else NULL)
-names(xbrks) <- c(if(len_bef_n>0)(bef_brk) else NULL,toTitleCase(paste(base,section)),if(len_aft_n>0) (aft_brk) else NULL)
+meta_xbrks <-  c(if(len_bef_n>0) (0-bef_brk_pos) else NULL,0,if(len_aft_n>0) (aft_brk_pos) else NULL)
+names(meta_xbrks) <- c(if(len_bef_n>0)(bef_brk) else NULL,toTitleCase(paste(base,section)),if(len_aft_n>0) (aft_brk) else NULL)
 
 }
+
+heat_df <- read.csv(snakemake@input[["heat_data"]],header=T,sep='\t', check.names=FALSE)
+heat_x_max <- max(heat_df$Position)
+heat_x_min <- min(heat_df$Position)
+heat_bin <- heat_x_max - heat_x_min
+heat_xbrks <- meta_xbrks*heat_bin/meta_bin 
+heat_xlim <- c(heat_x_min,heat_x_max)
+
+heat_colours <- lapply(strsplit(as.character(snakemake@config[["heatmap"]][["heat_colours"]]),","),trimws)[[1]]
+heat_lfcbrks <- c(-4:4)
+heat_lfcbrks <- unlist(lapply(heat_lfcbrks, function(x) {((2^(x+1))/((2^x)+1))-1}))
+names(heat_lfcbrks) <- c(-4:4)
 
 } else {
   difference <- gsub("_"," ",difference)
@@ -323,6 +330,10 @@ expr_i <-
 
 expr_i <- expr_i %>% arrange(change,padj) %>% group_by(change) %>% mutate(p_rank=1:n()) %>% ungroup
 expr_i <- expr_i %>% arrange(change,abs(log2FoldChange)) %>% group_by(change) %>% mutate(lfc_rank=n():1) %>% ungroup
+expr_i <- expr_i %>% arrange(log2FoldChange) %>% mutate(Fold_Change_Rank=1:n()) %>% ungroup
+expr_i <- expr_i %>% arrange(GC) %>%  mutate(GC_Rank=1:n()) %>% ungroup
+expr_i <- expr_i %>% arrange(Length) %>% mutate(Length_Rank=1:n()) %>% ungroup
+expr_i <- expr_i %>% arrange(rpkm) %>% mutate(RPKM_Rank=1:n()) %>% ungroup
 
 lfc_max <- max(c(abs(expr_i$log2FoldChange[expr_i$padj < sig_p]),0))
 expr_i$colour <- ifelse(expr_i$padj < sig_p, ifelse(expr_i$log2FoldChange < 0, down_col, up_col), insig_col)

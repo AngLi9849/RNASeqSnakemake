@@ -56,7 +56,7 @@ meta <- ggplot(mx_data,mapping=aes(x=Position,y=value,group=cond_group,colour=Co
   ) +
   scale_x_continuous(
     limits=xlim,
-    breaks=xbrks,
+    breaks=meta_xbrks,
   ) +
   labs(
     subtitle=paste("n=",meta_gene_n,sep="")
@@ -96,7 +96,7 @@ meta_plot <- meta +
   ) +
   scale_x_continuous(
     limits=xlim,
-    breaks=xbrks,
+    breaks=meta_xbrks,
   ) +  
   ylab(paste("Normalised",meta_y, "Coverage Depth")) + 
   facet_wrap(vars(rep),ncol=1,strip.position="top") + 
