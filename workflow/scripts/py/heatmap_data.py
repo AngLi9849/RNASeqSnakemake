@@ -46,7 +46,7 @@ for l in [snakemake.input.sense_mx,snakemake.input.antisense_mx]:
     control_ls.append(control_sum)
     treat_ls.append(treat_sum) 
   else:
-     continue
+    continue
 
 
 

@@ -106,12 +106,12 @@ heat_x_max <- max(heat_df$Position)
 heat_x_min <- min(heat_df$Position)
 heat_bin <- heat_x_max - heat_x_min
 heat_xbrks <- meta_xbrks*heat_bin/meta_bin 
-heat_xlim <- c(heat_x_min,heat_x_max)
+heat_xlim <- c(heat_x_min-0.5,heat_x_max+0.5)
 
 heat_colours <- lapply(strsplit(as.character(snakemake@config[["heatmap"]][["heat_colours"]]),","),trimws)[[1]]
-heat_lfcbrks <- c(-4:4)
+heat_lfcbrks <- c(-3:3)
 heat_lfcbrks <- unlist(lapply(heat_lfcbrks, function(x) {((2^(x+1))/((2^x)+1))-1}))
-names(heat_lfcbrks) <- c(-4:4)
+names(heat_lfcbrks) <- c(-3:3)
 
 } else {
   difference <- gsub("_"," ",difference)
@@ -344,14 +344,6 @@ title_i <- gsub("_"," ",paste(experiment, feature_i, "Differential", toTitleCase
 for ( s in sum_list ) {
 source(snakemake@config[["differential_plots"]][["scripts"]][[paste(s)]])
 }
-# Metagene ===================================================
-#if (diff=="expression") {{
-#source(snakemake@config[["differential_plots"]][["scripts"]][["meta"]])
-#}}
-# Heatmap ====================================================
-#source(snakemake@config[["differential_plots"]][["scripts"]][["heat"]])
-
-
 # GC, Length and RPKM Bias ===================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["bias"]])
 

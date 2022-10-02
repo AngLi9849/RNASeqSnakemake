@@ -92,7 +92,7 @@ meta <- meta +
 
 meta_plot <- meta +
   xlab(
-    paste(gsub("(?<!\\w)(.)","\\U\\1", feature_i, perl = TRUE), "Distance (bps)")
+    paste(gsub("(?<!\\w)(.)","\\U\\1", feature_i, perl = TRUE), "Position (bps)")
   ) +
   scale_x_continuous(
     limits=xlim,
