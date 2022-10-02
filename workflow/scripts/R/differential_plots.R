@@ -26,6 +26,9 @@ if (snakemake@threads > 1) {
 
 # Import lfc table and mean levels table
 expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+expr$featureID <- rownames(expr)
+expr$RPKM <- expr$rpkm
+
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 
@@ -37,10 +40,13 @@ base <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \
 
 mx_samples <- c(snakemake@params[["samples"]])
 
-base_bed <- read.csv(snakemake@input[["lfc"]],header=F, sep='\t', check.names=FALSE)[,c(5,8)]
+base_bed <- read.csv(snakemake@input[["base_bed"]],header=F, sep='\t', check.names=FALSE)[,c(5,8)]
 names(base_bed) <- c("Length","baseID")
 
 use_base_length <- (section!="body" & as.logical(snakemake@params[["main_int"]])) 
+
+head(base_bed,10)
+use_base_length
 
 if (use_base_length) { 
 
@@ -80,11 +86,8 @@ if (difference != "splicing_ratio") {
   
 
 if (section=="body") {
-xbrks <- c(0,main_bin)
-names(xbrks) <- c("Start","End")
-
-xbrk_short <- c(0,main_bin)
-names(xbrk_short) <- c("Start","End")
+meta_xbrks <- c(0,main_bin)
+names(meta_xbrks) <- c("Start","End")
 
 } else {
 bef_brk_len <- signif(len_bef_n*1.5,1)/2
@@ -108,10 +111,19 @@ heat_bin <- heat_x_max - heat_x_min
 heat_xbrks <- meta_xbrks*heat_bin/meta_bin 
 heat_xlim <- c(heat_x_min-0.5,heat_x_max+0.5)
 
+heat_name <- "log2FC"
 heat_colours <- lapply(strsplit(as.character(snakemake@config[["heatmap"]][["heat_colours"]]),","),trimws)[[1]]
 heat_lfcbrks <- c(-3:3)
 heat_lfcbrks <- unlist(lapply(heat_lfcbrks, function(x) {((2^(x+1))/((2^x)+1))-1}))
 names(heat_lfcbrks) <- c(-3:3)
+heat_scale_pc <- as.numeric(snakemake@config[["heatmap"]][["heat_scale_pc"]])/100
+
+
+heat_ranks <- c("log2FoldChange","GC","Length","RPKM")
+heat_units <- c("","%","bps","")
+
+heat_config <- data.frame(heat_ranks,heat_units)
+names(heat_config) <- c("Ranking","unit")
 
 } else {
   difference <- gsub("_"," ",difference)
@@ -119,26 +131,20 @@ names(heat_lfcbrks) <- c(-3:3)
 }
 
 head(expr,10)
-snakemake@params[["is_antisense"]]
-is_antisense
-len_aft_n
-aft_brk
-aft_brk_pos
 
-len_bef_n
-bef_brk
-bef_brk_pos
+head(heat_df,10)
 
-
-xbrks
-xbrk_short
-
+heat_bin
+heat_xbrks
+heat_lfcbrks
+heat_colours
 
 # Import wildcards as text
 prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
 tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
 valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
 feature <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]])))
+title_feature <- gsub("(?<!\\w)(.)","\\U\\1", feature, perl = TRUE)
 
 experiment <- gsub("_"," ",as.character(snakemake@wildcards[["experiment"]]))
 treatment <- as.character(snakemake@params[["treat"]])
@@ -235,9 +241,9 @@ min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_
 
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(c(""),unique(expr$group[expr$biotype %in% biotypes]))
-for (i in i_group) {
+#for (i in i_group) {
 
-#i <- "multiexonic protein coding"
+i <- "multiexonic protein coding"
 
 if (i =="") {
   expr_i <- expr
@@ -330,10 +336,6 @@ expr_i <-
 
 expr_i <- expr_i %>% arrange(change,padj) %>% group_by(change) %>% mutate(p_rank=1:n()) %>% ungroup
 expr_i <- expr_i %>% arrange(change,abs(log2FoldChange)) %>% group_by(change) %>% mutate(lfc_rank=n():1) %>% ungroup
-expr_i <- expr_i %>% arrange(log2FoldChange) %>% mutate(Fold_Change_Rank=1:n()) %>% ungroup
-expr_i <- expr_i %>% arrange(GC) %>%  mutate(GC_Rank=1:n()) %>% ungroup
-expr_i <- expr_i %>% arrange(Length) %>% mutate(Length_Rank=1:n()) %>% ungroup
-expr_i <- expr_i %>% arrange(rpkm) %>% mutate(RPKM_Rank=1:n()) %>% ungroup
 
 lfc_max <- max(c(abs(expr_i$log2FoldChange[expr_i$padj < sig_p]),0))
 expr_i$colour <- ifelse(expr_i$padj < sig_p, ifelse(expr_i$log2FoldChange < 0, down_col, up_col), insig_col)
@@ -372,13 +374,16 @@ summary_caption
 if (difference == "splicing ratio") {
 plots <- list("summary","bias","ma_plot","volcano_plot")
 } else {
-plots <- list("summary","bias","ma_plot","volcano_plot","meta_plot","heatmaps")
+plots <- list("summary","bias","ma_plot","volcano_plot","meta_plot","heatmap")
 }
 
 plot_n <- 1
 
 # Loop for each plot listed
 for ( p in plots) {
+
+p_header <- toTitleCase(gsub("_"," ",p))
+doc <- body_add(doc,fpar(ftext(paste(p_header), prop=heading_3)),style = "heading 4")
 plot_p <- get(p)
 title_p <- get(paste(p,"_title",sep=""))
 caption_p <- get(paste(p,"_caption",sep=""))
@@ -412,7 +417,7 @@ if ( (plot_n-1) == length(plots)) {
 
 }
 }
-}
+#}
 
 sum_bar_data
 
@@ -422,9 +427,37 @@ head(sum_violin_data,5)
 
 source(snakemake@config[["differential_plots"]][["scripts"]][["overview"]])
 #doc <- cursor_begin(doc)
+head(expr_i,10)
+head(heat_data,10)
+
+heat_data <- heat_df[heat_df$featureID %in% expr_i$featureID,]
+
+heat_ranks <- c("Fold_Change","GC","Length","RPKM")
+
+heat_ylab <- data.frame(heat_ranks, c(paste(difference, "Fold Change (Low to High)"), "GC Content (%)", paste(title_feature_i, "Mean Expression Levels (RPKM)",sep=" "),paste(ifelse(use_base_length,title_base_i,title_feature_i), "Length (bps)",sep=" ")))
+
+heat_ls <- paste(heat_ranks,"_heat",sep="")
+
+names(heat_ylab) <- c("Ranking","ylab")
+
+"Fold_Change"
+expr_i[match(heat_data$featureID,expr_i$featureID),paste("Fold_Change","_Rank",sep='')]
+
+"GC"
+expr_i[match(heat_data$featureID,expr_i$featureID),paste("GC","_Rank",sep='')]
+
+"Length"
+expr_i[match(heat_data$featureID,expr_i$featureID),paste("Length","_Rank",sep='')]
+
+"RPKM"
+expr_i[match(heat_data$featureID,expr_i$featureID),paste("RPKM","_Rank",sep='')]
 
 
+heat_ylab
 
+heat_ls
+
+heat_colours
 
 print(doc,target=snakemake@output[["docx"]])
 

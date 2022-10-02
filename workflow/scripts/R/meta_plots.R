@@ -18,8 +18,6 @@ mx_data$Sample <- gsub("_"," ",mx_data$Sample)
 
 head(mx_data,10)
 
-heat_colours <- c("dodgerblue","blue","black","red","orange")
-
 mx_data$Condition <- factor(mx_data$Condition, levels=c(control, treat))
 mx_data$cond_group <- factor(mx_data$cond_group, levels=c(paste(control,"sense"),paste(treat,"sense"),paste(control,"antisense"),paste(treat,"antisense")))
 

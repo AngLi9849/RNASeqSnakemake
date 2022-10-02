@@ -25,10 +25,6 @@ rule heatmap_data:
         main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
         plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
-        control_mx="heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.control_mx.tab.gz",
-        treat_mx="heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.treat_mx.tab.gz",
-        fc_mx="heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.dc_mx.tab.gz",
-        mean_mx="heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.mean_mx.tab.gz",
     log:
         "logs/heatmap_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
     threads: 1
@@ -106,7 +102,8 @@ rule differential_plots:
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
-        base_bed==lambda wildcards: ("resources/annotations/{source}/{{lineage}}.{s}.{{valid}}_{{tag}}.{f}.bed".format(
+        base_bed=lambda wildcards: ("resources/annotations/{source}/{{lineage}}.{s}.{{valid}}_{{tag}}.{f}.bed".format(
+            source=  str( get_sample_source(wildcards.experiment) ),
             s=features.loc[features.loc[wildcards.feature,"feature"],"type"] if (features.loc[wildcards.feature,"feature"] in features["feature_name"].tolist()) else "gtf",
             f=features.loc[wildcards.feature,"feature"]
         ) ), 
@@ -147,10 +144,11 @@ rule differential_plots:
         main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
         plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],        
-        base=lambda wildcards : features.loc[wildcards.feature,"feature"],
-        is_antisense=lambda wildcards : features.loc[wildcards.feature,"sense_dir"]
+        base = lambda wildcards : features.loc[wildcards.feature,"feature"],
+        is_antisense=lambda wildcards : features.loc[wildcards.feature,"sense_dir"],
+        main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
     resources:
-        mem="486G",
+        mem="48G",
         rmem="32G",
     conda:
         "../envs/differential.yaml"

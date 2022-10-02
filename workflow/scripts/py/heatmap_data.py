@@ -56,7 +56,7 @@ mean_mx = (control_mx + treat_mx)/2
 mask_mx = (mean_mx > snakemake.config['heatmap']['min_fc_cov'])*1
 fc_mx = (treat_mx / mean_mx).fillna(1)
 fc_mx = fc_mx-1
-fc_mx = fx_mx * mask_mx
+fc_mx = fc_mx * mask_mx
 
 mx_bin = len(fc_mx.columns)
 fc_mx.columns = range(0-start_pos,mx_bin - start_pos)

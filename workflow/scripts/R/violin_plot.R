@@ -27,14 +27,17 @@ violin_data_i$group <- group_label
 violin_control_mean <- median(violin_data_i$value[violin_data_i$condition==control])
 violin_data_i$value <- violin_data_i$value/violin_control_mean 
 violin_data_i$Colours <- condition_col[match(violin_data_i$condition,names(condition_col))]
-if (exists("sum_violin_data")) {
 
-sum_violin_data <- rbind(sum_violin_data,violin_data_i)
+if (nrow(mean_level_i) > 5) {
+  if (exists("sum_violin_data")) {
 
-} else {
+  sum_violin_data <- rbind(sum_violin_data,violin_data_i)
 
-sum_violin_data <- violin_data_i
+  } else {
 
+  sum_violin_data <- violin_data_i
+
+  }
 }
 
 violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +

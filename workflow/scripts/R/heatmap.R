@@ -1,16 +1,31 @@
-heat_data <- head_df[heat_df$featureID %in% expr_i$featureID,]
+for (r in heat_config$Ranking) {
+expr_i <- expr_i %>% arrange(!!sym(r)) %>% mutate(!!paste(r,"_Rank",sep='') := 1:n()) %>% ungroup
+}
 
-heat_ranks <- c("Fold_Change","GC","Length","RPKM")
 
-heat_ylab <- data.frame(heat_ranks, c(paste(difference, "Fold Change (Low to High)"), "GC Content (%)", paste(title_feature_i, "Mean Expression Levels (RPKM)",sep=" "),paste(ifelse(use_base_length,title_base_i,title_feature_i), "Length (bps)",sep=" ")))
-
+heat_pc = c(0,25,50,75,100)
+heat_data <- heat_df[heat_df$featureID %in% expr_i$featureID,]
 heat_ls <- paste(heat_ranks,"_heat",sep="")
+heat_gene_n <- length(unique(heat_data$featureID))
 
-names(heat_ylab) <- c("Ranking","ylab") 
+heat_scale <- quantile(abs(heat_data$heat),heat_scale_pc,na.rm=T)
+heat_data$heat <- heat_data$heat/heat_scale
+heat_data$heat <- ifelse(heat_data$heat >= 1, 1, heat_data$heat)
 
-for (i in heat_ranks) {
+heat_lfcbrks_i <- heat_lfcbrks/heat_scale
 
-heat_data$Rank <- c(expr_i[,paste(i,"_Rank",sep='\t')])[match(heat_data$featureID,expr$featureID),] 
+for (i in heat_config$Ranking) {
+
+heat_unit <- heat_config$unit[heat_config$Ranking==i]
+i_unit <- ifelse(heat_unit=="","",paste("(",heat_unit,")",sep=""))
+heat_data$Rank <- as.numeric(unlist(expr_i[match(heat_data$featureID,expr_i$featureID),paste(i,"_Rank",sep='')]))
+heat_ybrks <- unlist(lapply(heat_pc, function(p) { quantile(as.numeric(unlist(expr_i[,paste(i, "_Rank",sep='')])),p/100,na.rm=T) } ) )
+names(heat_ybrks) <-  unlist(lapply(heat_pc, function(p) {ifelse(heat_unit=="%",100,1)*signif(quantile(as.numeric(unlist(expr_i[,paste(i)])),p/100,na.rm=T),2) } ) )
+
+i_lab <- ifelse(i =="log2FoldChange", paste(toTitleCase(difference), "log2FoldChange"),i)
+i_lab <- ifelse(i_lab =="Length", paste(ifelse(use_base_length,title_base_i,title_feature_i),"Length"),i_lab)
+
+heat_ylab <- paste(gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",i_lab)),i_unit)
 
 heatmap <- ggplot(
   heat_data,
@@ -18,6 +33,7 @@ heatmap <- ggplot(
   ) +
 geom_raster() +
 scale_fill_gradientn(
+  name=heat_name,
   colours = heat_colours,
   limits=c(-1,1),
   breaks=heat_lfcbrks,
@@ -37,7 +53,7 @@ scale_fill_gradientn(
   ) +
 scale_y_continuous(
   limits=c(0.5,max(heat_data$Rank)+0.5),
-  breaks=NULL,
+  breaks=heat_ybrks,
   expand=c(0,0)
   ) +
 scale_x_continuous(
@@ -45,32 +61,39 @@ scale_x_continuous(
   breaks=heat_xbrks,
   expand=c(0,0)
   ) +
-xlab(
-  paste(gsub("(?<!\\w)(.)","\\U\\1", feature_i, perl = TRUE), "Position (bps)")
+labs(
+  subtitle=paste("n=",heat_gene_n,sep="")
   ) +
-ylab(heat_ylab$ylab[heat_ylab$Ranking==i]) +
+xlab(
+  paste(title_feature, "(bps)")
+  ) +
+ylab(heat_ylab) +
 theme(
   panel.background=element_rect(
     fill="White",
     colour="white"
-  ),
+    ),
   panel.border=element_rect(
     fill=NA,
     colour="black",
     size=0.7
-  ), 
+    ), 
   panel.grid.major = element_blank(), 
   panel.grid.minor = element_blank(), 
   legend.background=element_rect(
     fill="White"
-  ), 
+    ), 
   legend.key=element_rect(
     colour="white",
     fill="white"
-  ), 
+    ), 
   axis.line=element_line(
     colour=NA,
-    size=NA)
+    size=NA
+    ),
+  axis.title.y = element_text(size=9),
+  axis.title.x = element_text(size=9),
+  legend.title = element_text(size=9)
   )
 
 assign(paste(i,"_heat",sep=""),heatmap) 
@@ -79,9 +102,14 @@ assign(paste(i,"_heat",sep=""),heatmap)
 
 heat_ls <- lapply(heat_ls,get)
 
-heat_plot <- ggarrange(plotlist=heat_ls,ncol=2,nrow=lenth(heat_ls)/2,labels="AUTO")
+heatmap <- ggarrange(plotlist=heat_ls,ncol=2,nrow=length(heat_ls)/2,labels="AUTO")
 
-heat_plot_caption <- paste(
+heatmap_title <- paste(
+  "Heatmaps of fold changes in ", difference, " of ", feature_i, " in ", experiment, ".",
+  sep="")
+
+
+heatmap_caption <- paste(
   "Heatmaps of fold changes in ", difference, " of ", feature_i, " in ", experiment, ".",
   sep="")
 
