@@ -86,7 +86,7 @@ rule compute_raw_matrix:
             print
           }}
         ' {input.bed} > {params.temp} &&
-        computeMatrix scale-regions -S {input.bigwig} -R {params.temp} -p {threads} --metagene --binSize 1 --averageTypeBins mean --regionBodyLength {wildcards.bin} --sortRegions descend --sortUsing region_length -o {params.temp_gz} &&
+        computeMatrix scale-regions -S {input.bigwig} -R {params.temp} -p {threads} --metagene --binSize 1 --averageTypeBins sum --regionBodyLength {wildcards.bin} --sortRegions descend --sortUsing region_length -o {params.temp_gz} &&
         zcat {params.temp_gz} |
         tail -n +2 |
         cut -f4,7- |

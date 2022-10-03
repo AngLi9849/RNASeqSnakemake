@@ -151,7 +151,7 @@ rule custom_feature:
         awk -F'\\t' -v OFS='\\t' '
         BEGIN {{
           nofrst = ("{params.no_frst}" =="nan" || "{params.no_frst}" == "0" )?"":"{params.no_frst}" ;
-          nolast = ("{params.no_last}" =="nan" || "{params.no_frst}" == "0" )?"":"{params.no_last}" ;
+          nolast = ("{params.no_last}" =="nan" || "{params.no_last}" == "0" )?"":"{params.no_last}" ;
           split( nofrst,f,",") ;
           for (i in f) {{
             if (f[i]-0 > 0) {{
@@ -168,12 +168,9 @@ rule custom_feature:
               exclude_last[l[i]]=""
             }} ;
           }} ;
-          include_all = (length(f)==0 && length(l)==0)? 1 : 0 ;
+          include_all = (f[1]=="" && l[1]=="")? 1 : 0 ;
         }} ;
-        ( (include_all==1) || \
-          ( (length(f)==0) || ( (length(f) > 0) && ($12 in include_first) && !($12 in exclude_first) ) )  && \
-          ( (length(l)==0) || ( (length(l) > 0) && ($13 in include_last) && !($13 in exclude_last) ) ) \
-        ) {{ 
+        ( (include_all==1) || ( ( (f[1]=="") || ( (f[1]-0 != 0) && ($12 in include_first) && !($12 in exclude_first) ) )  && ( (l[1]=="") || ( (l[1]-0 != 0) && ($13 in include_last) && !($13 in exclude_last) ) ) ) ) {{ 
           if ($6=="+") {{ 
             $7="{wildcards.feature}" ; a=$2 ; b=$3 ;
             $2 = ( \
