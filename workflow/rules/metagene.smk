@@ -200,8 +200,8 @@ rule sort_raw_matrices:
           bin= features.loc[wildcards.feature,"plotaft_bin"],
         ),
     output:
-        sum_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.sum_matrix.gz",
-        norm_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.norm_matrix.gz",
+        sum_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.{mean}_sum_matrix.gz",
+        norm_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.{mean}_norm_matrix.gz",
     threads: 1
     resources:
         mem="20G",

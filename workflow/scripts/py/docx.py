@@ -67,6 +67,7 @@ def add_page_number(paragraph):
     num_pages_run._r.append(fldChar4)
 
 doc = Document('resources/templates/r_template.docx')
+#doc = Document()
 
 styles = [
     s for s in doc.styles
@@ -80,6 +81,9 @@ for style in styles:
 #doc.styles.add_style('centered', docx.enum.style.WD_STYLE_TYPE.PARAGRAPH)
 #doc.styles['centered'].base_style = doc.styles['Normal']
 #doc.styles['centered'].paragraph_format.alignment = docx.enum.text.WD_PARAGRAPH_ALIGNMENT.CENTER
+
+doc.styles.add_style('heading 4', docx.enum.style.WD_STYLE_TYPE.PARAGRAPH)
+doc.styles['heading 4'].base_style = doc.styles['heading 3']
 
 add_page_number(doc.sections[0].footer.paragraphs[0])
 doc.save(snakemake.output.docx)

@@ -241,9 +241,9 @@ min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_
 
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- append(c(""),unique(expr$group[expr$biotype %in% biotypes]))
-for (i in i_group) {
+#for (i in i_group) {
 
-#i <- "multiexonic protein coding"
+i <- "multiexonic protein coding"
 
 if (i =="") {
   expr_i <- expr
@@ -381,6 +381,9 @@ plot_n <- 1
 
 # Loop for each plot listed
 for ( p in plots) {
+
+p_header <- toTitleCase(gsub("_"," ",p))
+doc <- body_add(doc,fpar(ftext(paste(p_header), prop=heading_3)),style = "heading 4")
 plot_p <- get(p)
 title_p <- get(paste(p,"_title",sep=""))
 caption_p <- get(paste(p,"_caption",sep=""))
@@ -414,7 +417,7 @@ if ( (plot_n-1) == length(plots)) {
 
 }
 }
-}
+#}
 
 sum_bar_data
 
@@ -426,6 +429,35 @@ source(snakemake@config[["differential_plots"]][["scripts"]][["overview"]])
 #doc <- cursor_begin(doc)
 head(expr_i,10)
 head(heat_data,10)
+
+heat_data <- heat_df[heat_df$featureID %in% expr_i$featureID,]
+
+heat_ranks <- c("Fold_Change","GC","Length","RPKM")
+
+heat_ylab <- data.frame(heat_ranks, c(paste(difference, "Fold Change (Low to High)"), "GC Content (%)", paste(title_feature_i, "Mean Expression Levels (RPKM)",sep=" "),paste(ifelse(use_base_length,title_base_i,title_feature_i), "Length (bps)",sep=" ")))
+
+heat_ls <- paste(heat_ranks,"_heat",sep="")
+
+names(heat_ylab) <- c("Ranking","ylab")
+
+"Fold_Change"
+expr_i[match(heat_data$featureID,expr_i$featureID),paste("Fold_Change","_Rank",sep='')]
+
+"GC"
+expr_i[match(heat_data$featureID,expr_i$featureID),paste("GC","_Rank",sep='')]
+
+"Length"
+expr_i[match(heat_data$featureID,expr_i$featureID),paste("Length","_Rank",sep='')]
+
+"RPKM"
+expr_i[match(heat_data$featureID,expr_i$featureID),paste("RPKM","_Rank",sep='')]
+
+
+heat_ylab
+
+heat_ls
+
+heat_colours
 
 print(doc,target=snakemake@output[["docx"]])
 

@@ -8,6 +8,8 @@ heat_data <- heat_df[heat_df$featureID %in% expr_i$featureID,]
 heat_ls <- paste(heat_ranks,"_heat",sep="")
 heat_gene_n <- length(unique(heat_data$featureID))
 
+heat_data$Sense <- factor(heat_data$Sense, levels=c("Sense","Antisense"))
+
 heat_scale <- quantile(abs(heat_data$heat),heat_scale_pc,na.rm=T)
 heat_data$heat <- heat_data$heat/heat_scale
 heat_data$heat <- ifelse(heat_data$heat >= 1, 1, heat_data$heat)
@@ -36,7 +38,7 @@ scale_fill_gradientn(
   name=heat_name,
   colours = heat_colours,
   limits=c(-1,1),
-  breaks=heat_lfcbrks,
+  breaks=heat_lfcbrks_i,
   guide = guide_colorbar(
     label = TRUE,
     draw.ulim = TRUE, 
@@ -65,7 +67,7 @@ labs(
   subtitle=paste("n=",heat_gene_n,sep="")
   ) +
 xlab(
-  paste(title_feature, "(bps)")
+  paste(feature, "(bps)")
   ) +
 ylab(heat_ylab) +
 theme(
@@ -93,8 +95,18 @@ theme(
     ),
   axis.title.y = element_text(size=9),
   axis.title.x = element_text(size=9),
-  legend.title = element_text(size=9)
+  legend.title = element_text(size=9),
+  strip.text=element_text(face="bold"),
+  strip.background=element_rect(colour="white",fill="white",size=0.1),
+  axis.text.y = element_text(colour="black"),
+  axis.text.x = if (length(heat_xbrks)>2) (element_text(angle = 45, vjust = 1, hjust=1,colour="black")) else (element_text(colour="black"))
   )
+
+if (length(unique(heat_data$Sense))==2) {
+
+heatmap <- heatmap + facet_wrap(vars(Sense),ncol=1,strip.position="top")
+
+}
 
 assign(paste(i,"_heat",sep=""),heatmap) 
 
@@ -105,12 +117,12 @@ heat_ls <- lapply(heat_ls,get)
 heatmap <- ggarrange(plotlist=heat_ls,ncol=2,nrow=length(heat_ls)/2,labels="AUTO")
 
 heatmap_title <- paste(
-  "Heatmaps of fold changes in ", difference, " of ", feature_i, " in ", experiment, ".",
+  "Heatmaps of changes ", difference, " of ", feature_i, " in ", experiment, ".",
   sep="")
 
 
 heatmap_caption <- paste(
-  "Heatmaps of fold changes in ", difference, " of ", feature_i, " in ", experiment, ".",
+  "Heatmaps representing fold changes in ", difference, " of ", feature_i, " in ", experiment, ".",
   sep="")
 
 

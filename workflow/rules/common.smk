@@ -442,6 +442,8 @@ USAGE=[""]
 BIOTYPE=list(config["biotypes"])
 
 SCORE=["sum","per_gene"] if config["metagene"]["norm_per_gene"] else "per_gene"
+MX_NORM="norm" if config["metagene"]["norm_per_gene"] else "sum"
+MX_MEAN="median" if config["metagene"]["norm_to_median"] else "mean"
 
 #Functions for generating results
 def get_bams():
@@ -481,8 +483,8 @@ def get_diffsplice_docx():
 
 def get_differential_reports():
     docx = expand(
-        "diff_reports/experiment_reports/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}.{exp.norm_feat}_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
-        exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE
+        "diff_reports/experiment_reports/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}.{exp.norm_feat}_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
+        exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE, mean=MX_MEAN, norm=MX_NORM
     ),
     return docx
 

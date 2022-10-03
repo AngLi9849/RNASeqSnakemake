@@ -149,6 +149,31 @@ rule custom_feature:
         sort -k7,7 -k4,4 -k2,2n -k3,3n |
         uniq |
         awk -F'\\t' -v OFS='\\t' '{{
+        BEGIN {{
+          nofrst = ("{params.no_frst}" =="nan" || "{params.no_frst}" == "0" )?"":"{params.no_frst}" ;
+          nolast = ("{params.no_last}" =="nan" || "{params.no_frst}" == "0" )?"":"{params.no_last}" ;
+          split( nofrst,f,",") ;
+          for (i in f) {{
+            if (f[i]-0 > 0) {{
+              include_first[f[i]]=""
+            }} else {{
+              exclude_first[f[i]]=""
+            }} ;
+          }} ; 
+          split(nolast,l,",") ;
+          for (i in l) {{
+            if (l[i]-0 > 0) {{
+              include_last[l[i]]=""
+            }} else {{
+              exclude_last[l[i]]=""
+            }} ;
+          }} ;
+          include_all = (length(f)==0 && length(l)==0)? 1 : 0 ;
+        }} ;
+        ( (include_all==1) || \
+          ( (length(f)==0) || ( (length(f) > 0) && ($12 in include_first) && !($12 in exclude_first) ) )  && \
+          ( (length(l)==0) || ( (length(l) > 0) && ($13 in include_last) && !($13 in exclude_last) ) ) \
+        ) {{ 
           if ($6=="+") {{ 
             $7="{wildcards.feature}" ; a=$2 ; b=$3 ;
             $2 = ( \
@@ -185,8 +210,8 @@ rule custom_feature:
             $7="{wildcards.feature}" ; a=$2 ; b=$3 ;
             $2 = ( \
               ("{params.sect}"=="body") ? (a - {params.after}) : ( \
-                ("{params.sect}"=="start") ? (a - {params.after}) : ( \
-                  ("{params.sect}"=="end") ? (b - {params.after}) : ( \
+                ("{params.sect}"=="end") ? (a - {params.after}) : ( \
+                  ("{params.sect}"=="start") ? (b - {params.after}) : ( \
                     ("{params.sect}"=="centre") ? ( int( (b+a)/2 - 0.5 ) - {params.after} ) : (a - {params.after}) \
                   ) \
                 ) \
@@ -194,8 +219,8 @@ rule custom_feature:
             ) ;
             $3 = ( \
               ("{params.sect}"=="body") ? (b + {params.before}) : ( \
-                ("{params.sect}"=="start") ? (a + {params.before}) : ( \
-                  ("{params.sect}"=="end") ? (b + {params.before}) : ( \
+                ("{params.sect}"=="end") ? (a + {params.before}) : ( \
+                  ("{params.sect}"=="start") ? (b + {params.before}) : ( \
                     ("{params.sect}"=="centre") ? ( int( (b+a)/2 - 0.5 ) + {params.before} ) : (b + {params.before}) \
                   ) \
                 ) \

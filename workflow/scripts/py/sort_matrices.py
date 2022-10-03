@@ -18,7 +18,7 @@ main = None if main_ls==[] else pd.concat(main_ls)
 
 main_x_sum=main.sum(axis=1)
 
-main_mean = main_x_sum[main_x_sum!=0].median() if snakemake.config['metagene']['norm_to_median'] else main_x_sum[main_x_sum!=0].mean()
+main_mean = main_x_sum[main_x_sum!=0].median() if snakemake.wildcards.mean=="median" else main_x_sum[main_x_sum!=0].mean()
 
 
 aft_ls=[]
