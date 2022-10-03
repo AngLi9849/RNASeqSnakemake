@@ -148,7 +148,7 @@ rule custom_feature:
         cut -f1-14 |
         sort -k7,7 -k4,4 -k2,2n -k3,3n |
         uniq |
-        awk -F'\\t' -v OFS='\\t' '{{
+        awk -F'\\t' -v OFS='\\t' '
         BEGIN {{
           nofrst = ("{params.no_frst}" =="nan" || "{params.no_frst}" == "0" )?"":"{params.no_frst}" ;
           nolast = ("{params.no_last}" =="nan" || "{params.no_frst}" == "0" )?"":"{params.no_last}" ;

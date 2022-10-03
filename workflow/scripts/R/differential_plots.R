@@ -37,6 +37,7 @@ sig <- as.numeric(snakemake@params[["sig"]])
 bg <- as.numeric(snakemake@params[["bg"]])
 section <- snakemake@params[["section"]]
 base <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@params[["base"]])))
+base_feat <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@params[["base_feat"]])))
 
 mx_samples <- c(snakemake@params[["samples"]])
 
@@ -64,7 +65,6 @@ analysis <- paste("differential", difference, "analysis")
 
 if (difference != "splicing_ratio") {
 
-
   is_antisense <- snakemake@params[["is_antisense"]]==-1
 
   difference <- "expression levels"
@@ -83,24 +83,28 @@ if (difference != "splicing_ratio") {
   plot_median <- as.logical(snakemake@config[["metagene"]][["plot_median"]])
   meta_y <- ifelse(plot_median,"Median","Mean")
   meta_bin <- plotbef_bin + plotaft_bin + main_bin
-  
+  start_name <- snakemake@params[["start_name"]]
+  start_name <- ifelse(start_name=="nan","Start",start_name)  
+  end_name <- snakemake@params[["end_name"]]
+  end_name <- ifelse(end_name=="nan","End",end_name)
 
 if (section=="body") {
 meta_xbrks <- c(0,main_bin)
-names(meta_xbrks) <- c("Start","End")
+names(meta_xbrks) <- c(start_name,end_name)
 
 } else {
+start_name <- ifelse(start_name=="Start",paste(base_feat,toTitleCase(section)),start_name)
+
 bef_brk_len <- signif(len_bef_n*1.5,1)/2
 bef_brk <- paste(ifelse(is_antisense,"+","-"), as.character(bef_brk_len), sep="")
 bef_brk_pos <- floor(signif(bef_bin*1.5,1)/2)
-
 
 aft_brk_len <- signif(len_aft_n*1.5,1)/2
 aft_brk <- paste(ifelse(is_antisense,"-","+"), as.character(aft_brk_len), sep="")
 aft_brk_pos <- floor(signif((main_bin-bef_bin)*1.5,1)/2)
 
 meta_xbrks <-  c(if(len_bef_n>0) (0-bef_brk_pos) else NULL,0,if(len_aft_n>0) (aft_brk_pos) else NULL)
-names(meta_xbrks) <- c(if(len_bef_n>0)(bef_brk) else NULL,toTitleCase(paste(base,section)),if(len_aft_n>0) (aft_brk) else NULL)
+names(meta_xbrks) <- c(if(len_bef_n>0)(bef_brk) else NULL,start_name,if(len_aft_n>0) (aft_brk) else NULL)
 
 }
 

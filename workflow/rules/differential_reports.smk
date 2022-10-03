@@ -1,10 +1,10 @@
 rule heatmap_data:
     input:
-        sense_mx = lambda wildcards: list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.sense.{mean}_sum_matrix.gz",
+        sense_mx = lambda wildcards: list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.sense.{{mean}}_sum_matrix.gz",
             sample=results[results.experiment==wildcards.experiment].itertuples(),
             plot_md5=features.loc[wildcards.feature,"plot_md5"],
         ))),
-        antisense_mx=lambda wildcards: [] if not features.loc[wildcards.feature,"antisense"] else list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.antisense.{mean}_sum_matrix.gz",
+        antisense_mx=lambda wildcards: [] if not features.loc[wildcards.feature,"antisense"] else list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.antisense.{{mean}}_sum_matrix.gz",
             sample=results[results.experiment==wildcards.experiment].itertuples(),
             plot_md5=features.loc[wildcards.feature,"plot_md5"],
         ))),
@@ -26,7 +26,7 @@ rule heatmap_data:
         plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
     log:
-        "logs/heatmap_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
+        "logs/heatmap_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised_{mean}/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
     threads: 1
     script:
         "../scripts/py/heatmap_data.py"
@@ -37,11 +37,11 @@ rule meta_plot_data:
         lfc="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
         levels="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
         counts="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
-        sense_mx = lambda wildcards: list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.sense.{mean}_{{norm}}_matrix.gz",
+        sense_mx = lambda wildcards: list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.sense.{{mean}}_{{norm}}_matrix.gz",
             sample=results[results.experiment==wildcards.experiment].itertuples(),
             plot_md5=features.loc[wildcards.feature,"plot_md5"],
         ))),
-        antisense_mx=lambda wildcards: [] if not features.loc[wildcards.feature,"antisense"] else list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.antisense.{mean}_{{norm}}_matrix.gz",
+        antisense_mx=lambda wildcards: [] if not features.loc[wildcards.feature,"antisense"] else list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.antisense.{{mean}}_{{norm}}_matrix.gz",
             sample=results[results.experiment==wildcards.experiment].itertuples(),
             plot_md5=features.loc[wildcards.feature,"plot_md5"],
         ))),
@@ -75,14 +75,16 @@ rule meta_plot_data:
         main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
         plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
-        base=lambda wildcards : features.loc[wildcards.feature,"feature"],
+        base=lambda wildcards : features.loc[wildcards.feature,"group"],
+        start_name = lambda wildcards : str(features.loc[wildcards.feature,"strt_nm"]),
+        end_name = lambda wildcards : str(features.loc[wildcards.feature,"end_nm"]),
     resources:
         mem="48G",
         rmem="32G",
     conda:
         "../envs/differential.yaml"
     log:
-        "logs/meta_plot_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
+        "logs/meta_plot_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised.{mean}_{norm}/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
     threads: 1
     script:
         "../scripts/R/meta_plot_data.R"
@@ -102,7 +104,7 @@ rule differential_plots:
         ),
         base_bed=lambda wildcards: ("resources/annotations/{source}/{{lineage}}.{s}.{{valid}}_{{tag}}.{f}.bed".format(
             source=  str( get_sample_source(wildcards.experiment) ),
-            s=features.loc[features.loc[wildcards.feature,"feature"],"type"] if (features.loc[wildcards.feature,"feature"] in features["feature_name"].tolist()) else "gtf",
+            s=features.loc[features.loc[wildcards.feature,"group"],"type"] if (features.loc[wildcards.feature,"group"] in features["feature_name"].tolist()) else "gtf",
             f=features.loc[wildcards.feature,"feature"]
         ) ), 
         bed=lambda w: "resources/annotations/{source}/{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
@@ -121,7 +123,7 @@ rule differential_plots:
             c=str(config["differential_plots"]["word_docx"]["font_colour"]),
         ),
     output:
-        docx="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normaliseds.{mean}_{norm}/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
+        docx="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised.{mean}_{norm}/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
     params:
         genesets=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["gene_sets"]).split(","),
         goi= lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["GOI"]).split(","),
@@ -142,16 +144,19 @@ rule differential_plots:
         main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
         plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],        
-        base = lambda wildcards : features.loc[wildcards.feature,"feature"],
+        base = lambda wildcards : features.loc[wildcards.feature,"group"],
+        base_feat = lambda wildcards : features.loc[wildcards.feature,"feature"],
         is_antisense=lambda wildcards : features.loc[wildcards.feature,"sense_dir"],
         main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
+        start_name = lambda wildcards : str(features.loc[wildcards.feature,"strt_nm"]),
+        end_name = lambda wildcards : str(features.loc[wildcards.feature,"end_nm"]),
     resources:
         mem="48G",
         rmem="32G",
     conda:
         "../envs/differential.yaml"
     log:
-        "logs/differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plots.log",
+        "logs/differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised.{mean}_{norm}/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plots.log",
     threads: 1
     script:
         "../scripts/R/differential_plots.R"
@@ -163,7 +168,7 @@ rule feature_reports:
             c=str(config["differential_plots"]["word_docx"]["font_colour"]),
         ),        
         plots=lambda wildcards: expand(
-            "diff_plots/{{experiment}}/{{reference}}/differential_{feat.diff}/{{pair}}.{{spikein}}_{{normaliser}}ReadCount_normalised.{mean}_{norm}/{{experiment}}.{{splice}}_{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}.docx",
+            "diff_plots/{{experiment}}/{{reference}}/differential_{feat.diff}/{{pair}}.{{spikein}}_{{normaliser}}ReadCount_normalised.{{mean}}_{{norm}}/{{experiment}}.{{splice}}_{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}.docx",
         feat=feat_res[feat_res.feature_name==wildcards.feature].itertuples(),
         valid=VALID,
         )
@@ -182,7 +187,7 @@ rule feature_reports:
     conda:
         "../envs/differential.yaml"
     log:
-        "feature_reports/{experiment}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
+        "feature_reports/{experiment}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised.{mean}_{norm}/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
     script:
         "../scripts/R/feature_report.R"
 
@@ -194,7 +199,7 @@ rule differential_report:
             c=str(config["differential_plots"]["word_docx"]["font_colour"]),
         ),
         plots=lambda wildcards: list(dict.fromkeys(expand(
-            "diff_reports/features/{{experiment}}/{exp.reference}/{{pair}}.{{spikein}}_{{normaliser}}ReadCount_normalised.{mean}_{norm}/{{experiment}}.{{splice}}_{{prefix}}.{{lineage}}_{valid}.custom-{feat.prefix_md5}.{{tag}}.{feat.feature_name}.docx",
+            "diff_reports/features/{{experiment}}/{exp.reference}/{{pair}}.{{spikein}}_{{normaliser}}ReadCount_normalised.{{mean}}_{{norm}}/{{experiment}}.{{splice}}_{{prefix}}.{{lineage}}_{valid}.custom-{feat.prefix_md5}.{{tag}}.{feat.feature_name}.docx",
             exp=results[results.experiment==wildcards.experiment].itertuples(),
             feat=feat_res.itertuples(),
             valid=VALID,
@@ -208,7 +213,7 @@ rule differential_report:
     conda:
         "../envs/differential.yaml"
     log:
-        "diff_reports/{splice}_{prefix}/{experiment}/{lineage}.{tag}.{pair}.{spikein}.{normaliser}_normalised/{experiment}.{splice}_{prefix}.differential_report.log"
+        "diff_reports/{splice}_{prefix}/{experiment}/{lineage}.{tag}.{pair}.{spikein}.{normaliser}_normalised.{mean}_{norm}/{experiment}.{splice}_{prefix}.differential_report.log"
     script:
         "../scripts/R/differential_report.R"
             

@@ -51,7 +51,7 @@ features.columns = features.columns.str.strip()
 features = features.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 features = features.mask( features == '')
 features = (features.set_index(["feature_name"], drop=False).sort_index())
-feat_prefix = features.iloc[:, features.columns.get_loc("region"): features.columns.get_loc("bin_n")]
+feat_prefix = features.iloc[:, features.columns.get_loc("region"): (features.columns.get_loc("len_aft")+1)]
 feat_plot = features.iloc[:,features.columns.get_loc("region"): features.columns.get_loc("s2b_min")]
 features["prefix"] = feat_prefix.apply(lambda row: 
     ''.join([str(a)+ "_" + str(b) + "." for a,b in zip(row.index.tolist(), row.tolist())]) 
@@ -443,7 +443,7 @@ BIOTYPE=list(config["biotypes"])
 
 SCORE=["sum","per_gene"] if config["metagene"]["norm_per_gene"] else "per_gene"
 MX_NORM="norm" if config["metagene"]["norm_per_gene"] else "sum"
-MX_MEAN="median" if config["metagene"]["norm_to_median"] else "mean"
+MX_MEAN=["median","mean"] if config["metagene"]["norm_to_median"]=="BOTH" else ["median"] if config["metagene"]["norm_to_median"] else ["mean"]
 
 #Functions for generating results
 def get_bams():
