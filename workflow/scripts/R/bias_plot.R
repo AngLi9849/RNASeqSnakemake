@@ -1,7 +1,6 @@
-expr_bias1 <- expr_i
-expr_bias1$change <- "All"
-expr_bias1$abslog2FoldChange <- expr_bias1$log2FoldChange
-expr_bias1$density <- 1
+expr_heat$change <- "All"
+expr_heat$abslog2FoldChange <- expr_heat$log2FoldChange
+expr_heat$density <- 1
 
 expr_bias <- expr_i[abs(expr_i$padj) < sig_p,]
 
@@ -13,7 +12,7 @@ expr_bias$abslog2FoldChange <- abs(expr_bias$log2FoldChange)
 FCmin=quantile(expr_bias$log2FoldChange,0.001,na.rm=TRUE)
 FCmax=quantile(expr_bias$log2FoldChange,0.999,na.rm=TRUE)
 
-expr_bias$density <- 0.01/expr_bias$padj
+expr_bias$density <- 0.01/expr_heat$padj
 expr_bias <- rbind(expr_bias1,expr_bias)
 
 GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2FoldChange)) +
@@ -44,7 +43,7 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2Fol
     alpha=0.3,
     linetype=5
   ) + 
-  scale_x_continuous(limits=c(0.25,0.75),breaks=c(0,0.25,0.5,0.75,1),labels=scales::percent) + 
+  scale_x_continuous(limits=c(0,1),breaks=c(0,0.25,0.5,0.75,1),labels=scales::percent) + 
   facet_wrap(
     ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
   ) +

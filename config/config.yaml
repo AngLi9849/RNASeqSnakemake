@@ -115,14 +115,14 @@ differential_plots:
       font_colour: black
 
 metagene:
-  min_reads: 20
+  min_reads: 10
   norm_per_gene: TRUE # Plot meta profiles with genes normalised or not, if FALSE, more abundant genes will weight more in the metaplot
   norm_to_median: BOTH # Else per-gene normalisation will be based on the mean
   anomaly_trim: 0.05
   plot_median: FALSE #Otherwise plot mean
 
 heatmap:
-  min_reads: 20
+  min_reads: 10
   bin_number: 100
   heat_colours: royalblue,skyblue,white,goldenrod1,red #Colours for representing lowest to highest log2 foldchange from -4 to 4 , middle one will represent 0
   min_fc_cov: 5 # minimum mean read depth in a bin to calculate fold change, belowe this threshold, fold change is set to zero 

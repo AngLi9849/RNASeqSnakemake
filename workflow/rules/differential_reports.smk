@@ -142,6 +142,8 @@ rule differential_plots:
         len_aft=lambda wildcards : features.loc[wildcards.feature,"len_aft"],
         bef_bin=lambda wildcards : features.loc[wildcards.feature,"bef_bin"],
         main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
+        plotbef_len=lambda wildcards : features.loc[wildcards.feature,"plotbef"],
+        plotaft_len=lambda wildcards : features.loc[wildcards.feature,"plotaft"],
         plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
         plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],        
         base = lambda wildcards : features.loc[wildcards.feature,"group"],

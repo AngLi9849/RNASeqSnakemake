@@ -1,127 +1,78 @@
-rule biotype_genebody_annotations:
+rule feature_metagene_annotations:
     input:
-        {prefix}.gtf.bed",
+        bed=lambda w: "{{prefix}}.custom-{id}.{{type}}.{{feature}}.{{sense}}.bed".format(
+            id = features.loc[w.feature,"prefix_md5"],
+        ),
     output:
-        {prefix}.gtf.{biotype}_genebody.bed",
-        {prefix}.gtf.{biotype}_genebody.fwd.bed",
-        {prefix}.gtf.{biotype}_genebody.rev.bed",
-        {prefix}.gtf.{biotype}_genebody.range.bed",
-        {prefix}.gtf.{biotype}_genebody.range.fwd.bed",
-        {prefix}.gtf.{biotype}_genebody.range.rev.bed",
-        {prefix}.gtf.{biotype}_genebody.non_overlap.fwd.bed",
-        {prefix}.gtf.{biotype}_genebody.non_overlap.rev.bed",
-        {prefix}.gtf.{biotype}_genebody.non_overlap.stranded.bed",
-        {prefix}.gtf.{biotype}_genebody.non_overlap.unstranded.bed",
-    threads: 4 
+        main="{prefix}.plot-{md5}.{type}.{feature}.{sense}_main.bed",
+        before="{prefix}.plot-{md5}.{type}.{feature}.{sense}_plotbef.bed",
+        after="{prefix}.plot-{md5}.{type}.{feature}.{sense}_plotaft.bed",
+        range = "{prefix}.plot-{md5}.{type}.{feature}.{sense}_range.bed",
     params:
-        before=config["metagene"]["genebody"]["before_TSS"],
-        after=config["metagene"]["genebody"]["after_TTS"],
+        before=lambda w: features.loc[w.feature,"plotbef"],
+        after=lambda w: features.loc[w.feature,"plotaft"],
+    threads: 1
     conda:
         "../envs/bedtools.yaml"
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/metagene/{prefix}_{biotype}_genebody.annotations.log",
+        "logs/metagene/{prefix}_plot-{md5}.{type}.{feature}.{sense}.plot.log",
     shell:
         """
-        awk -F'\\t' -v OFS='\\t' '$0 ~ "{wildcards.biotype}" {{if ($8 ~ "gene") {{print}}}}' {input} > {output[0]} &&
-        awk -F'\\t' -v OFS='\\t' '$6=="+"{{print $0}}' {output[0]} > {output[1]} &&
-        awk -F'\\t' -v OFS='\\t' '$6=="-"{{print $0}}' {output[0]} > {output[2]} &&
-	awk -F'\\t' -v OFS='\\t' '$0 ~ "{wildcards.biotype}" {{if ($8 ~ "gene") {{$2=$2-(before+after);$3=$3+(before+after);print}}}}' {input} > {output[3]} &&  
-        awk -F'\\t' -v OFS='\\t' '$6=="+"{{print $0}}' {output[3]} > {output[4]} &&
-        awk -F'\\t' -v OFS='\\t' '$6=="-"{{print $0}}' {output[3]} > {output[5]} &&
-        bedtools merge -s -i {output[4]} -c 1 -o count | 
-        awk '$4>1 {{print}}' - | 
-        bedtools intersect -a {output[1]} -b - -v > {output[6]} && 
-        bedtools merge -s -i {output[5]} -c 1 -o count |
-        awk '$4>1 {{print}}' - |
-        bedtools intersect -a {output[2]} -b - -v > {output[7]} &&
-        cat {output[6]} {output[7]} > {output[8]}
-        bedtools merge -i {output[3]} -c 1 -o count |
-        awk '$4>1 {{print}}' - |
-        bedtools intersect -a {output[0]} -b - -v > {output[9]}
+        sort -k6,6 -k1,1 -k8,8 -k2,2n -k3,3n {input.bed} | 
+        awk -F'\\t' -v OFS='\\t' -v id='' '
+          FNR==NR && NF>=6 {{
+            len[$8] += $5 ; 
+            five[$8]=(five[$8]<=1)?$2:((five[$8] <= $2)?five[$8]:$2) ;
+            three[$8]=(three[$8]>=$3)?three[$8]:$3 ;
+            print $1, $2, $3, $8, $5, $6 >> "{output.main}" ;
+          }}
+          FNR < NR && NF>=6 {{
+            if ( id != $8 ) {{
+              l=len[$8] ;
+              bef=(match("{params.before}","([^x]*)x",b))? int(l*b) : {params.before} ;
+              aft=(match("{params.after}","([^x]*)x",a))? int(l*a) : {params.after} ;
+              if (($6=="+" && "{wildcards.sense}" == "sense") || ($6=="-" && "{wildcards.sense}" == "antisense")) {{ 
+                $2 = ( five[$8] >= bef ) ? ( five[$8] - bef ) : 0 ;
+                $3 = five[$8] ;
+                print $1, $2, $3, $8, l, $6 >> "{output.before}" ;
+                $2 = three[$8] ;
+                $3 = three[$8] + aft ;
+                print $1, $2, $3, $8, l, $6 >> "{output.after}" ;
+                $2 = ( five[$8] >= bef ) ? ( five[$8] - bef ) : 0 ;
+                $3 = three[$8] + aft ;
+                print $1, $2, $3, $8, l, $6 >> "{output.range}" ;
+              }} else {{
+                $2 = (five[$8] >= aft)? ( five[$8] - aft ) : 0   ;
+                $3 = five[$8] ;
+                print $1, $2, $3, $8, l, $6 >> "{output.after}" ;
+                $2 = three[$8] ; 
+                $3 = three[$8] + bef
+                print $1, $2, $3, $8, l, $6 >> "{output.before}" ;
+                $2 = (five[$8] >= aft)? ( five[$8] - aft ) : 0   ;
+                $3 = three[$8] + bef
+                print $1, $2, $3, $8, l, $6 >> "{output.range}" ;
+              }} ;
+              id = $8 ;
+            }}
+          }}' {input.bed} -
         """
 
 
-rule promptTSS_annotations:
-    input:
-        {prefix}.gtf.{biotype}_genebody.non_overlap.stranded.bed",
-    output:
-        {prefix}.gtf.{biotype}_promptTSS.bed",
-        {prefix}.gtf.{biotype}_promptTSS.non_overlap.bed",
-        {prefix}.gtf.{biotype}_promptTSS.non_overlap.fwd.bed",
-        {prefix}.gtf.{biotype}_promptTSS.non_overlap.rev.bed",
-    threads: 4
-    params:
-        prompt=config["metagene"]["promptTSS"]["prompt_length"],
-        tss=config["metagene"]["promptTSS"]["TSS_length"],
-    conda:
-        "../envs/bedtools.yaml"
-    resources:
-        mem="6G",
-        rmem="4G",
-    log:
-        "logs/metagene/{prefix}_{biotype}_prompt_TSS_annotations.log",
-    shell:
-        """
-        awk -F'\\t' -v OFS='\\t' '{{if($2>={params.prompt} && $6=="+"){{print $1,$2-{params.prompt},$2+{params.tss},$4,$5,"-",$7,"prompt_TSS_antisense",$9,$10;}} else if($3>={params.tss} && $6=="-"){{print $1,$3-{params.tss},$3+{params.prompt},$4,$5,"+",$7,"prompt_TSS_antisense",$9,$10}}}}' {input[0]} > {output[0]} && 
-        bedtools intersect -s -v -a {output[0]} -b {input} | 
-        bedtools intersect -wa -a {input} -b - > {output[1]} &&
-        awk -F'\\t' -v OFS='\\t' '$6=="+"{{print $0}}' {output[1]} > {output[2]} && 
-        awk -F'\\t' -v OFS='\\t' '$6=="-"{{print $0}}' {output[1]} > {output[3]} 
-        """
-        
-rule TTSpostgene_annotations:
-    input:
-        {prefix}.gtf.{biotype}_genebody.non_overlap.stranded.bed",
-    output:
-        {prefix}.gtf.{biotype}_TTSpostgene.bed",
-        {prefix}.gtf.{biotype}_TTSpostgene.non_overlap.bed",
-        {prefix}.gtf.{biotype}_TTSpostgene.non_overlap.fwd.bed",
-        {prefix}.gtf.{biotype}_TTSpostgene.non_overlap.rev.bed",
-    threads: 4
-    params:
-        tts=config["metagene"]["TTSpostgene"]["TTS_length"],
-        postgene=config["metagene"]["TTSpostgene"]["postgene_length"],
-    conda:
-        "../envs/bedtools.yaml"
-    resources:
-        mem="6G",
-        rmem="4G",
-    log:
-        "logs/metagene/{prefix}_{biotype}_TTSpostgene_annotations.log",
-    shell:
-        """
-        awk -F'\\t' -v OFS='\\t' '{{if($3>={params.tts} && $6=="+"){{print $1,$3+1,$3+{params.postgene},$4,$5,"+",$7,"TTS_postgene_antisense",$9,$10;}} else if($2>={params.postgene} && $6=="-"){{print $1,$2-{params.postgene},$2-1,$4,$5,"-",$7,"TTS_postgene_antisense",$9,$10}}}}' {input[0]} > {output[0]} &&
-        bedtools intersect -s -v -a {output[0]} -b {input} |
-        bedtools intersect -wa -a {input} -b - > {output[1]} &&
-        awk -F'\\t' -v OFS='\\t' '$6=="+"{{print $0}}' {output[1]} > {output[2]} &&
-        awk -F'\\t' -v OFS='\\t' '$6=="-"{{print $0}}' {output[1]} > {output[3]}
-        """
-
-
-rule compute_matrix_promptTSS_stranded:
+rule compute_raw_matrix:
     input:        
-        fwd_bed=lambda wildcards: (str(get_annotation(experiments.loc[wildcards.experiment,"sample_source"]) + ".{wildcards.biotype}_promptTSS.non_overlap.fwd.bed"),
-        rev_bed=lambda wildcards: (str(get_annotation(experiments.loc[wildcards.experiment,"sample_source"]) + ".{wildcards.biotype}_promptTSS.non_overlap.rev.bed"),
-        fwd_bigwig="{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.fwd_{splice}.bigwig",
-        rev_bigwig="{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.rev_{splice}.bigwig",
+        bed= "resources/annotations/{reference}/{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_{part}.bed",
+        bigwig = "raw_bw/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
     output:
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.sense.fwd.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.sense.rev.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.antisense.fwd.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}.antisense.rev.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}_sum.sense.matrix.tab",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}_per_gene.sense.matrix.tab",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}_sum.antisense.matrix.tab",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{sample}_{unit}_per_gene.antisense.matrix.tab",
+        matrix="matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.gz",
     log:
-        "logs/metagene/by_{normaliser}_{counts}_{splice}{prefix}/{biotype}_promptTSS/{sample}_{unit}.matrix.log",
+        "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.log",
     params:
-        prompt=config["metagene"]["promptTSS"]["prompt_length"],
-        bin_size=config["metagene"]["promptTSS"]["bin_size"],
-        tss=config["metagene"]["promptTSS"]["TSS_length"],
+        strand = lambda wildcards:  "+" if (wildcards.strand == "fwd") else "-" if (wildcards.strand == "rev") else "+-",
+        temp = "resources/annotations/{reference}/{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_{part}.{strand}.bed",
+        temp_gz = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.temp.gz",
     threads: 4
     resources:
         mem="10G",
@@ -130,212 +81,139 @@ rule compute_matrix_promptTSS_stranded:
         "../envs/deeptools.yaml",
     shell:
         """
-        computeMatrix reference-point -S {input.fwd_bigwig} -R {input.fwd_bed} -p {threads} -b {params.prompt} -a {params.tss} --referencePoint TSS --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[0]} && 
-        computeMatrix reference-point -S {input.rev_bigwig} -R {input.rev_bed} -p {threads} -b {params.prompt} -a {params.tss} --referencePoint TSS --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[1]} &&
-        computeMatrix reference-point -S {input.rev_bigwig} -R {input.fwd_bed} -p {threads} -b {params.prompt} -a {params.tss} --referencePoint TSS --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[2]} &&
-        computeMatrix reference-point -S {input.fwd_bigwig} -R {input.rev_bed} -p {threads} -b {params.prompt} -a {params.tss} --referencePoint TSS --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[3]} &&
-        zcat {output[0]} {output[1]} | 
-        awk -F'\\t'   -v OFS='\\t' 'NF>1&& $0 !~ "nan" {{$2=sqrt(($3-$2)^2);print}}' - |
-        sort -rnk2,2 - |
-        cut -f 1,2,4,7- - |
-        sed '1 i\\{wildcards.sample}_sense' - > {output[4]} &&
-        zcat {output[2]} {output[3]} |
-        awk -F'\\t' -v OFS='\\t' 'NF>1&& $0 !~ "nan" {{$2=sqrt(($3-$2)^2);print}}' - |
-        sort -rnk2,2 - |
-        cut -f 1,2,4,7- - |
-        sed '1 i\\{wildcards.sample}_antisense' - > {output[6]} &&
-        paste {output[4]} {output[6]} | 
-        awk -v OFS='\\t' 'FNR==NR&&FNR>1{{for (i=4; i<=NF; i++) sum[FNR]+=$i;size[FNR]=sum[FNR]/(NF-3);total+=(sum[FNR]/(FNR-1)); next}} FNR<NR&&FNR==1{{print $0;next}} FNR<NR&&FNR>1{{for(i=4;i<=NF;i++) $i=(size[FNR]>0?$i/size[FNR]*total:0);print}}' - {output[4]} > {output[5]} &&
-        paste {output[4]} {output[6]} |
-        awk -v OFS='\\t' 'FNR==NR&&FNR>1{{for (i=4; i<=NF; i++) sum[FNR]+=$i;size[FNR]=sum[FNR]/(NF-3);total+=(sum[FNR]/(FNR-1)); next}} FNR<NR&&FNR==1{{print $0;next}} FNR<NR&&FNR>1{{for(i=4;i<=NF;i++) $i=(size[FNR]>0?$i/size[FNR]*total:0);print}}' - {output[6]} > {output[7]}
+        awk -F'\\t' -v OFS='\\t' '
+          "{params.strand}" ~ $6 {{
+            print
+          }}
+        ' {input.bed} > {params.temp} &&
+        computeMatrix scale-regions -S {input.bigwig} -R {params.temp} -p {threads} --metagene --binSize 1 --averageTypeBins mean --regionBodyLength {wildcards.bin} --sortRegions descend --sortUsing region_length -o {params.temp_gz} &&
+        zcat {params.temp_gz} |
+        tail -n +2 |
+        cut -f4,7- |
+        sort -k1,1 |
+        gzip - > {output.matrix}
         """
-    
 
-rule compute_matrix_TTSpostgene_stranded:
+
+rule feature_signal2background:
     input:
-        fwd_bed=lambda wildcards: (str(get_annotation(experiments.loc[wildcards.experiment,"sample_source"]) + ".{wildcards.biotype}_TTSpostgene.non_overlap.fwd.bed"),
-        rev_bed=lambda wildcards: (str(get_annotation(experiments.loc[wildcards.experiment,"sample_source"]) + ".{wildcards.biotype}_TTSpostgene.non_overlap.rev.bed"),
-        fwd_bigwig="{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.fwd_{splice}.bigwig",
-        rev_bigwig="{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.rev_{splice}.bigwig",
+        rpk = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpk.bed",
+        sense = "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.sense.bed",
+        genetab = "resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
+        background = lambda wildcards: expand("featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{feat.valid}.{feat.type}.{{tag}}.{feat.feature_name}.rpk.bed",
+            feat=features.loc[str(features.loc[wildcards.feature,"backgrd"]).split(",")].itertuples()
+        ) ,
     output:
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_TTSpostgene/{sample}_{unit}.fwd.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_TTSpostgene/{sample}_{unit}.rev.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_TTSpostgene/{sample}_{unit}_sum.stranded.matrix.tab",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_TTSpostgene/{sample}_{unit}_per_gene.stranded.matrix.tab",
-    log:
-        "logs/metagene/by_{normaliser}_{counts}_{splice}{prefix}/{biotype}_TTSpostgene/{sample}_{unit}.matrix.log",
+        tab = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.sig2bg.tab",
     params:
-        tts=config["metagene"]["TTSpostgene"]["TTS_length"],
-        postgene=config["metagene"]["TTSpostgene"]["postgene_length"],
-        bin_size=config["metagene"]["TTSpostgene"]["bin_size"],
-    threads: 4
-    resources:
-        mem="10G",
-        rmem="6G",
+        compat_bt=lambda wildcards: features.loc[wildcards.feature,"comp_bt"],
+        bef= lambda wildcards: features.loc[wildcards.feature,"plotbef"],
+        aft= lambda wildcards: features.loc[wildcards.feature,"plotaft"],
+        range = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.range.bed",        
+        temp="featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.temp.bed"
+    threads: 1
     conda:
-        "../envs/deeptools.yaml",
-    shell:
-        """
-        computeMatrix reference-point -S {input.fwd_bigwig} -R {input.fwd_bed} -p {threads} -b {params.tts} -a {params.postgene} --referencePoint TES --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[0]} &&
-        computeMatrix reference-point -S {input.rev_bigwig} -R {input.rev_bed} -p {threads} -b {params.tts} -a {params.postgene} --referencePoint TES --binSize {params.bin_size} --averageTypeBins mean --sortRegions descend --sortUsing region_length -o {output[1]} &&
-        zcat {output[0]} {output[1]} | 
-        awk -F'\\t' -v OFS='\\t' 'NF>1&& $0 !~ "nan" {{$2=sqrt(($3-$2)^2);print}}' - |
-        sort -rnk2,2 - |
-        cut -f 1,2,4,7- - | 
-        sed '1 i\\{wildcards.sample}' - > {output[2]} &&
-        awk -v OFS='\\t' 'FNR==NR&&FNR>1{{for (i=4; i<=NF; i++) sum[FNR]+=$i;size[FNR]=sum[FNR]/(NF-3);total+=(sum[FNR]/(FNR-1)); next}} FNR<NR&&FNR==1{{print $0;next}} FNR<NR&&FNR>1{{for(i=4;i<=NF;i++) $i=(size[FNR]>0?$i/size[FNR]*total:0);print}}' {output[2]} {output[2]} > {output[3]}
-        """
-
-
- 
-rule compute_matrix_genebody:
-    input:
-        bed=lambda wildcards: (str(get_annotation(experiments.loc[wildcards.experiment,"sample_source"]) + ".{wildcards.biotype}_genebody.non_overlap.{wildcards.strand}.bed"),
-        bigwig="{experiment}/bigwig/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{sample}_{unit}.{strand}_{splice}.bigwig",
-    output:
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}/{sample}_{unit}_genebody.{strand}.matrix.gz",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}/{sample}_{unit}_genebody_sum.{strand}.matrix.tab",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}/{sample}_{unit}_genebody_per_gene.{strand}.matrix.tab",
-    params:
-        before=config["metagene"]["genebody"]["before_TSS"],
-        after=config["metagene"]["genebody"]["after_TTS"],
-        start=config["metagene"]["genebody"]["TSS_unscaled"],
-        end=config["metagene"]["genebody"]["TTS_unscaled"],
-        bin_size=config["metagene"]["genebody"]["bin_size"],
-        body_length=config["metagene"]["genebody"]["gene_body"],
-    wildcard_constraints:
-        strand=r"fwd|rev|unstranded",
-    resources:
-        mem="12G",
-        rmem="8G",
-    log:
-        "logs/metagene/by_{normaliser}_{counts}_{splice}_{prefix}/{sample}_{unit}_{biotype}_genebody.{strand}.matrix.log",
-    conda:
-        "../envs/deeptools.yaml",
-    threads: 2 
-    shell:
-        """
-        computeMatrix scale-regions -S {input.bigwig} -R {input.bed} -p {threads} -b {params.before} -a {params.after} --unscaled5prime {params.start} --unscaled3prime {params.end} --binSize {params.bin_size} --averageTypeBins mean --regionBodyLength {params.body_length} --sortRegions descend --sortUsing region_length -o {output[0]} && 
-        zcat {output[0]} |
-        awk -F'\\t' -v OFS='\\t' 'NF>1&& $0 !~ "nan" {{$2=sqrt(($3-$2)^2);print}}' - |
-        cut -f 1,2,4,7- - |
-        sed '1 i\\{wildcards.sample}' - > {output[1]} &&
-        awk -v OFS='\\t' 'FNR==NR&&FNR>1{{for (i=(({params.before}/{params.bin_size})+4); i<=((({params.before}+{params.body_length})/{params.bin_size})+3); i++) sum[FNR]+=$i;size[FNR]=sum[FNR]*{params.bin_size}/{params.body_length};total+=(sum[FNR]/(FNR-1)); next}} FNR<NR&&FNR==1{{print $0;next}} FNR<NR&&FNR>1{{for(i=4;i<=NF;i++) $i=(size[FNR]>0?$i/size[FNR]*total:0);print}}' {output[1]} {output[1]} > {output[2]}
-        """
-       
-
-rule combine_stranded_genebody_matrices:
-    input:
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}/{sample}_{unit}_genebody_{score}.fwd.matrix.tab",
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}/{sample}_{unit}_genebody_{score}.rev.matrix.tab",
-    output:
-        "{experiment}/meta_matrices/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/{biotype}/{sample}_{unit}_genebody_{score}.stranded.matrix.tab",
+        "../envs/bedtools.yaml"
     resources:
         mem="6G",
         rmem="4G",
-    log:
-        "logs/meta_matrices/{biotype}_by_{normaliser}_{counts}_{splice}_{prefix}/{sample}_{unit}_genebody_{score}_combine.log"
     shell:
         """
-        awk -v OFS='\t' 'FNR>1{{print}}' {input[0]} {input[1]} |  
-        sort -rnk2,2 - |
-        sed '1 i\\{wildcards.sample}' - > {output[0]} 2>{log}
+        cat {input.sense} |
+
+        awk -F'\\t' -v OFS='\\t' ' 
+          FNR==NR {{
+            strand[$8]=$6
+          }}
+          FNR<NR {{
+            print $0, "range" ;
+            start=$2 ; 
+            end=$3 ;
+            if ( ( {params.bef}!=0 && strand[$8]=="+" ) || ({params.aft}!=0 && strand[$8]=="-") ) {{
+              before=(strand[$8]=="+")?{params.bef}:{params.aft} ; 
+              $2=(start>=before)?start-before:0 ; 
+              $3=start ;
+              print $0, "outer"
+            }} ; 
+            if ( ( {params.aft}!=0 && strand[$8]=="+" ) || ({params.bef}!=0 && strand[$8]=="-") ) {{
+              $2=end ;
+              $3=end + ( (strand[$8]=="+")?{params.aft}:{params.bef} ) ;
+              print $0, "outer"
+            }} ;
+          }}' - {input.rpk} > {params.range} &&
+
+        cat {input.background} |        
+
+        awk -F'\\t' -v OFS='\\t' '
+          FNR==NR {{
+            biotype[$1]=$3 ; 
+          }}
+          FNR < NR && ($7 >0 ) {{
+            if (biotype[$4] != "") {{
+              print $0, biotype[$4] ; 
+            }} else {{
+              print $0, "NA"
+            }}
+          }}
+        ' {input.genetab} - |
+ 
+        bedtools intersect -a {params.range} -b - -s -wao > {params.temp} &&
+
+        awk -F'\\t' -v OFS='\\t' -v OFMT='%f' '
+          BEGIN {{
+            print "featureID", "sig2bg", "bg2sig"
+          }}
+          {{
+            if ( ($7!=0) && ($21 != 0) && ($9 != $19) && (("{params.compat_bt}" != "nan" && "{params.compat_bt}" !~ $20) || "{params.compat_bt}" == "nan" ) ) {{
+              sig_bg=$7/$17 ;
+              sb[$8]=((sb[$8]-0)>=sig_bg || sb[$8]=="Inf")?sig_bg:sb[$8] ;
+              bs[$8]=($7-0>0)? ( ( (bs[$8]-0) >= ($17/$7) )?(bs[$8]-0):$17/$7 ) :( (bs[$8]-0>0)? bs[$8] : "Inf" ) ;
+            }} else {{
+              sb[$8]=((sb[$8]-0)>0)?sb[$8]:( ($7==0)?0:"Inf" ) ; 
+            }}
+          }}
+          END {{
+            for ( i in sb ) {{
+              print i, (bs[i]=="Inf")?0:((bs[i]==0)?"Inf":(1/bs[i])), (bs[i]=="Inf")?"Inf":bs[i]-0
+            }}
+          }}' {params.temp} > {output.tab} &&
+        rm {params.range} &&
+        rm {params.temp}
         """ 
 
-rule plot_promptTSS_stranded_meta_profile:
+
+rule sort_raw_matrices:         
     input:
-        sense_matrices=expand(
-            "{{experiment}}/meta_matrices/{{splice}}_{{prefix}}_normalised_by_{{normaliser}}_{{counts}}/{{biotype}}_promptTSS/{sample.sample_name}_{sample.unit_name}_{{score}}.sense.matrix.tab",sample=samples.itertuples(),
+        bed = lambda w: "resources/annotations/{{reference}}/{{lineage}}.custom-{id}.{{valid}}_{{tag}}.{{feature}}.bed".format(
+          id = features.loc[w.feature,"prefix_md5"] 
         ),
-        antisense_matrices=expand(
-            "{{experiment}}/meta_matrices/{{splice}}_{{prefix}}_normalised_by_{{normaliser}}_{{counts}}/{{biotype}}_promptTSS/{sample.sample_name}_{sample.unit_name}_{{score}}.antisense.matrix.tab",sample=samples.itertuples(),
+        bef = lambda wildcards : [] if features.loc[wildcards.feature,"plotbef_bin"]==0 else expand(
+          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotbef.{bin}bins.matrix.gz",
+          strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
+          bin= features.loc[wildcards.feature,"plotbef_bin"],
+        ), 
+        main = lambda wildcards : expand(
+          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_main.{bin}bins.matrix.gz",
+          strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
+          bin = features.loc[wildcards.feature,"bin_n"],
         ),
-        size_table="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_genebody/{splice}_{biotype}_genebody_normalised_{score}.stranded.sizes.tab",
-        sample_table="config/samples.tsv",
+        aft = lambda wildcards : [] if features.loc[wildcards.feature,"plotaft_bin"]==0 else expand(
+          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotaft.{bin}bins.matrix.gz",
+          strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
+          bin= features.loc[wildcards.feature,"plotaft_bin"],
+        ),
     output:
-        meta_profile_png="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{splice}_{biotype}_promptTSS_normalised_{score}.stranded.meta_profile.png",
-        meta_profile_pdf="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS/{splice}_{biotype}_promptTSS_normalised_{score}.stranded.meta_profile.pdf",
-    log:
-        "logs/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/meta_graphs/{biotype}_promptTSS/{score}.stranded.meta_profile.log"
+        sum_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.{mean}_sum_matrix.gz",
+        norm_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.{mean}_norm_matrix.gz",
     threads: 1
     resources:
-        mem=lambda wildcards, input: (str((input.size//10000000)+8) + "G"),
-        rmem=lambda wildcards, input: (str((input.size//20000000)+8) + "G"),
+        mem="20G",
+        rmem="16G",
     params:
-        prompt=config["metagene"]["promptTSS"]["prompt_length"],
-        tss=config["metagene"]["promptTSS"]["TSS_length"],
-        bin_size=config["metagene"]["promptTSS"]["bin_size"],
-        trim=config["metagene"]["promptTSS"]["anomaly_trim"],
-        dir="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_promptTSS",
-        control=config["control_condition"],
-        paired=config["paired_analysis"],
-    conda:
-        "../envs/tidyverse.yaml"
+        bef_bin =lambda wildcards : features.loc[wildcards.feature,"bef_bin"],
+        plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
+        main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
+        plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
+        main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
     script:
-        "../scripts/R/stranded_prompt_meta_profile.R"
-
-
-rule plot_TTSpostgene_meta_profile:
-    input:
-        sense_matrices=expand(
-            "{{experiment}}/meta_matrices/{{splice}}_{{prefix}}_normalised_by_{{normaliser}}_{{counts}}/{{biotype}}_TTSpostgene/{sample.sample_name}_{sample.unit_name}_{{score}}.{{strand}}.matrix.tab",sample=samples.itertuples(),
-        ),
-        size_table="{{experiment}}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_genebody/{splice}_{biotype}_genebody_normalised_{score}.{strand}.sizes.tab",
-        sample_table="config/samples.tsv",
-    output:
-        meta_profile_png="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_TTSpostgene/{splice}_{biotype}_TTSpostgene_normalised_{score}.{strand}.meta_profile.png",
-        meta_profile_pdf="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_TTSpostgene/{splice}_{biotype}_TTSpostgene_normalised_{score}.{strand}.meta_profile.pdf",
-    log:
-        "logs/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/meta_graphs/{biotype}_TTSpostgene/{score}.{strand}.meta_profile.log"
-    threads: 1
-    resources:
-        mem=lambda wildcards, input: (str((input.size//60000000)+8) + "G"),
-        rmem=lambda wildcards, input: (str((input.size//125000000)+8) + "G"),
-    params:
-        tts=config["metagene"]["TTSpostgene"]["TTS_length"],
-        postgene=config["metagene"]["TTSpostgene"]["postgene_length"],
-        bin_size=config["metagene"]["TTSpostgene"]["bin_size"],
-        trim=config["metagene"]["TTSpostgene"]["anomaly_trim"],
-        dir="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_TTSpostgene",
-        control=config["control_condition"],
-        paired=config["paired_analysis"],
-    conda:
-        "../envs/tidyverse.yaml"
-    script:
-        "../scripts/R/stranded_postgene_meta_profile.R"
-
-
-
-rule plot_genebody_meta_profile:
-    input:
-        matrices=expand(
-            "{{experiment}}/meta_matrices/{{splice}}_{{prefix}}_normalised_by_{{normaliser}}_{{counts}}/{{biotype}}/{sample.sample_name}_{sample.unit_name}_genebody_{{score}}.{{strand}}.matrix.tab",sample=samples.itertuples(),
-        ),
-        sample_table="config/samples.tsv",
-    output:
-        meta_profile_png="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_genebody/{splice}_{biotype}_genebody_normalised_{score}.{strand}.meta_profile.png",
-        meta_profile_pdf="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_genebody/{splice}_{biotype}_genebody_normalised_{score}.{strand}.meta_profile.pdf",
-        size_table="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_genebody/{splice}_{biotype}_genebody_normalised_{score}.{strand}.sizes.tab",
-    log:
-        "logs/{splice}_{prefix}_normalised_by_{normaliser}_{counts}/meta_graphs/{biotype}/genebody_{score}.{strand}.meta_profile.log"
-    threads: 1 
-    resources:
-        mem=lambda wildcards, input: (str((input.size//50000000)+10) + "G"),
-        rmem=lambda wildcards, input: (str((input.size//100000000)+10) + "G"),
-    params:
-        before=config["metagene"]["genebody"]["before_TSS"],
-        after=config["metagene"]["genebody"]["after_TTS"],
-        start=config["metagene"]["genebody"]["TSS_unscaled"],
-        end=config["metagene"]["genebody"]["TTS_unscaled"],
-        body_length=config["metagene"]["genebody"]["gene_body"],
-        bin_size=config["metagene"]["genebody"]["bin_size"],
-        trim=config["metagene"]["genebody"]["anomaly_trim"],
-        dir="{experiment}/meta_profiles/{splice}{prefix}_normalised_by_{normaliser}_{counts}/{biotype}_genebody",
-        control=config["control_condition"],
-        paired=config["paired_analysis"],
-    conda:
-        "../envs/tidyverse.yaml"
-    script:
-        "../scripts/R/genebody_meta_profile.R"
-
-
+        "../scripts/py/sort_matrices.py"

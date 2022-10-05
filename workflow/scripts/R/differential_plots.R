@@ -72,31 +72,54 @@ analysis <- paste("differential", difference, "analysis")
 if (difference != "splicing_ratio") {
 
   is_antisense <- snakemake@params[["is_antisense"]]==-1
-
   difference <- "expression levels"
   difference_unit <- "expression levels (RPKM)"
 
   mx_df <- read.csv(snakemake@input[["mx_data"]],header=T, sep='\t', check.names=FALSE)
-  plotbef_bin <- snakemake@params[["plotbef_bin"]]
-  plotaft_bin <- snakemake@params[["plotaft_bin"]]
   bef_bin <- snakemake@params[["bef_bin"]]
   main_bin <- snakemake@params[["main_bin"]]
   section <- snakemake@params[["section"]]
-  len_bef_n <- if (is_antisense) (as.numeric(snakemake@params[["len_aft"]]) ) else (as.numeric(snakemake@params[["len_bef"]]) ) 
-  len_aft_n <- if (is_antisense) ( as.numeric(snakemake@params[["len_bef"]]) ) else (as.numeric(snakemake@params[["len_aft"]]) )
-  len_bef <- paste("-",as.character(snakemake@params[["len_bef"]]),sep="")
-  len_aft <- paste("+",as.character(snakemake@params[["len_aft"]]),sep="")
   plot_median <- as.logical(snakemake@config[["metagene"]][["plot_median"]])
   meta_y <- ifelse(plot_median,"Median","Mean")
   meta_bin <- plotbef_bin + plotaft_bin + main_bin
   start_name <- snakemake@params[["start_name"]]
-  start_name <- ifelse(start_name=="nan","Start",start_name)  
+  start_name <- ifelse(start_name=="nan","Start",start_name)
   end_name <- snakemake@params[["end_name"]]
   end_name <- ifelse(end_name=="nan","End",end_name)
+  if (is_antisense) {
+    plotbef_len <- snakemake@params[["plotaft_len"]]
+    plotaft_len <- snakemake@params[["plotbef_len"]]
+    plotbef_bin <- snakemake@params[["plotaft_bin"]]
+    plotaft_bin <- snakemake@params[["plotbef_bin"]]
+    len_bef_n <- snakemake@params[["len_aft"]] 
+    len_aft_n <- snakemake@params[["len_bef"]]
+  } else {
+    plotbef_len <- snakemake@params[["plotbef_len"]]
+    plotaft_len <- snakemake@params[["plotaft_len"]]
+    plotbef_bin <- snakemake@params[["plotbef_bin"]]
+    plotaft_bin <- snakemake@params[["plotaft_bin"]]
+    len_bef_n <- snakemake@params[["len_bef"]]
+    len_aft_n <- snakemake@params[["len_aft"]]
+  }
+  meta_bin <- plotbef_bin + plotaft_bin + main_bin
+
+plotbef_brk <- paste(ifelse(is_antisense,"-","+"), as.character(plotbef_len), sep="")
+plotaft_brk <- paste(ifelse(is_antisense,"+","-"), as.character(plotaft_len), sep="")
 
 if (section=="body") {
-meta_xbrks <- c(0,main_bin)
-names(meta_xbrks) <- c(start_name,end_name)
+meta_xbrks <- c(
+ if(plotbef_len>0) (0-plotbef_bin) else NULL, 
+ 0,
+ main_bin, 
+ if(plotaft_len>0) (main_bin + plotaft_bin) else NULL
+)
+
+names(meta_xbrks) <- c(
+  if(plotbef_len>0) (plotbef_brk) else NULL, 
+  start_name,
+  end_name, 
+  if(plotaft_len>0) (plotaft_brk) else NULL
+)
 
 } else {
 start_name <- ifelse(start_name=="Start",paste(base_feat,toTitleCase(section)),start_name)
@@ -109,8 +132,17 @@ aft_brk_len <- signif(len_aft_n*1.5,1)/2
 aft_brk <- paste(ifelse(is_antisense,"-","+"), as.character(aft_brk_len), sep="")
 aft_brk_pos <- floor(signif((main_bin-bef_bin)*1.5,1)/2)
 
-meta_xbrks <-  c(if(len_bef_n>0) (0-bef_brk_pos) else NULL,0,if(len_aft_n>0) (aft_brk_pos) else NULL)
-names(meta_xbrks) <- c(if(len_bef_n>0)(bef_brk) else NULL,start_name,if(len_aft_n>0) (aft_brk) else NULL)
+meta_xbrks <-  c(
+  if(len_bef_n>0) (0-bef_brk_pos) else NULL,
+  0,
+  if(len_aft_n>0) (aft_brk_pos) else NULL
+)
+
+names(meta_xbrks) <- c(
+  if(len_bef_n>0)(bef_brk) else NULL,
+  start_name,
+  if(len_aft_n>0) (aft_brk) else NULL
+)
 
 }
 
