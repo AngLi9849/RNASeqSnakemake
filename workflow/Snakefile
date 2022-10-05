@@ -52,6 +52,7 @@ rule all:
         #"results/qc/multiqc_report.html",
         #get_norm_bigwigs(),
         #get_mx_data(),
+        #get_meta_data(),
         #get_heat_data(),
         #get_diffexp_docx(),
         #get_diffsplice_docx(),

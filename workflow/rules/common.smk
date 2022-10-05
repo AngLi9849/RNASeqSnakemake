@@ -106,7 +106,7 @@ def get_part_bin_number(feature,part):
         opposite="plotbef" if part=="plotaft" else "plotaft"
         main_bin=int(row.bin_n)
         main_is_int=not ( ("x" in str(row.len_bef)) or ("x" in str(row.len_aft)) or str(row.section)=="body" )
-        r = 1 if pd.isna(row.befaftr) else float(row.befaftr)
+        r = 1 if pd.isna(row.befaftr) else (float(row.befaftr)/(1-float(row.befaftr)))
         if ("x" in str(row.plotbef)) and ("x" in str(row.plotaft)) :
             bef = float(re.search(r".*(?<!x)",str(row.plotbef)).group())
             aft = float(re.search(r".*(?<!x)",str(row.plotaft)).group())
@@ -469,8 +469,8 @@ def get_feature_counts():
 
 def get_diffexp_docx():
     counts = expand(
-        "diff_plots/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
-        exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples()
+        "diff_plots/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples(), mean=MX_MEAN, norm=MX_NORM,
     ),
     return counts
 
@@ -490,8 +490,8 @@ def get_differential_reports():
 
 def get_meta_data():
     counts = expand(
-        "meta_data/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.mx_data.tab",
-        exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples()
+        "meta_data/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.{mean}_{norm}.mx_data.tab",
+        exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples(), mean=MX_MEAN, norm=MX_NORM
     ),
     return counts
 

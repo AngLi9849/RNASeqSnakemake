@@ -1,6 +1,9 @@
 import sys
 import pandas as pd
 
+lengths = pd.read_csv(snakemake.input.bed,sep='\t',header=None,index_col=7)[4]
+
+
 bef_ls=[]
 
 for i in snakemake.input.bef:
@@ -14,9 +17,17 @@ for i in snakemake.input.main:
     main_ls.append( pd.read_csv(i,sep='\t',header=None,index_col=0, compression='gzip') )
 
 main = None if main_ls==[] else pd.concat(main_ls)
+main_bin = snakemake.params.main_bin
 
+if snakemake.params.main_int:
+    main_x_sum=main.sum(axis=1)
+else:
+    lengths = pd.read_csv(snakemake.input.bed,sep='\t',header=None,index_col=7)[4]
+    main_length=main.apply(lambda row:
+        lengths.loc[row.name].sum() if (row.name in lengths.index) else main_bin,
+        axis=1)
+    main_x_sum=main.sum(axis=1)*main_length
 
-main_x_sum=main.sum(axis=1)
 
 main_mean = main_x_sum[main_x_sum!=0].median() if snakemake.wildcards.mean=="median" else main_x_sum[main_x_sum!=0].mean()
 

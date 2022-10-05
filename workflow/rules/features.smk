@@ -75,13 +75,13 @@ rule feature_nuc_info:
         bedtools nuc -C -s -fi {input.fasta} -bed {input.bed} |
         awk -F'\\t' -v OFS='\\t' '
         FNR > 1 {{
-          a[$4] += $17 ; 
-          c[$4] += $18 ; 
-          g[$4] += $19 ;
-          t[$4] += $20 ; 
-          n[$4] += $21 ;
-          other[$4] += $22 ;
-          len[$4] += $23 ; 
+          a[$8] += $17 ; 
+          c[$8] += $18 ; 
+          g[$8] += $19 ;
+          t[$8] += $20 ; 
+          n[$8] += $21 ;
+          other[$8] += $22 ;
+          len[$8] += $23 ; 
         }}
         END {{
           for (i in len) {{

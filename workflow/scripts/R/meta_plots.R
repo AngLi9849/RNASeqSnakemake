@@ -70,6 +70,7 @@ meta <- ggplot(mx_data,mapping=aes(x=Position,y=value,group=cond_group,colour=Co
     legend.key=element_rect(colour="white",fill="White"), 
     legend.position="none",
     axis.text=element_text(colour="black"),
+    axis.text.x = if (length(heat_xbrks)>2) (element_text(angle = 45, vjust = 1, hjust=1,colour="black")) else (element_text(colour="black")),
     axis.line=element_line(colour="black",size=0.1),
     axis.line.x.top=element_line(colour="black",size=0.1),
     axis.line.y.right=element_line(colour="black",size=0.1)

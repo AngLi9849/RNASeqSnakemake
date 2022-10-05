@@ -41,6 +41,12 @@ base_feat <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"
 
 mx_samples <- c(snakemake@params[["samples"]])
 
+
+bed <- read.csv(snakemake@input[["bed"]],header=F, sep='\t', check.names=FALSE)[,c(8,11)]
+names(bed) <- c("featureID","baseID")
+expr$baseID <- bed$baseID[match(expr$featureID,bed$featureID)]
+head(bed,10)
+
 base_bed <- read.csv(snakemake@input[["base_bed"]],header=F, sep='\t', check.names=FALSE)[,c(5,8)]
 names(base_bed) <- c("Length","baseID")
 
@@ -51,7 +57,7 @@ use_base_length
 
 if (use_base_length) { 
 
-expr$Length <- base_bed$Length[match(rownames(expr),base_bed$baseID)]
+expr$Length <- base_bed$Length[match(expr$baseID,base_bed$baseID)]
 
 }
 
@@ -123,8 +129,8 @@ names(heat_lfcbrks) <- c(-3:3)
 heat_scale_pc <- as.numeric(snakemake@config[["heatmap"]][["heat_scale_pc"]])/100
 
 
-heat_ranks <- c("log2FoldChange","GC","Length","RPKM")
-heat_units <- c("","%","bps","")
+heat_ranks <- c("log2FoldChange","RPKM","Length","GC")
+heat_units <- c("","","bps","%")
 
 heat_config <- data.frame(heat_ranks,heat_units)
 names(heat_config) <- c("Ranking","unit")
@@ -277,7 +283,8 @@ if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"
 
 config_min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
 
-
+heat_min_reads <- snakemake@config[["heatmap"]][["min_reads"]]
+expr_heat <- expr_i[expr_i$baseMean >= heat_min_reads,]
 
 total_i <- nrow(expr_i)
 

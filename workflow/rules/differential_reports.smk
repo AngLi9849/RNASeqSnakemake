@@ -105,7 +105,7 @@ rule differential_plots:
         base_bed=lambda wildcards: ("resources/annotations/{source}/{{lineage}}.{s}.{{valid}}_{{tag}}.{f}.bed".format(
             source=  str( get_sample_source(wildcards.experiment) ),
             s=features.loc[features.loc[wildcards.feature,"group"],"type"] if (features.loc[wildcards.feature,"group"] in features["feature_name"].tolist()) else "gtf",
-            f=features.loc[wildcards.feature,"feature"]
+            f=features.loc[wildcards.feature,"group"]
         ) ), 
         bed=lambda w: "resources/annotations/{source}/{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
             source=  str( get_sample_source(w.experiment) ),

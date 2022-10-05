@@ -1,10 +1,10 @@
 for (r in heat_config$Ranking) {
-expr_i <- expr_i %>% arrange(!!sym(r)) %>% mutate(!!paste(r,"_Rank",sep='') := 1:n()) %>% ungroup
+expr_heat <- expr_heat %>% arrange(!!sym(r)) %>% mutate(!!paste(r,"_Rank",sep='') := 1:n()) %>% ungroup
 }
 
 
 heat_pc = c(0,25,50,75,100)
-heat_data <- heat_df[heat_df$featureID %in% expr_i$featureID,]
+heat_data <- heat_df[heat_df$featureID %in% expr_heat$featureID,]
 heat_ls <- paste(heat_ranks,"_heat",sep="")
 heat_gene_n <- length(unique(heat_data$featureID))
 
@@ -20,9 +20,9 @@ for (i in heat_config$Ranking) {
 
 heat_unit <- heat_config$unit[heat_config$Ranking==i]
 i_unit <- ifelse(heat_unit=="","",paste("(",heat_unit,")",sep=""))
-heat_data$Rank <- as.numeric(unlist(expr_i[match(heat_data$featureID,expr_i$featureID),paste(i,"_Rank",sep='')]))
-heat_ybrks <- unlist(lapply(heat_pc, function(p) { quantile(as.numeric(unlist(expr_i[,paste(i, "_Rank",sep='')])),p/100,na.rm=T) } ) )
-names(heat_ybrks) <-  unlist(lapply(heat_pc, function(p) {ifelse(heat_unit=="%",100,1)*signif(quantile(as.numeric(unlist(expr_i[,paste(i)])),p/100,na.rm=T),2) } ) )
+heat_data$Rank <- as.numeric(unlist(expr_heat[match(heat_data$featureID,expr_heat$featureID),paste(i,"_Rank",sep='')]))
+heat_ybrks <- unlist(lapply(heat_pc, function(p) { quantile(as.numeric(unlist(expr_heat[,paste(i, "_Rank",sep='')])),p/100,na.rm=T) } ) )
+names(heat_ybrks) <-  unlist(lapply(heat_pc, function(p) {ifelse(heat_unit=="%",100,1)*signif(quantile(as.numeric(unlist(expr_heat[,paste(i)])),p/100,na.rm=T),2) } ) )
 
 i_lab <- ifelse(i =="log2FoldChange", paste(toTitleCase(difference), "log2FoldChange"),i)
 i_lab <- ifelse(i_lab =="Length", paste(ifelse(use_base_length,title_base_i,title_feature_i),"Length"),i_lab)
@@ -122,7 +122,7 @@ heatmap_title <- paste(
 
 
 heatmap_caption <- paste(
-  "Heatmaps representing fold changes in ", difference, " of ", feature_i, " in ", experiment, ".",
+  "Heatmaps representing fold changes in ", difference, " of ", feature_i, " mapped with at least ", heat_min_reads, " reads on average in ", experiment, ".",
   sep="")
 
 
