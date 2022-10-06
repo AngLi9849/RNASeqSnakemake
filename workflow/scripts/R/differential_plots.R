@@ -81,7 +81,6 @@ if (difference != "splicing_ratio") {
   section <- snakemake@params[["section"]]
   plot_median <- as.logical(snakemake@config[["metagene"]][["plot_median"]])
   meta_y <- ifelse(plot_median,"Median","Mean")
-  meta_bin <- plotbef_bin + plotaft_bin + main_bin
   start_name <- snakemake@params[["start_name"]]
   start_name <- ifelse(start_name=="nan","Start",start_name)
   end_name <- snakemake@params[["end_name"]]
@@ -315,8 +314,17 @@ if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"
 
 config_min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
 
+meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= snakemake@config[["metagene"]][["min_reads"]]])
+
 heat_min_reads <- snakemake@config[["heatmap"]][["min_reads"]]
 expr_heat <- expr_i[expr_i$baseMean >= heat_min_reads,]
+expr_heat$padj <- ifelse(is.na(expr_heat$padj),expr_heat$pvalue,expr_heat$padj)
+expr_heat$padj <- ifelse(is.na(expr_heat$padj),1,expr_heat$padj)
+expr_heat$log10P <- -log10(expr_heat$padj)
+expr_heat <- expr_heat %>% arrange(change,padj) %>% group_by(change) %>% mutate(p_rank=1:n()) %>% ungroup
+expr_heat <- expr_heat %>% arrange(change,abs(log2FoldChange)) %>% group_by(change) %>% mutate(lfc_rank=n():1) %>% ungroup
+expr_heat$colour <- ifelse(expr_heat$padj < sig_p, ifelse(expr_heat$log2FoldChange < 0, down_col, up_col), insig_col)
+
 
 total_i <- nrow(expr_i)
 

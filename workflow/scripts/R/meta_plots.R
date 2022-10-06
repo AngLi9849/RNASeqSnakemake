@@ -1,8 +1,5 @@
 mx_data <- mx_df[mx_df$i_group == i,]
 
-meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID) 
-
-
 sample_colours <- as.character(unique(mx_data$colour))
 sample_names <- as.character(unique(mx_data$Sample))
 sample_colours

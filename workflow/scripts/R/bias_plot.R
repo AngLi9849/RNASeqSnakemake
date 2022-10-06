@@ -12,8 +12,8 @@ expr_bias$abslog2FoldChange <- abs(expr_bias$log2FoldChange)
 FCmin=quantile(expr_bias$log2FoldChange,0.001,na.rm=TRUE)
 FCmax=quantile(expr_bias$log2FoldChange,0.999,na.rm=TRUE)
 
-expr_bias$density <- 0.01/expr_heat$padj
-expr_bias <- rbind(expr_bias1,expr_bias)
+expr_bias$density <- 0.01/expr_bias$padj
+expr_bias <- rbind(expr_heat,expr_bias)
 
 GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2FoldChange)) +
   geom_point(

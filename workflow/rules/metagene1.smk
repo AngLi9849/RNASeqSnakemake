@@ -184,9 +184,6 @@ rule feature_signal2background:
 
 rule sort_raw_matrices:         
     input:
-        bed = lambda w: "resources/annotations/{{reference}}/{{lineage}}.custom-{id}.{{valid}}_{{tag}}.{{feature}}.bed".format(
-          id = features.loc[w.feature,"prefix_md5"] 
-        ),
         bef = lambda wildcards : [] if features.loc[wildcards.feature,"plotbef_bin"]==0 else expand(
           "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotbef.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
@@ -203,8 +200,7 @@ rule sort_raw_matrices:
           bin= features.loc[wildcards.feature,"plotaft_bin"],
         ),
     output:
-        sum_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.{mean}_sum_matrix.gz",
-        norm_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.{mean}_norm_matrix.gz",
+        sum_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.sum_matrix.gz",
     threads: 1
     resources:
         mem="20G",
@@ -217,3 +213,61 @@ rule sort_raw_matrices:
         main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
     script:
         "../scripts/py/sort_matrices.py"
+
+rule meta_profiles:
+    input:
+        lfc="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
+        levels="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
+        counts="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
+        sense_mx = lambda wildcards: list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.sense.sum_matrix.gz",
+            sample=results[results.experiment==wildcards.experiment].itertuples(),
+            plot_md5=features.loc[wildcards.feature,"plot_md5"],
+        ))),
+        antisense_mx=lambda wildcards: [] if not features.loc[wildcards.feature,"antisense"] else list(dict.fromkeys(expand("norm_mx/{sample.sample_name}/{sample.unit_name}/{{reference}}/{{splice}}{{prefix}}.{sample.stranded}/{{lineage}}_{{valid}}.plot-{plot_md5}.{{tag}}.{{feature}}.antisense.{{mean}}_{{norm}}_matrix.gz",
+            sample=results[results.experiment==wildcards.experiment].itertuples(),
+            plot_md5=features.loc[wildcards.feature,"plot_md5"],
+        ))),
+        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+            norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
+            norm_group=experiments.loc[w.experiment,"group_name"],
+        ),
+        sig_bg=lambda wildcards : "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}.plot-{plot_md5}.sig2bg.tab".format(
+            norm_group=experiments.loc[wildcards.experiment,"group_name"],
+            plot_md5=features.loc[wildcards.feature,"plot_md5"],
+        ),
+    output:
+        mx_data="meta_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{mean}_{norm}.mx_data.tab",
+    params:
+        genesets=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["gene_sets"]).split(","),
+        goi= lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["GOI"]).split(","),
+        protocol = lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["protocol"],
+        control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
+        treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],
+        paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
+        descript= lambda wildcards: feature_descript(wildcards),
+        samples= lambda wildcards: list(dict.fromkeys(expand("{sample.sample_name}",
+            sample=results[results.experiment==wildcards.experiment].itertuples(),
+        ))),
+        sig=lambda wildcards : features.loc[wildcards.feature,"s2b_min"],
+        bg=lambda wildcards : features.loc[wildcards.feature,"b2s_min"],
+        section=lambda wildcards : features.loc[wildcards.feature,"section"],
+        len_bef=lambda wildcards : features.loc[wildcards.feature,"len_bef"],
+        len_aft=lambda wildcards : features.loc[wildcards.feature,"len_aft"],
+        bef_bin=lambda wildcards : features.loc[wildcards.feature,"bef_bin"],
+        main_bin=lambda wildcards : features.loc[wildcards.feature,"bin_n"],
+        plotbef_bin=lambda wildcards : features.loc[wildcards.feature,"plotbef_bin"],
+        plotaft_bin=lambda wildcards : features.loc[wildcards.feature,"plotaft_bin"],
+        base=lambda wildcards : features.loc[wildcards.feature,"group"],
+        start_name = lambda wildcards : str(features.loc[wildcards.feature,"strt_nm"]),
+        end_name = lambda wildcards : str(features.loc[wildcards.feature,"end_nm"]),
+    resources:
+        mem="48G",
+        rmem="32G",
+    conda:
+        "../envs/differential.yaml"
+    log:
+        "logs/meta_plot_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised.{mean}_{norm}/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
+    threads: 1
+    script:
+        "../scripts/R/meta_plot_data.R"
+
