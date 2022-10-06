@@ -3,9 +3,9 @@ protocol              	treatment       	control         	sample_species	sample_l
 Chromatin_RNA-Seq   	HNRNPU-AID_KO      	HCT116          	homo_sapiens	HCT116         	FALSE	FALSE	                        	            	U_Spl,U_lncRNA
 Nucleoplasm_RNA-Seq   	HNRNPU-AID_KO        	HCT116              	homo_sapiens	HCT116         	FALSE	FALSE	                         	         	U-Spl,U_lncRNA
 Cytoplasm_RNA-Seq   	HNRNPU-AID_KO          	HCT116             	homo_sapiens	HCT116         	FALSE	FALSE	                         	          	U_Spl,U_lncRNA
-TT-Seq           	HNRNPU-AID_KO      	HCT116          	homo_sapiens	HCT116         	TRUE	FALSE	saccharomyces_cerevisiae      	         	U_Spl,U_related,U_lncRNA
-TT-Seq             	HNRNPUL1-AID_KO        	HCT116           	homo_sapiens	HCT116        	TRUE	FALSE	saccharomyces_cerevisiae     	             	snRNAs
-TT-Seq            	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr  	homo_sapiens	HCT116         	TRUE	FALSE	saccharomyces_cerevisiae      	          	FUS_Spl
+TT-Seq           	HNRNPU-AID_KO      	HCT116          	homo_sapiens	HCT116         	TRUE	TRUE	saccharomyces_cerevisiae      	         	U_Spl,U_related,U_lncRNA
+TT-Seq             	HNRNPUL1-AID_KO        	HCT116           	homo_sapiens	HCT116        	TRUE	TRUE	saccharomyces_cerevisiae     	             	snRNAs
+TT-Seq            	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr  	homo_sapiens	HCT116         	TRUE	TRUE	saccharomyces_cerevisiae      	          	FUS_Spl
 Total_RNA-Seq   	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr	homo_sapiens	HCT116         	FALSE	FALSE	                              	         	FUS_Spl
 Total_RNA-Seq   	FUS-mAID_+5PhIAA_48hr 	FUS-mAID_+DMSO_48hr	homo_sapiens	HCT116         	FALSE	FALSE	                              	         	FUS_Spl
 Chromatin_RNA-Seq   	HB3261           	SC3504           	homo_sapiens	Lymphoblastoid	FALSE	FALSE	                        	           	snRNAs

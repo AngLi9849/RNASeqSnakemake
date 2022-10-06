@@ -25,7 +25,7 @@ heat_ybrks <- unlist(lapply(heat_pc, function(p) { quantile(as.numeric(unlist(ex
 names(heat_ybrks) <-  unlist(lapply(heat_pc, function(p) {ifelse(heat_unit=="%",100,1)*signif(quantile(as.numeric(unlist(expr_heat[,paste(i)])),p/100,na.rm=T),2) } ) )
 
 i_lab <- ifelse(i =="log2FoldChange", paste(toTitleCase(difference), "log2FoldChange"),i)
-i_lab <- ifelse(i_lab =="Length", paste(ifelse(use_base_length,title_base_i,title_feature_i),"Length"),i_lab)
+i_lab <- ifelse(i_lab =="Length", paste(ifelse(use_base_length,title_base,title_feature),"Length"),i_lab)
 
 heat_ylab <- paste(gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",i_lab)),i_unit)
 

@@ -97,7 +97,7 @@ sum_violin <- ggplot(data = sum_violin_data, aes(x=group, group=interaction(grou
     alpha=0.3,
     linetype=5
   ) +
-  ylab(paste("Normalised",toTitleCase(difference))) +
+  ylab(paste(toTitleCase(difference))) +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),

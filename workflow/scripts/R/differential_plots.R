@@ -106,8 +106,8 @@ plotbef_brk_len <- signif(plotbef_len*1.5,1)/2
 plotaft_brk_len <- signif(plotaft_len*1.5,1)/2
 plotbef_brk_pos <- 0-bef_bin-(signif(plotbef_bin*1.5,1)/2)
 plotaft_brk_pos <- main_bin-bef_bin + (signif(plotaft_bin*1.5,1)/2)
-plotbef_brk <- paste(ifelse(is_antisense,"-","+"), as.character(plotbef_brk_len), sep="")
-plotaft_brk <- paste(ifelse(is_antisense,"+","-"), as.character(plotaft_brk_len), sep="")
+plotbef_brk <- paste(ifelse(is_antisense,"+","-"), as.character(plotbef_brk_len), sep="")
+plotaft_brk <- paste(ifelse(is_antisense,"-","+"), as.character(plotaft_brk_len), sep="")
 
 if (section=="body") {
 meta_xbrks <- c(
@@ -190,6 +190,7 @@ tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
 valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
 feature <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]])))
 title_feature <- gsub("(?<!\\w)(.)","\\U\\1", feature, perl = TRUE)
+title_base <- paste("Base",gsub("(?<!\\w)(.)","\\U\\1", base, perl = TRUE))
 
 experiment <- gsub("_"," ",as.character(snakemake@wildcards[["experiment"]]))
 treatment <- as.character(snakemake@params[["treat"]])
@@ -491,15 +492,15 @@ doc <- body_add(doc,fpar(ftext(analysis_heading, prop=heading_2)),style = "headi
 doc <- body_add(doc,fpar(ftext("Overview", prop=heading_3)),style = "heading 3")
 #doc <- body_add(doc,value=overview,width = 6, height = 9, res= plot_dpi,style = "centered")
 doc <- body_add(doc,fpar(ftext("A", prop=bold)),style = "Normal")
-doc <- body_add(doc,value=sum_pie,width = 6, height = 2.4, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=sum_pie,width = 6, height = 2.2, res= plot_dpi,style = "centered")
 
 doc <- body_add(doc,fpar(ftext("B", prop=bold)),style = "Normal")
-doc <- body_add(doc,value=sum_bar,width = 6, height = 2.4, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=sum_bar,width = 6, height = 2.2, res= plot_dpi,style = "centered")
 
 doc <- body_add(doc,fpar(ftext("C", prop=bold)),style = "Normal")
-doc <- body_add(doc,value=sum_violin,width = 6, height = 2.4, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=sum_violin,width = 6, height = 2.2, res= plot_dpi,style = "centered")
 
-doc <- body_add(doc,run_pagebreak())
+#doc <- body_add(doc,run_pagebreak())
 doc <- body_add(doc,block_pour_docx(snakemake@output[["docx"]]))
 
 print(doc, target = snakemake@output[["docx"]])
