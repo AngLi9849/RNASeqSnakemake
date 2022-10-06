@@ -43,9 +43,9 @@ tof <- block_toc(level=1,seq_id="Figure")
 
 doc <- body_add(doc, fpar(ftext("Table of Content",prop=fp_text(bold=TRUE))))
 doc <- body_add(doc,toc)
-doc <- body_add(doc,run_pagebreak())
-doc <- body_add(doc,fpar(ftext("List of Figures",prop=fp_text(bold=TRUE))))
-doc <- body_add(doc,tof)
+#doc <- body_add(doc,run_pagebreak())
+#doc <- body_add(doc,fpar(ftext("List of Figures",prop=fp_text(bold=TRUE))))
+#doc <- body_add(doc,tof)
 doc <- body_add(doc,run_pagebreak())
 
 for (i in plot_list) {

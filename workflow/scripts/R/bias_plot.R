@@ -47,7 +47,7 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2Fol
   facet_wrap(
     ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
   ) +
-  xlab(paste(feature_i,"GC Content (%)",sep=" ")) +
+  xlab(paste(title_feature_i,"GC Content (%)",sep=" ")) +
   ylab("log2 Fold Change") +
   theme(panel.background=element_rect(fill="White",colour="white"), 
         strip.text=element_text(face="bold"), 

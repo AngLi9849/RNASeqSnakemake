@@ -104,24 +104,24 @@ if (difference != "splicing_ratio") {
 
 plotbef_brk_len <- signif(plotbef_len*1.5,1)/2
 plotaft_brk_len <- signif(plotaft_len*1.5,1)/2
-plotbef_brk_pos <- 0- (signif(plotbef_bin*1.5,1)/2)
-plotaft_brk_pos <- main_bin + (signif(plotaft_bin*1.5,1)/2)
-plotbef_brk <- paste(ifelse(is_antisense,"-","+"), as.character(plotbef_len), sep="")
-plotaft_brk <- paste(ifelse(is_antisense,"+","-"), as.character(plotaft_len), sep="")
+plotbef_brk_pos <- 0-bef_bin-(signif(plotbef_bin*1.5,1)/2)
+plotaft_brk_pos <- main_bin-bef_bin + (signif(plotaft_bin*1.5,1)/2)
+plotbef_brk <- paste(ifelse(is_antisense,"-","+"), as.character(plotbef_brk_len), sep="")
+plotaft_brk <- paste(ifelse(is_antisense,"+","-"), as.character(plotaft_brk_len), sep="")
 
 if (section=="body") {
 meta_xbrks <- c(
- if(plotbef_len>0) (0-plotbef_bin) else NULL, 
+ if(plotbef_len>0) (plotbef_brk_pos) else NULL, 
  0,
  main_bin, 
- if(plotaft_len>0) (main_bin + plotaft_bin) else NULL
+ if(plotaft_len>0) (plotaft_brk_pos) else NULL
 )
 
 names(meta_xbrks) <- c(
-  if(plotbef_len>0) (plotbef_brk_pos) else NULL, 
+  if(plotbef_len>0) (plotbef_brk) else NULL, 
   start_name,
   end_name, 
-  if(plotaft_len>0) (plotaft_brk_pos) else NULL
+  if(plotaft_len>0) (plotaft_brk) else NULL
 )
 
 } else {
@@ -450,13 +450,13 @@ doc <- body_add(doc,run_pagebreak())
 title_p <- fpar(fig_num,ftext(title_p,prop=title_prop)) 
 
 plot_n <- plot_n + 1
+doc <- body_add(doc,fpar(ftext(toTitleCase(gsub("_"," ",p)), prop=heading_3)),style = "heading 4")
 if (p=="summary") {
-doc <- body_add(doc,value=plot_p,width = 6, height = 8.5, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=plot_p,width = 6, height = 8, res= plot_dpi,style = "centered")
 doc <- body_add(doc,run_pagebreak())
 } else {
-doc <- body_add(doc,value=plot_p,width = 6, height = 7.5, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=plot_p,width = 6, height = 7, res= plot_dpi,style = "centered")
 }
-doc <- body_add(doc,fpar(ftext(toTitleCase(gsub("_"," ",p)), prop=heading_3)),style = "heading 4")
 doc <- body_add(doc,title_p)
 # Loop for each line in caption
 for (c in caption_p) {
@@ -491,13 +491,13 @@ doc <- body_add(doc,fpar(ftext(analysis_heading, prop=heading_2)),style = "headi
 doc <- body_add(doc,fpar(ftext("Overview", prop=heading_3)),style = "heading 3")
 #doc <- body_add(doc,value=overview,width = 6, height = 9, res= plot_dpi,style = "centered")
 doc <- body_add(doc,fpar(ftext("A", prop=bold)),style = "Normal")
-doc <- body_add(doc,value=sum_pie,width = 6, height = 2.7, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=sum_pie,width = 6, height = 2.4, res= plot_dpi,style = "centered")
 
 doc <- body_add(doc,fpar(ftext("B", prop=bold)),style = "Normal")
-doc <- body_add(doc,value=sum_bar,width = 6, height = 2.7, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=sum_bar,width = 6, height = 2.4, res= plot_dpi,style = "centered")
 
 doc <- body_add(doc,fpar(ftext("C", prop=bold)),style = "Normal")
-doc <- body_add(doc,value=sum_violin,width = 6, height = 2.7, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=sum_violin,width = 6, height = 2.4, res= plot_dpi,style = "centered")
 
 doc <- body_add(doc,run_pagebreak())
 doc <- body_add(doc,block_pour_docx(snakemake@output[["docx"]]))
