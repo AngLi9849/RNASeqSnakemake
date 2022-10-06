@@ -6,11 +6,11 @@ sys.stderr = open(snakemake.log[0], "w")
 import os
 from snakemake.shell import shell
 
-shell(
-    """
-    Rscript workflow/scripts/R/docx.R
-    """
-)
+#shell(
+#    """
+#    Rscript workflow/scripts/R/docx.R
+#    """
+#)
 
 # Create word template using the configured font
 # Using script in Utkarsh Dalal's Answer in https://stackoverflow.com/questions/56658872/add-page-number-using-python-docx to set centred page numbers
@@ -66,8 +66,8 @@ def add_page_number(paragraph):
     num_pages_run._r.append(instrText2)
     num_pages_run._r.append(fldChar4)
 
-doc = Document('resources/templates/r_template.docx')
-#doc = Document()
+#doc = Document('resources/templates/r_template.docx')
+doc = Document()
 
 styles = [
     s for s in doc.styles
@@ -78,12 +78,12 @@ for style in styles:
         doc.styles[str(style.name)].font.name = snakemake.wildcards.font
         doc.styles[str(style.name)].font.color.rgb = docx.shared.RGBColor.from_string(matp.colors.cnames[str(snakemake.wildcards.font_colour)][1:])
 
-#doc.styles.add_style('centered', docx.enum.style.WD_STYLE_TYPE.PARAGRAPH)
-#doc.styles['centered'].base_style = doc.styles['Normal']
-#doc.styles['centered'].paragraph_format.alignment = docx.enum.text.WD_PARAGRAPH_ALIGNMENT.CENTER
+doc.styles.add_style('centered', docx.enum.style.WD_STYLE_TYPE.PARAGRAPH)
+doc.styles['centered'].base_style = doc.styles['Normal']
+doc.styles['centered'].paragraph_format.alignment = docx.enum.text.WD_PARAGRAPH_ALIGNMENT.CENTER
 
-doc.styles.add_style('heading 4', docx.enum.style.WD_STYLE_TYPE.PARAGRAPH)
-doc.styles['heading 4'].base_style = doc.styles['heading 3']
+#doc.styles.add_style('heading 4', docx.enum.style.WD_STYLE_TYPE.PARAGRAPH)
+#doc.styles['heading 4'].base_style = doc.styles['heading 3']
 
 add_page_number(doc.sections[0].footer.paragraphs[0])
 doc.save(snakemake.output.docx)

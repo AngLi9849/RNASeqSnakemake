@@ -102,6 +102,10 @@ if (difference != "splicing_ratio") {
   }
   meta_bin <- plotbef_bin + plotaft_bin + main_bin
 
+plotbef_brk_len <- signif(plotbef_len*1.5,1)/2
+plotaft_brk_len <- signif(plotaft_len*1.5,1)/2
+plotbef_brk_pos <- 0- (signif(plotbef_bin*1.5,1)/2)
+plotaft_brk_pos <- main_bin + (signif(plotaft_bin*1.5,1)/2)
 plotbef_brk <- paste(ifelse(is_antisense,"-","+"), as.character(plotbef_len), sep="")
 plotaft_brk <- paste(ifelse(is_antisense,"+","-"), as.character(plotaft_len), sep="")
 
@@ -114,10 +118,10 @@ meta_xbrks <- c(
 )
 
 names(meta_xbrks) <- c(
-  if(plotbef_len>0) (plotbef_brk) else NULL, 
+  if(plotbef_len>0) (plotbef_brk_pos) else NULL, 
   start_name,
   end_name, 
-  if(plotaft_len>0) (plotaft_brk) else NULL
+  if(plotaft_len>0) (plotaft_brk_pos) else NULL
 )
 
 } else {
@@ -452,7 +456,7 @@ doc <- body_add(doc,run_pagebreak())
 } else {
 doc <- body_add(doc,value=plot_p,width = 6, height = 7.5, res= plot_dpi,style = "centered")
 }
-
+doc <- body_add(doc,fpar(ftext(toTitleCase(gsub("_"," ",p)), prop=heading_3)),style = "heading 4")
 doc <- body_add(doc,title_p)
 # Loop for each line in caption
 for (c in caption_p) {
