@@ -10,6 +10,8 @@ mRNA                			TRUE	FALSE	FALSE	FALSE	FALSE	gene	intron	gene	gene	FALSE	
 FirstExon           			TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	exon	FALSE	10	3	body	+	1	0	0	0	300	500	1500	0.6	0	0	20	0	GeneBody	FirstIntron    		
 FirstIntron          	5'SS	3'SS	TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	intron	FALSE	10	3	body	+	1	0	0	0	400	500	500	0.4	0	0	20	0	GeneBody	             		
 FirstSpliceSite       	5'SS		TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	intron	FALSE	10	3	start	+	1	0	1000	2000	600	0	0		0	0	20	0	GeneBody	          		
+IntronicRegion      			TRUE	FALSE	FALSE	FALSE	FALSE	gene	exon	gene	gene	FALSE	10	3	body	+	0	0	0	0	1000	1000	1000	0.3	0	0	50	0	GeneBody	            		
+Intron              	5'SS	3'SS	TRUE	FALSE	FALSE	TRUE	FALSE	gene		gene	intron	FALSE	10	3	body	+	0	0	0	0	300	200	200	0.4	0	0	20	0	GeneBody	            		
 #Transcript        			TRUE	TRUE	FALSE	FALSE	FALSE	gene		gene	trscrpt	FALSE	10	3	body	+	0	0	0	0	1000	500	500		0	0			        	           		
 #Exon                			FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	exon	FALSE	10	3	body	+	1	1	0	0	1000	300	300		0	0			        	           		
 #Exon_5prime         			FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	exon	FALSE	0	3	start	+	1	1	100	100	1000	100	100		0	0			         	           		
