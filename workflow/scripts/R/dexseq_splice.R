@@ -69,6 +69,14 @@ unsplice_cts_names <- row.names(unsplice_cts)
 unsplice_cts <- sapply(unsplice_cts,as.numeric)
 row.names(unsplice_cts) <- unsplice_cts_names
 
+cts_sum <- splice_cts + unsplice_cts
+cts_mean <- mean(cts_sum)
+splice_mean <- apply(splice_cts,1,mean)
+splice_mean <- ifelse(is.na(splice_cts),splice_mean,splice_mean)
+unsplice_cts <- round(ifelse((splice_mean<=1 | splice_cts <= 1),unsplice_cts,unsplice_cts*splice_mean/splice_cts))
+splice_cts <- round(ifelse((splice_mean<=1 | splice_cts <= 1),splice_cts,splice_mean))
+
+
 cts <- data.frame(rbind(splice_cts,unsplice_cts), check.names=F)
 cts$state <- c(replicate(nrow(splice_cts),"spliced"),replicate(nrow(unsplice_cts),"unspliced"))
 cts$id <- c(rownames(splice_cts),rownames(splice_cts))
