@@ -56,6 +56,27 @@ ma_plot <- ma +
     force_pull=5
   ) 
 
+ma <- ma +
+  geom_point(
+    data=subset(expr_i, gene_name %in% goi),
+    color="red",
+    size=1,
+    alpha=1
+  ) +
+  geom_text_repel(
+    mapping=aes(label=ifelse((gene_name %in% goi), as.character(gene_name),NA)),
+    size=3.0,
+    color="white",
+    fontface=1,
+    bg.color="black",
+    bg.r=0.17,
+    segment.color="black",
+    segment.alpha=1,
+    max.overlaps=Inf,
+    force=10,
+    force_pull=5
+  )
+
 ma_caption <- paste(
  "Log2 fold change in ", difference, " of each ", feature_i, " is plotted against their mean normalised ", counting, ". Dot colours represent significant (p < " ,sig_p,") increases (", up_col, ") and decreases (", down_col, ").",sep=""
 )

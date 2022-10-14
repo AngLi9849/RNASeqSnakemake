@@ -152,6 +152,9 @@ rule differential_plots:
         main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
         start_name = lambda wildcards : str(features.loc[wildcards.feature,"strt_nm"]),
         end_name = lambda wildcards : str(features.loc[wildcards.feature,"end_nm"]),
+        bar_data="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised.{mean}_{norm}/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.bar.tab",
+        pie_data="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised.{mean}_{norm}/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.pie.tab",
+        violin_data="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}ReadCount_normalised.{mean}_{norm}/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.violin.tab",
     resources:
         mem="48G",
         rmem="32G",

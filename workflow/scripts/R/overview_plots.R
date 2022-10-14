@@ -1,3 +1,5 @@
+sum_group_n <- length(unique(sum_bar_data$group))
+
 sum_pie_data$Label <- ifelse(sum_pie_data$Numbers > 0,as.character(sum_pie_data$Numbers),NA)
 
 i_group_levels <- unlist(lapply(i_group,function(i) {gsub("exonic ","exonic\n",(gsub("_"," ",toTitleCase(ifelse(i=="","All",i)))))} ) )
@@ -30,7 +32,7 @@ sum_pie <- ggplot(data = sum_pie_data, aes(x=group, y=Numbers, fill=fct_inorder(
     legend.background=element_rect(fill="White"),
     legend.key=element_rect(colour="white",fill="White"),
     axis.text = element_text(colour="black"),
-    axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+    axis.text.x = if (sum_group_n > 3) (element_text(angle = 45, vjust = 1, hjust=1)) else (element_text()),
     axis.line=element_line(colour="black",size=0.5),
     axis.title.x=element_blank(),
     axis.title.y = element_text(size=9)
@@ -49,7 +51,7 @@ sum_bar_data$condition <- factor(sum_bar_data$condition,levels=c(control,treat))
 sum_bar <- ggplot(data = sum_bar_data, aes(fill=condition, y=mean, x = group)) +
   geom_col(width=0.6,position=position_dodge(0.7),colour = "black") +
   geom_errorbar(aes(ymin=SD_min,ymax=mean+SD),width=0.3,position=position_dodge(0.7)) +
-  scale_fill_manual("Conditions",values=sum_bar_data$Colours, labels = bar_cond) + 
+  scale_fill_manual(toTitleCase(gsub("_"," ",protocol)),values=condition_col) + 
   scale_x_discrete(breaks=sum_bar_data$group) +
   scale_y_continuous(limits=c(0,bar_max),breaks=c(0,bar_brks)) +
   geom_hline(
@@ -65,7 +67,7 @@ sum_bar <- ggplot(data = sum_bar_data, aes(fill=condition, y=mean, x = group)) +
     legend.background=element_rect(fill="White"),
     legend.key=element_rect(colour="white",fill="White"),
     axis.text = element_text(colour="black"),
-    axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+    axis.text.x = if (sum_group_n > 3) (element_text(angle = 45, vjust = 1, hjust=1)) else (element_text()),
     axis.line=element_line(colour="black",size=0.5),
     axis.title.x=element_blank(),
     axis.title.y = element_text(size=9)
@@ -105,7 +107,7 @@ sum_violin <- ggplot(data = sum_violin_data, aes(x=group, group=interaction(grou
     legend.background=element_rect(fill="White"),
     legend.key=element_rect(colour="white",fill="White"),
     axis.text = element_text(colour="black"),
-    axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+    axis.text.x = if (sum_group_n > 3) (element_text(angle = 45, vjust = 1, hjust=1)) else (element_text()),
     axis.line=element_line(colour="black",size=0.5),
     axis.title.x=element_blank(),
     axis.title.y = element_text(size=9)

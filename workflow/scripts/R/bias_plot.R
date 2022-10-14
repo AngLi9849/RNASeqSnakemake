@@ -2,9 +2,9 @@ expr_heat$change <- "All"
 expr_heat$abslog2FoldChange <- expr_heat$log2FoldChange
 expr_heat$density <- 1
 
-expr_bias <- expr_i[abs(expr_i$padj) < sig_p,]
+expr_bias <- expr_i
 
-expr_bias$change <- paste("Significantly", expr_bias$change)
+expr_bias$change <- paste(expr_bias$change)
 expr_bias$abslog2FoldChange <- abs(expr_bias$log2FoldChange)
 
 
@@ -12,7 +12,7 @@ expr_bias$abslog2FoldChange <- abs(expr_bias$log2FoldChange)
 FCmin=quantile(expr_bias$log2FoldChange,0.001,na.rm=TRUE)
 FCmax=quantile(expr_bias$log2FoldChange,0.999,na.rm=TRUE)
 
-expr_bias$density <- 0.01/expr_bias$padj
+expr_bias$density <- ifelse(is.na(expr_bias$padj),0,ifelse(expr_bias$padj==0,1,0.01/expr_bias$padj))
 expr_bias <- rbind(expr_heat,expr_bias)
 
 GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2FoldChange)) +
@@ -45,7 +45,7 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2Fol
   ) + 
   scale_x_continuous(limits=c(0,1),breaks=c(0,0.25,0.5,0.75,1),labels=scales::percent) + 
   facet_wrap(
-    ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
+    ~factor(change,levels=c("All","Increased","Decreased")), scales="free"
   ) +
   xlab(paste(title_feature_i,"GC Content (%)",sep=" ")) +
   ylab("log2 Fold Change") +
@@ -84,9 +84,14 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$ab
     label.y.npc= 1,
     size=3,
     colour="black") +
+  geom_hline(
+    yintercept=0,
+    alpha=0.3,
+    linetype=5
+  ) +
   scale_x_log10() + 
   facet_wrap(
-    ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
+    ~factor(change,levels=c("All","Increased","Decreased")), scales="free"
   ) +
   xlab(paste(ifelse(use_base_length,title_base_i,title_feature_i), "Length (bps)",sep=" ")) +
   ylab("|log2 Fold Change|") +
@@ -126,9 +131,14 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog
     label.y.npc= 1,
     size=3,
     colour="black") +
+  geom_hline(
+    yintercept=0,
+    alpha=0.3,
+    linetype=5
+  ) +
   scale_x_log10() + 
   facet_wrap(
-    ~factor(change,levels=c("All","Significantly Increased","Significantly Decreased")), scales="free"
+    ~factor(change,levels=c("All","Increased","Decreased")), scales="free"
   ) +
   xlab(paste(title_feature_i, "Mean Expression Levels (RPKM)",sep=" ")) +
   ylab("|log2 Fold Change|") +
@@ -154,6 +164,6 @@ bias_caption <- paste("There is not any significant changes in ", difference, " 
 } else {
 bias <- ggarrange(plotlist=list(GC_plot,Length_plot,rpkm_plot),ncol=1,nrow=3,labels="AUTO")
 bias_caption <- paste(
-  "Absolute values of significant (p < ", sig_p, ") log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
+  "Log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
 )
 }

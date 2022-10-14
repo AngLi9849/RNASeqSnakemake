@@ -191,6 +191,7 @@ valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
 feature <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]])))
 title_feature <- gsub("(?<!\\w)(.)","\\U\\1", feature, perl = TRUE)
 title_base <- paste("Base",gsub("(?<!\\w)(.)","\\U\\1", base, perl = TRUE))
+protocol <- as.character(snakemake@params[["protocol"]])
 
 experiment <- gsub("_"," ",as.character(snakemake@wildcards[["experiment"]]))
 treatment <- as.character(snakemake@params[["treat"]])
@@ -333,7 +334,7 @@ expr_heat$colour <- ifelse(expr_heat$padj < sig_p, ifelse(expr_heat$log2FoldChan
 
 total_i <- nrow(expr_i)
 
-min_rpkm <- quantile(expr_i$rpkm[expr_i$baseMean > 0],min_rpkm_pc/100)
+min_rpkm <- quantile(expr_i$rpkm[expr_i$baseMean > 0],min_rpkm_pc/100,na.rm=T)
 meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= config_min_mean & expr_i$baseMean >= min_rpkm])
 
 
@@ -477,6 +478,9 @@ sum_bar_data
 head(sum_bar_data,5)
 head(sum_pie_data,5)
 head(sum_violin_data,5)
+write.table(sum_bar_data,file=snakemake@params[["bar_data"]],sep='\t',row.names=F,quote=F)
+write.table(sum_pie_data,file=snakemake@params[["pie_data"]], sep='\t',row.names=F,quote=F)
+write.table(sum_violin_data,file=snakemake@params[["violin_data"]],sep='\t',row.names=F,quote=F)
 
 source(snakemake@config[["differential_plots"]][["scripts"]][["overview"]])
 #doc <- cursor_begin(doc)

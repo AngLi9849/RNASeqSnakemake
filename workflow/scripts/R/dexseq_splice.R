@@ -58,35 +58,35 @@ splice_cts <- read.table(snakemake@input[["spliced"]], header=TRUE, row.names="g
 unsplice_cts <- read.table(snakemake@input[["unspliced"]], header=TRUE, row.names="gene", check.names=FALSE, stringsAsFactors=FALSE)
 
 splice_cts <- splice_cts[ , order(names(splice_cts))]
+unsplice_cts <- unsplice_cts[ , order(names(unsplice_cts))]
 samples=names(splice_cts)
+
+#Count table of unnormalised spliced and spliced counts
+cts <- rbind(splice_cts,unsplice_cts)
+cts$state <- c(replicate(nrow(splice_cts),"spliced"),replicate(nrow(unsplice_cts),"unspliced"))
+cts$id <- c(rownames(splice_cts),rownames(splice_cts))
 
 splice_cts_names <- row.names(splice_cts)
 splice_cts <- sapply(splice_cts,as.numeric)
 row.names(splice_cts) <- splice_cts_names
 
-unsplice_cts <- unsplice_cts[ , order(names(unsplice_cts))]
 unsplice_cts_names <- row.names(unsplice_cts)
 unsplice_cts <- sapply(unsplice_cts,as.numeric)
 row.names(unsplice_cts) <- unsplice_cts_names
 
+#Internally Normalised per-gene splice and unspliced counts 
 cts_sum <- splice_cts + unsplice_cts
-cts_mean <- mean(cts_sum)
-splice_mean <- apply(splice_cts,1,mean)
-splice_mean <- ifelse(is.na(splice_cts),splice_mean,splice_mean)
-unsplice_cts <- round(ifelse((splice_mean<=1 | splice_cts <= 1),unsplice_cts,unsplice_cts*splice_mean/splice_cts))
-splice_cts <- round(ifelse((splice_mean<=1 | splice_cts <= 1),splice_cts,splice_mean))
+cts_mean <- apply(cts_sum,1,mean)
+cts_mean <- ifelse(is.na(splice_cts),cts_mean,cts_mean)
+unsplice_cts <- round(ifelse((cts_mean<=1 | cts_sum <= 1),unsplice_cts,unsplice_cts*cts_mean/cts_sum))
+splice_cts <- round(ifelse((cts_mean<=1 | cts_sum <= 1),splice_cts,splice_cts*cts_mean/cts_sum))
 
 
-cts <- data.frame(rbind(splice_cts,unsplice_cts), check.names=F)
-cts$state <- c(replicate(nrow(splice_cts),"spliced"),replicate(nrow(unsplice_cts),"unspliced"))
-cts$id <- c(rownames(splice_cts),rownames(splice_cts))
+#splice_mean <- apply(splice_cts,1,mean)
+#splice_mean <- ifelse(is.na(splice_cts),splice_mean,splice_mean)
+#unsplice_cts <- round(ifelse((splice_mean<=1 | splice_cts <= 1),unsplice_cts,unsplice_cts*splice_mean/splice_cts))
+#splice_cts <- round(ifelse((splice_mean<=1 | splice_cts <= 1),splice_cts,splice_mean))
 
-
-feature_id <- row.names(splice_cts)
-temp <- data.frame(row.names(splice_cts))
-temp$group_id <- "input"
-
-group_id <- temp$group_id
 
 # Import sample table
 sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
@@ -96,10 +96,10 @@ rownames(sample_table) <- sample_table$sample_name
 sample_table <- sample_table[order(row.names(sample_table)), , drop=F]
 
 feature_id <- row.names(splice_cts)
-temp <- data.frame(row.names(splice_cts))
-temp$group_id <- "input"
+group_id <- rep("input",length(feature_id))
 
-group_id <- temp$group_id
+#feature_id <- c(row.names(splice_cts),paste(row.names(unsplice_cts),"_unsplice",sep=""))
+#group_id <- rep(row.names(splice_cts),2)
 
 coldata <- sample_table[,c("condition","replicate")]
 
@@ -115,6 +115,10 @@ unsplice_exp <- unsplice_cts[,sample_table$condition==treatment]
 
 splice_cts_exp <- cbind(splice_exp,splice_control)
 unsplice_cts_exp <- cbind(unsplice_exp,unsplice_control)
+
+#row.names(unsplice_cts_exp) <- paste(row.names(unsplice_cts_exp),"_unsplice",sep="")
+#cts_exp <- rbind(splice_cts_exp,unsplice_cts_exp)
+#head(cts_exp,10)
 
 coldata_exp <- coldata[sample_table$condition==treatment,]
 
@@ -134,6 +138,7 @@ nrow(splice_cts_exp)
 head(unsplice_cts_exp,10)
 nrow(unsplice_cts_exp)
 
+
 if (rep_pair){
   full_model <- ~sample + exon + condition:exon + replicate:exon
   reduced_model <- ~sample + exon + replicate:exon
@@ -143,6 +148,7 @@ if (rep_pair){
 }
 
 dds <- DEXSeqDataSet(countData=splice_cts_exp,sampleData=coldata, featureID=feature_id, groupID=group_id, alternativeCountData = unsplice_cts_exp, design=full_model)
+#dds <- DEXSeqDataSet(countData=cts_exp,sampleData=coldata, featureID=feature_id, groupID=group_id, design=full_model)
 
 rds <- estimateSizeFactors(dds)
 rds <- estimateDispersions(rds,formula=full_model)
@@ -150,8 +156,9 @@ rds <- testForDEU(rds,reducedModel = reduced_model,fullModel = full_model)
 rds <- estimateExonFoldChanges(rds, fitExpToVar="condition")
 res <- DEXSeqResults(rds)
 
-expr <- data.frame(res@listData[1:10])
-rownames(expr) <- feature_id
+expr <- data.frame(res@listData[1:10],check.names=FALSE)
+#expr <- expr[unlist(lapply(expr$featureID,function(x) {!grepl(x,"_unsplice")})),]
+rownames(expr) <- splice_cts_names 
 colnames(expr)[10] <- "Rawlog2FoldChange"
 colnames(expr)[3] <- "baseMean"
 #expr <- expr[!is.na(expr$padj),]

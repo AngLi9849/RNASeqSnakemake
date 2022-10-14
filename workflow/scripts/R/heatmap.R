@@ -29,6 +29,12 @@ i_lab <- ifelse(i_lab =="Length", paste(ifelse(use_base_length,title_base,title_
 
 heat_ylab <- paste(gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",i_lab)),i_unit)
 
+if (max(heat_data$Rank) >= 18000) {
+rank_scale <- max(heat_data$Rank)/18000
+heat_data$Rank <- ceiling(heat_data$Rank / rank_scale)
+heat_ybrks <- ceiling(heat_ybrks/rank_scale)
+}
+
 heatmap <- ggplot(
   heat_data,
   aes(x=Position,y=Rank,fill=heat)
