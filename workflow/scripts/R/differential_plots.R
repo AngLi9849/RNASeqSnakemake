@@ -394,7 +394,7 @@ expr_i <-
 expr_i <- expr_i %>% arrange(change,padj) %>% group_by(change) %>% mutate(p_rank=1:n()) %>% ungroup
 expr_i <- expr_i %>% arrange(change,abs(log2FoldChange)) %>% group_by(change) %>% mutate(lfc_rank=n():1) %>% ungroup
 
-lfc_max <- max(c(abs(expr_i$log2FoldChange[expr_i$padj < sig_p]),0))
+lfc_max <- max(c(quantile(abs(expr_i$log2FoldChange),lfc_pc_lim/100,na.rm=T),0))
 expr_i$colour <- ifelse(expr_i$padj < sig_p, ifelse(expr_i$log2FoldChange < 0, down_col, up_col), insig_col)
 
 title_i <- gsub("_"," ",paste(experiment, feature_i, "Differential", toTitleCase(difference),sep=" "))

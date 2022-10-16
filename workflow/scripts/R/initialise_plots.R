@@ -6,6 +6,7 @@ sink(log, type="message")
 ma_n <- as.numeric(snakemake@config[["differential_plots"]][["ma_gene_name_numbers"]])
 volc_n <- as.numeric(snakemake@config[["differential_plots"]][["volcano_gene_name_numbers"]])
 meta_trim <- as.numeric(snakemake@config[["metagene"]][["anomaly_trim"]]) 
+lfc_pc_lim <- as.numeric(snakemake@config[["differential_plots"]][["lfc_pc_limit"]])
 
 up_col <- as.character(snakemake@config[["differential_plots"]][["up_colour"]])
 down_col <- as.character(snakemake@config[["differential_plots"]][["down_colour"]])

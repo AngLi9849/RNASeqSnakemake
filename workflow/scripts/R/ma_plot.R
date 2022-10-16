@@ -1,8 +1,9 @@
-ma <- ggplot(data = expr_i, aes(x = baseMean, y = log2FoldChange)) +
+ma <- ggplot(data = expr_i, aes(x = baseMean, y = ifelse(abs(log2FoldChange) <= lfc_max, log2FoldChange, ifelse(log2FoldChange < 0, -0.98*lfc_max, 0.98*lfc_max)))) +
   geom_point(
     size = 0.5,
     color = expr_i$colour,
     alpha = 0.5,
+    shape = ifelse(abs(expr_i$log2FoldChange) <= lfc_max, 19, 17)
   ) +
   scale_x_log10() +
   geom_hline(

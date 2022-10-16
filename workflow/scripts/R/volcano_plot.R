@@ -1,14 +1,15 @@
-volcano <- ggplot(data = expr_i, aes(x = log2FoldChange, y = log10P)) +
+volcano <- ggplot(data = expr_i, aes(x = ifelse(abs(log2FoldChange) <= lfc_max, log2FoldChange, ifelse(log2FoldChange < 0, -0.98*lfc_max, 0.98*lfc_max)), y = log10P)) +
   geom_point(
     size = 0.5,
     color = expr_i$colour,
     alpha = 0.5,
+    shape = ifelse(abs(expr_i$log2FoldChange) <= lfc_max, 19, 17)
   ) +
   scale_y_continuous(
     limits=c(0.0,max_log10P*1.1),expand=c(0.0,max_log10P/70)
   ) +
   scale_x_continuous(
-    limits=c(-max(abs(expr_i$log2FoldChange)),max(abs(expr_i$log2FoldChange)))
+    limits=c(-lfc_max,lfc_max)
   ) +
   geom_vline(
     xintercept=0,
