@@ -1,4 +1,5 @@
 sum_group_n <- length(unique(sum_bar_data$group))
+sum_legend_title <- paste(toTitleCase(gsub("_"," ",protocol)),"\n",toTitleCase(splice)," ",spikein,"\nNormalised\n",feature,sep="")
 
 sum_pie_data$Label <- ifelse(sum_pie_data$Numbers > 0,as.character(sum_pie_data$Numbers),NA)
 
@@ -8,7 +9,7 @@ sum_pie_data$group <- factor(sum_pie_data$group, levels=i_group_levels)
 
 sum_pie <- ggplot(data = sum_pie_data, aes(x=group, y=Numbers, fill=fct_inorder(Category))) +
   geom_bar(position="fill",stat="identity", colour="black") +
-  scale_fill_manual(paste(feature,"\n",toTitleCase(difference),sep=""),values=sum_pie_data$Colours) +
+  scale_fill_manual(sum_legend_title,values=sum_pie_data$Colours) +
   scale_x_discrete(breaks=sum_pie_data$group) +
   scale_y_continuous(labels=scales::percent) +
   xlab("") +
@@ -51,7 +52,7 @@ sum_bar_data$condition <- factor(sum_bar_data$condition,levels=c(control,treat))
 sum_bar <- ggplot(data = sum_bar_data, aes(fill=condition, y=mean, x = group)) +
   geom_col(width=0.6,position=position_dodge(0.7),colour = "black") +
   geom_errorbar(aes(ymin=SD_min,ymax=mean+SD),width=0.3,position=position_dodge(0.7)) +
-  scale_fill_manual(toTitleCase(gsub("_"," ",protocol)),values=condition_col) + 
+  scale_fill_manual(sum_legend_title,values=condition_col) + 
   scale_x_discrete(breaks=sum_bar_data$group) +
   scale_y_continuous(limits=c(0,bar_max),breaks=c(0,bar_brks)) +
   geom_hline(
@@ -91,7 +92,7 @@ test_p_i$y.position <- c(violin_p_y)
 sum_violin <- ggplot(data = sum_violin_data, aes(x=group, group=interaction(group,condition), y=value)) +
   geom_violin(trim=TRUE,aes(fill=condition),scale="width",width=0.7) +
   stat_pvalue_manual(data = test_p_i, x="group", label = "p.signif",inherit.aes=F) +
-  scale_fill_manual("Conditions",values=condition_col ) +
+  scale_fill_manual(sum_legend_title,values=condition_col ) +
   geom_boxplot(width=0.1,position=position_dodge(0.7)) +
   scale_x_discrete(breaks=sum_violin_data$group) +
   geom_hline(

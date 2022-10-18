@@ -217,11 +217,13 @@ control <- gsub("_"," ",control_str)
 names(mean_level) <- c(control,treat)
 
 spikein <- gsub("_"," ",as.character(snakemake@wildcards[["spikein"]]))
+spikein <- if (difference == "splicing ratio") ("internal") else (spikein)
 
 contrast <- list(c(control,treat))
 
 
 splice <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["splice"]]))
+splice <- if (difference=="splicing ratio") ("All") else (splice)
 normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["normaliser"]]))
 counting <- ifelse(diff=="splicing_ratio","splice sites read count","read count")
 counted <- gsub("_"," ",paste(tolower(splice), tolower(prefix), feature, counting, sep=" "))

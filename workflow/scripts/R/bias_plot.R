@@ -18,8 +18,8 @@ expr_bias <- rbind(expr_heat,expr_bias)
 GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2FoldChange)) +
   geom_point(
     size=0.5,
-    color=ifelse(expr_bias$log2FoldChange>0,up_col,down_col),
-    alpha=expr_bias$density
+    color=expr_bias$colour,
+#    alpha=expr_bias$density
   ) +
   geom_smooth(
     method = "lm",
@@ -43,7 +43,7 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2Fol
     alpha=0.3,
     linetype=5
   ) + 
-  scale_x_continuous(limits=c(0,1),breaks=c(0,0.25,0.5,0.75,1),labels=scales::percent) + 
+  scale_x_continuous(limits=c(min(c(expr_bias$GC,0.2)),max(c(expr_bias$GC,0.8))),breaks=c(0,0.25,0.5,0.75,1),labels=scales::percent) + 
   facet_wrap(
     ~factor(change,levels=c("All","Increased","Decreased")), scales="free"
   ) +
@@ -69,8 +69,8 @@ GC_plot <- ggplot(data = expr_bias, aes(x=expr_bias$GC, y = expr_bias$abslog2Fol
 Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$abslog2FoldChange)) +
   geom_point(
     size=0.5,
-    color=ifelse(expr_bias$log2FoldChange>0,up_col,down_col),
-    alpha=expr_bias$density
+    color=expr_bias$colour,
+#    alpha=expr_bias$density
   ) +
   geom_smooth(
     method = "lm",
@@ -116,8 +116,8 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$ab
 rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog2FoldChange)) +
   geom_point(
     size=0.5,
-    color=ifelse(expr_bias$log2FoldChange>0,up_col,down_col),
-    alpha=expr_bias$density
+    color=expr_bias$colour,
+#    alpha=expr_bias$density
   ) +
   geom_smooth(
     method = "lm",
