@@ -1,0 +1,11 @@
+group	treatment          	splice	feature 	difference	protocols
+1	HNRNPU-AID_KO        	FALSE	GeneBody 	expression	TT-Seq
+1	HNRNPU-AID_KO          	All	GeneBody	expression	Chromatin_RNA-Seq
+1	HNRNPU-AID_KO       	All	mRNA      	expression  	Nulceoplasm_RNA-Seq,Cytoplasm_RNA-Seq
+2	HNRNPUL1-AID_KO      	FALSE	GeneBody	expression	TT-Seq
+2	HNRNPU-AID_KO       	FALSE	GeneBody	expression	TT-Seq
+2	FUS-mAID_+5PhIAA_6hr	FALSE	GeneBody	expression	TT-Seq
+3	FUS-mAID_+5PhIAA_6hr	FALSE	GeneBody	expression	TT-Seq
+3	FUS-mAID_+5PhIAA_6hr	All	mRNA        	expression	Total_RNA-Seq
+3	FUS-mAID_+5PhIAA_48hr	All	mRNA         	expression	Total_RNA-Seq
+4	HNRNPU-AID_KO       	All	GeneBody	splicing_ratio	TT-Seq,Chromatin_RNA-Seq               

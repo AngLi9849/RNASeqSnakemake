@@ -1,0 +1,31 @@
+#1                 	20	21	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16	17	18	19	22	23	24	25	26	27	28	     	29           	30        	31	32
+feature_name        	strt_nm	end_nm	dif_exp	dif_use	dif_enr	dif_spl	dif_var	region	exclude	group	feature	force	min_len	tsl	section	sense	no_frst	no_last	len_bef	len_aft	bin_n	plotbef	plotaft	befaftr	5_unscl	3_unscl	s2b_min	b2s_min	backgrd       	bias_feature	comp_bt	annotation_bed
+GeneBody            	TSS	TTS	TRUE	FALSE	FALSE	TRUE	FALSE	gene		gene	gene	FALSE	0	3	body	+	0	0	0	0	1000	1500	1500	0.3	0	0	40	0	GeneBody	         		
+PROMPT-TSS          	TSS		TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	4	start	+-	0	0	1500	3000	1000	500	500		0	0	30	0	GeneBody	        	lncRNA	
+PROMPT              	TSS		TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	4	start	-	0	0	1500	0	500	200	200		0	0	30	0	GeneBody	              	lncRNA	
+TSS                 	TSS		TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	4	start	+	0	0	0	3000	500	500	500		0	0	30	0	GeneBody	             		
+TSS_500bps          	TSS		TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	4	start	+	0	0	0	500	500	250	250		0	0	50	0	GeneBody	             		
+TTS             	TTS		TRUE	FALSE	FALSE	FALSE	FALSE	gene		gene	gene	FALSE	0	3	end	+	0	0	500	3000	1000	0	0		0	0	20	0	GeneBody	             		
+mRNA                			TRUE	FALSE	FALSE	FALSE	FALSE	gene	intron	gene	gene	FALSE	10	3	body	+	0	0	0	0	800	500	500	0.3	0	0	50	0	mRNA         	           		
+Exon1           			FALSE	FALSE	FALSE	FALSE	FALSE	gene		gene	exon	FALSE	10	3	body	+	1	0	0	0	300	500	1500	0.6	0	0	20	0	GeneBody	           		
+FirstExon           			TRUE	FALSE	FALSE	FALSE	FALSE	Exon1		gene	gene	FALSE	10	3	body	+	1	0	0	0	300	500	1500	0.6	0	0	20	0	GeneBody	FirstIntron    		
+Intron1          	5'SS	3'SS	FALSE	FALSE	FALSE	FALSE	FALSE	gene		gene	intron	FALSE	10	3	body	+	1	0	0	0	400	500	500	0.4	0	0	20	0	GeneBody	             		
+FirstIntron          	5'SS	3'SS	TRUE	FALSE	FALSE	FALSE	FALSE	Intron1		gene	gene	FALSE	10	3	body	+	1	0	0	0	400	500	500	0.4	0	0	20	0	GeneBody	             		
+SS1               	5'SS		FALSE	FALSE	FALSE	FALSE	FALSE	gene		gene	intron	FALSE	10	3	start	+	1	0	0	100	600	0	0		0	0	20	0	GeneBody	          		
+FirstSpliceSite       	5'SS		TRUE	FALSE	FALSE	FALSE	FALSE	SS1		gene	gene	FALSE	10	3	start	+	1	0	1000	2000	600	0	0		0	0	20	0	GeneBody	          		
+IntronicRegion      			TRUE	FALSE	FALSE	FALSE	FALSE	gene	exon	gene	gene	FALSE	10	3	body	+	0	0	0	0	1000	1000	1000	0.3	0	0	50	0	GeneBody	            		
+Intron              	5'SS	3'SS	TRUE	FALSE	FALSE	TRUE	FALSE	gene		gene	intron	FALSE	10	3	body	+	0	0	0	0	300	200	200	0.4	0	0	20	0	GeneBody	            		
+#Transcript        			TRUE	TRUE	FALSE	FALSE	FALSE	gene		gene	trscrpt	FALSE	10	3	body	+	0	0	0	0	1000	500	500		0	0			        	           		
+#Exon                			FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	exon	FALSE	10	3	body	+	1	1	0	0	1000	300	300		0	0			        	           		
+#Exon_5prime         			FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	exon	FALSE	0	3	start	+	1	1	100	100	1000	100	100		0	0			         	           		
+#Exon_3prime         			FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	exon	FALSE	0	3	end	+	1	1	100	100	1000	100	100		0	0			         	              		
+#Intron              			FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	intron	FALSE	10	3	body	+	1	1	0	0	1000	300	300		0	0			        	              		
+#Intron_5prime       			FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	intron	FALSE	0	3	start	+	1	1	500	500	1000	100	100		0	0			         	              		
+#Intron_3prime       			FALSE	TRUE	FALSE	FALSE	FALSE	gene		gene	intron	FALSE	0	3	end	+	1	1	500	500	1000	100	100		0	0			          	                 		
+#5UTR_Intron         			TRUE	TRUE	TRUE	TRUE	TRUE	gene		5UTR	intron	FALSE	10	3	body	+	0	0	0	0	1000	500	500		0	0			          	             		
+#HCT_Enh            			FALSE	FALSE	FALSE	FALSE	FALSE					FALSE	0	0		+	0	0	0	0	1000	0	0		0	0			           	             		config/additionals/HCT116_Enhancers.bed
+#HCT116_Enhancer   			TRUE	FALSE	FALSE	FALSE	FALSE	chr		HCT_Enh	HCT_Enh	FALSE	10	0	body	+-	0	0	0	0	1000	500	500		0	0			          	              		
+# Base Features: gene exon intron skip_ex ret_int trscrpt CDS 5UTR 3UTR	# Base Features: gene exon intron skip_ex ret_int trscrpt CDS 5UTR 3UTR	# Base Features: gene exon intron skip_ex ret_int trscrpt CDS 5UTR 3UTR
+# comp_bt: compatible biotype, overlapping allowed	# comp_bt: compatible biotype, overlapping allowed	# comp_bt: compatible biotype, overlapping allowed
+# s2b: signal to noise ratio, b2s : noise to signal	# s2b: signal to noise ratio, b2s : noise to signal	# s2b: signal to noise ratio, b2s : noise to signal
+# no_drst,no_last : No. of indices, 0 or blank means all, positive number means include and negative means exclude, Example : 1,2,3 to include index 1 2 3 ; -1,-2,-3 to exlude index 1 2 3	# no_drst,no_last : No. of indices, 0 or blank means all, positive number means include and negative means exclude, Example : 1,2,3 to include index 1 2 3 ; -1,-2,-3 to exlude index 1 2 3	# no_drst,no_last : No. of indices, 0 or blank means all, positive number means include and negative means exclude, Example : 1,2,3 to include index 1 2 3 ; -1,-2,-3 to exlude index 1 2 3

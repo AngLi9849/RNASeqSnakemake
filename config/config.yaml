@@ -1,0 +1,225 @@
+# Hardware config:
+max_ram_gb: 64 # Highest ram available in a single machine
+
+# path or URL to sample sheet (TSV format, columns: sample, unit, condition, fq1, fq2)
+# Units are biological or technical replicates of experiment or sequencing lanes.
+# Conditions are compared in differential expression analysis.
+samples: config/samples.tsv
+experiments: config/experiments.tsv
+groups: config/groups.tsv
+protocols: config/protocols.tsv
+gene_sets: config/gene_sets.tsv
+feature_parameters: config/features.tsv
+references_info: config/references.tsv
+analysis_summary_plots: config/analysis.tsv
+
+
+MANE_gene_range: FALSE # Determine GRCh38 gene ranges and principal structures using MANE project annotated transcripts, if validating features, validated principal transcripts may take priority
+MANE_annotation: "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.0/MANE.GRCh38.v1.0.ensembl_genomic.gtf.gz" # Curated disease-related protein coding gene structures from MANE project for human GRCh38 genome, see https://www.ncbi.nlm.nih.gov/refseq/MANE/ 
+
+# Alignment Processing options (TRUE, FALSE or BOTH)
+remove_multimappers: FALSE
+remove_duplicate_reads: FALSE
+
+# Bigwig track options
+bigwig_bin_size: 1
+#strand_specific_bigwigs: TRUE # Generate strand-specific bigwigs for strand-specific data
+seperate_spliced_reads: FALSE 
+unspliced_min_length: 20
+unspliced_max_length: 2000
+
+# Adapter Trimming
+trimming:
+  activate: True
+  minimum_read_length: 18
+  minimum_read_quality: 20
+
+counting:
+  count_every_overlap: FALSE # If a read is counted to every feature it overlaps  
+
+#Specific Settings for Splicing Analysis
+splicing: 
+  detect_splice_sites: TRUE # Use lineage-specifc splice sites detected in provided samples only, otherwise uses all splice sites implied in genome annotation
+  splice_site_overhang: 3 # Bases on each side of splice site to count reads from
+
+ensembl_annotations:
+  transcript_support_level_tolerance: 1 # How many levels below the highest tsl should a transcript be considered into the structure of a gene? recommend 0 or 1, if using feature validation, detected principal transcripts will take priority.
+
+features:
+  minimum_intron_length: 6
+  minimum_retained_intron_coverage: 0.1 #minimum fraction of a retained intron annotated as part of a bridging exon
+  validate_features: TRUE
+
+lineage_feature_validation:
+  genes: # Use Salmon Quantification to select transcripts that supports the structure (exon intron UTR CDS) of a gene
+    principal_transcripts_threshold: 0.5 # (0~1) Top transcripts accumulate to this proportion of reads mapped to a gene will be used to annotate the range of the gene expression/splicing in a lineage, higher the more transcript variant included, 0 includes only the most abundant transcript, 1 will include all.
+    minimum_transcript_reads: 5 # (+integer) transcripts with less than this amount of reads will not be used to support the structure of the gene.
+    minimum_rpk_ratio: 0.1 # (0~1)  Only consider transcripts that supply more than this ratio of TPM to a gene 1=100%, 0.1=10%), 0 will include all expressed transcripts.
+  intron_retention:
+    inclusion_fold_threshold: 3 # An intron is considered retained when its inclusion level is this fold or higher of median of introns of its gene
+#  splicing:
+#    minimum_overhang: 10  # (+integer)  Minimum detected overhang length on each side of the intron/splice junction to validate a splicing event, recommend 6 or above for mammals.
+#    minimum_multimap_splice_reads: 100 # Number of multimap reads splice-across reads to exceptionally validate an intron, for managing unmasked duplicative genes such as SMN1 and 2 in human.
+#    minimum_unique_splice_reads: 3 # Number of uniquely mapped splice-across reads to validate an intron
+#    weak_splice_threshold: 0.2 # An intron or exon will be defined as "weak" separately from the main structures when it is supported by less than this ratio of splice-across reads compare to overlapping/adjacent splice events.
+  
+
+# Differential analysis statistical setting
+differential_analysis:
+  # feature expression/abundance thresholds
+  minimum_mean_reads: 10
+  use_p_adj_min_mean: TRUE # Use p-value cut-off mean read count calculated by differential analysis tools, only if it is higher than the min-reads set above
+  minimum_rpkm_percentile: 0 # Only analyse features with normalised rpkm above this percentile after trimming zeros, 0 will include all 
+  # P-Value thresholds
+  significant_p: 0.1 # Changes with p-value lower than this is considered significant
+  undetect_p: 0.95 # Changes with p-value higher than this is considered undetected
+
+differential_plots:
+  scripts:
+    initialise: "workflow/scripts/R/initialise_plots.R"
+    ma: "workflow/scripts/R/ma_plot.R"
+    volcano: "workflow/scripts/R/volcano_plot.R"
+    meta: "workflow/scripts/R/meta_plots.R"
+    heat: "workflow/scripts/R/heatmap.R"
+    bar: "workflow/scripts/R/bar_plot.R"
+    violin: "workflow/scripts/R/violin_plot.R"
+    dot: "workflow/scripts/R/dot_plot.R"
+    pie: "workflow/scripts/R/pie_chart.R"
+    bias: "workflow/scripts/R/bias_plot.R"   
+    overview: "workflow/scripts/R/overview_plots.R"
+  # Resolution of output files. Typically publications require at least 300 dpi.
+  dpi: 400
+  # Number of most significantly changed and most changed gene names to show in ma and volcano plots
+  ma_gene_name_numbers: 10
+  volcano_gene_name_numbers: 10
+  lfc_pc_limit: 99.9
+  # Colour Scheme
+  up_colour: orange
+  down_colour: blue
+  insignificant_colour: grey40
+  font_sizes:
+    axis_title: 12
+    axis_ticks: 9
+    labels: 10
+    title: 11
+    legend: 11
+    caption: 10
+  powerpoint: # Dimensions for powerpoint output in centimetres. Standard powerpoint is 25.4 x 19.05cm (w x h), A4 paper is 21 x 29.7cm.
+    width: 21
+    height: 29.7
+    margins: # Blank space to leave on each edge of a slide
+      top: 2
+      bottom: 2
+      left: 1.5
+      right: 1.5
+  word_docx: # Settings for word document output
+      font_name: Arial
+      font_colour: black
+
+metagene:
+  min_reads: 10
+  norm_per_gene: FALSE # Plot meta profiles with genes normalised or not, if FALSE, more abundant genes will weight more in the metaplot
+  norm_to_median: TRUE # Else per-gene normalisation will be based on the mean
+  anomaly_trim: 0.05
+  plot_median: FALSE #Otherwise plot mean
+
+heatmap:
+  min_reads: 10
+  bin_number: 100
+  heat_colours: royalblue,skyblue,white,goldenrod1,red #Colours for representing lowest to highest log2 foldchange from -4 to 4 , middle one will represent 0
+  min_fc_cov: 5 # minimum mean read depth in a bin to calculate fold change, belowe this threshold, fold change is set to zero 
+  heat_scale_pc : 99 # numerber between 0-100, Cap color depth to this percentile of fold change per bin and scale smaller changes up, lower number makes smaller changes mroe noticeable
+
+group_analysis:
+  scripts:
+    heat: "workflow/scripts/R/group_heat.R"
+    correlation: "workflow/scripts/R/group_correlation.R"
+#  min_common_set: FALSE # Only use minimum common set of features above minimum differential mean across all data sets of a group  
+  common_base_feature: FALSE # Analyse against protperties (length, GC content etc) of the common base feature
+
+# Ensembl Tags of interest, hashtag out those that are not
+# Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line
+ensembl_tags:
+  - basic #CCDS is assigned into basic, considered as transcript support level 1
+#  - cds_end_NF
+#  - cds_start_NF
+#  - mRNA_end_NF
+#  - mRNA_start_NF
+#  - seleno
+
+
+# Biotypes of Interest, hashtag out those that are not
+biotypes:
+#  - G_C_gene
+#  - GIG_C_pseudogene
+#  - IG_D_gene
+#  - IG_J_gene
+#  - IG_J_pseudogene
+#  - IG_pseudogene
+#  - IG_V_gene
+#  - IG_V_pseudogene
+  - lncRNA
+#  - miRNA
+#  - misc_RNA
+#  - Mt_rRNA
+#  - Mt_tRNA
+#  - polymorphic_pseudogene
+#  - processed_pseudogene
+  - protein_coding
+#  - pseudogene
+#  - ribozyme
+#  - rRNA
+#  - rRNA_pseudogene
+  - scaRNA
+#  - scRNA
+  - snoRNA
+  - snRNA
+#  - sRNA
+#  - TEC
+#  - transcribed_processed_pseudogene
+#  - transcribed_unitary_pseudogene
+#  - transcribed_unprocessed_pseudogene
+#  - translated_processed_pseudogene
+#  - translated_unprocessed_pseudogene
+#  - TR_C_gene
+#  - TR_D_gene
+#  - TR_J_gene
+#  - TR_J_pseudogene
+#  - TR_V_gene
+#  - TR_V_pseudogene
+#  - unitary_pseudogene
+#  - unprocessed_pseudogene
+#  - vault_RNA
+
+# Genes of Interest, use gene names present in provided(or ensembl) annotation
+GOI:
+  - FUS
+  - NEAT1
+  - MALAT1
+  - RNU1-1
+  - SAT1
+  - HNRNPH3
+  - MAT2A
+  - HNRNPU
+  - HNRNPUL1
+#  - POLR2A
+#  - SRSF9
+#  - SF3B2
+#  - LSM4
+#  - SNRPA
+
+# Gene Oncology Terms of Interest, requires ensembl annotation
+GO_terms:
+
+mergeReads:
+  activate: False
+
+pca:
+  activate: True
+  labels:
+    # columns of sample sheet to use for PCA
+    #     - condition
+    #
+
+params:
+  star: ""
