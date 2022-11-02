@@ -1,9 +1,9 @@
 rule group_data:
     input:
-        lfc=lambda wildcards: list(dict.fromkeys(expand(
+        lfc=lambda wildcards: expand(
             "differential/{exp.experiment}/{exp.reference}/differential_{exp.difference}/{exp.paired}.{exp.normaliser}_{exp.norm_feat}ReadCount_normalised/{exp.splice}_{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{exp.valid}.{exp.type}.{{tag}}.{exp.feature}.lfc.tab",
             exp=groups.loc[wildcards.md5].itertuples(),
-        ))),
+        ),
     params:
         titles=lambda wildcards: groups.loc[wildcars.md5,"title"].tolist()
         group_title=lambda wildcards: str(group_config.loc[wildcards.md5,"group_title"])
