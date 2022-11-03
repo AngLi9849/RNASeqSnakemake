@@ -7,6 +7,7 @@ rule group_data:
     params:
         titles=lambda wildcards: groups.loc[wildcars.md5,"title"].tolist()
         group_title=lambda wildcards: str(group_config.loc[wildcards.md5,"group_title"])
+        gene_sets=lambda
     output:
         group_lfc="differential/group_reports/Group.{group}.{title}.{md5}.{tag}.docx",
     log:

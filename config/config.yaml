@@ -136,6 +136,10 @@ group_analysis:
     correlation: "workflow/scripts/R/group_correlation.R"
 #  min_common_set: FALSE # Only use minimum common set of features above minimum differential mean across all data sets of a group  
   common_base_feature: FALSE # Analyse against protperties (length, GC content etc) of the common base feature
+  positive_colour: indianred1
+  negative_colour: dodgerblue
+  r_threshold: 0.3 # Minimum absolute R value to identify correlated features
+  label_number: 10  # number of most correlated features to highlight
 
 # Ensembl Tags of interest, hashtag out those that are not
 # Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line

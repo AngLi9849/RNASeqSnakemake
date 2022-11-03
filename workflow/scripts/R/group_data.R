@@ -71,7 +71,7 @@ doc <- body_add(doc,run_pagebreak())
 # Load in lfc data frames as a list
 lfc_ls <- lapply(lfc, function(x) {read.csv(x,sep='\t',header=T,check.names=F,index="id")})
 lfc_ls <- lapply(lfc, function(x) {x %>% filter(baseMean>=min_mean)})
-lfc_ls
+names(lfc_ls) <- titles
 
 # Find common features and names
 min_set <- as.logical(snakemake@config[["group_analysis"]][["min_common_set"]])
@@ -117,6 +117,7 @@ for (r in rankings) {
 lfc_i <- lapply(lfc_i, function(x) {
   x %>% arrange(!!sym(r)) %>% mutate(rank= 1:n()) %>% ungroup
 })
+gene_n <- nrow(lfc_i[[1]])
 
 doc <- body_add(doc,fpar(ftext(r, prop=heading_2)),style = "heading 2")
 heat_ylab <- r
@@ -128,10 +129,54 @@ doc <- body_add(doc,run_pagebreak())
 
 for (n in 1:length(titles)) {
 
+main <- titles[[n]]
+n_heading <- paste("Against ",main,sep=" ")
+doc <- body_add(doc,fpar(ftext(n_heading, prop=heading_2)),style = "heading 2")
+heat_ylab <- paste(main,"log2 Fold Change")
+
 lfc_rank <- lfc_i[[n]][,c("featureID","log2FoldChange")]
 names(lfc_rank) <- c("featureID","log2FoldChange")
-lfc_rank <- lfc_rank %>% 
-lfc_i <- 
+lfc_rank <- lfc_rank %>% arrange(log2FoldChange) %>% mutate(rank=n():1)
+
+lfc_i <- lapply(lfc_i, function(x) {
+  x %>% mutate(rank=lfc_rank$rank[match(featureID,lfc_rank$featureID)])
+})
+
+gene_n <- nrow(lfc_rank)
+
+source(snakemake@config[["group_analysis"]][["scripts"]][["heat"]])
+doc <- body_add(doc,fpar(ftext("Heatmap", prop=heading_3)),style = "heading 3")
+doc <- body_add(doc,value=heatmap,width = 6, height = 7, res= plot_dpi,style = "centered")
+doc <- body_add(doc,run_pagebreak())
+
+cor_n <- 1
+for (t in (1:length(titles))[titles != main]) {
+lfc_cor <- data.frame(lfc_i[[t]][,c("log2FoldChange","featureID","feature_name")],check.names=F)
+names(lfc_cor) <- c("x_lfc","featureID","feature_name")
+lfc_cor <- lfc_cor %>% mutate(y_lfc=lfc_rank$log2FoldChange[match(lfc_rank$featureID,featureID)]) %>% ungroup
+source(snakemake@config[["group_analysis"]][["scripts"]][["correlation"]])
+cor_n <- cor_n + 1
+}
+
+cor_n
+cor_plots <- unlist(lapply(1:cor_n, function(x) {paste("correlation_",x,sep="")}))
+cor_plots_chunks <- split(cor_plots,ceiling(seq_along(cor_plots)/6))
+
+for ( c in cor_plots_chunks) {
+cor_plots_ls <- lapply(c,function(x) {get(x)})
+cor_height <- ceiling(len(c)/2)*2.7
+
+correlation_chunk <- ggarrange(plotlist=cor_plot_ls, ncol=2, nrow=3)
+
+doc <- body_add(doc,value=correlation_chunk,width = 6, height = cor_height, res= plot_dpi,style = "centered")
+doc <- body_add(doc,run_pagebreak())
 
 
 }
+
+}
+
+}
+
+print(doc, target = snakemake@output[["docx"]])
+

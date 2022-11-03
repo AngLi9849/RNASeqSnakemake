@@ -17,6 +17,11 @@ void_col <- "black"
 sig_p <- as.numeric(snakemake@config[["differential_analysis"]][["significant_p"]])
 undetect_p <- as.numeric(snakemake@config[["differential_analysis"]][["undetect_p"]])
 
+r_threshold <- snakemake@config[["group_analysis"]][["r_threshold"]]
+cor_lab_n <- snakemake@config[["group_analysis"]][["label_number"]]
+pos_col <- snakemake@config[["group_analysis"]][["positive_colour"]] 
+neg_col <- snakemake@config[["group_analysis"]][["negative_colour"]]
+
 # Heatmap setting
 heat_name <- "log2FC"
 heat_colours <- lapply(strsplit(as.character(snakemake@config[["heatmap"]][["heat_colours"]]),","),trimws)[[1]]

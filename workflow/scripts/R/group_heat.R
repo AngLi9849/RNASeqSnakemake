@@ -9,6 +9,8 @@ heat_data$heat <- ifelse(heat_data$heat >= 1, 1, ifelse(heat_data$heat <= -1, -1
 
 heat_lfcbrks_i <- heat_lfcbrks/heat_scale
 
+heat_name <- paste(i_heading,"\nn=",gene_n,"\nlog2FC",sep="")
+
 heatmap <- ggplot(
   heat_data,
   aes(x=title,y=rank,fill=heat)
@@ -42,9 +44,6 @@ scale_x_discrete(
   breaks=titles,
   position="top"
   ) +
-labs(
-  subtitle=paste("n=",gene_n,sep="")
-  ) +
 xlab(paste(group_title)) +
 ylab(heat_ylab) +
 theme(
@@ -76,6 +75,6 @@ theme(
   strip.text=element_text(face="bold"),
   strip.background=element_rect(colour="white",fill="white",size=0.1),
   axis.text.y = element_text(colour="black",size=9),
-  axis.text.x = element_text(angle = 45, vjust = 1, hjust=1,colour="black")
+  axis.text.x = element_text(angle = 45, vjust = -1, hjust=-1,colour="black")
   )
 
