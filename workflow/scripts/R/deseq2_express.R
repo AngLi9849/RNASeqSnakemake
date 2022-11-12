@@ -50,7 +50,9 @@ bed <- unique(read.csv(snakemake@input[["bed"]],sep='\t',header=F,check.names=F)
 names(bed) <- c("rootID","featureID","feature_name","baseID")
 
 genes <- genes[genes$geneID %in% bed$rootID,]
-genesc[,c("rootID","featureID","feature_name","baseID")] <- bed$featureID[match(gene$geneID,bed$rootID),c("rootID","featureID","feature_name","baseID")]
+genes[,c("rootID","featureID","feature_name","baseID")] <- bed[match(genes$geneID,bed$rootID),c("rootID","featureID","feature_name","baseID")]
+
+head(genes,5)
 
 #  Import sample config, size factors and count table and conduct DESeq2 Differential Expression Analysis
 rep_pair <- as.logical(snakemake@params[["paired"]])
@@ -172,19 +174,20 @@ expr$group2<-paste(expr$change,expr$group)
 section <- snakemake@params[["section"]]
 base_bed <- read.csv(snakemake@input[["base_bed"]],header=F, sep='\t', check.names=FALSE)[,c(5,8)]
 names(base_bed) <- c("Length","baseID")
-base_bed <- data.frame("baseID" = unique(base_bed$baseID), "Length"=lapply(unique(base_bed$baseID) function(x) {sum(base_bed$Length[base_bed$baseID==x])}), check.names=F)
+#base_bed <- data.frame("baseID" = unique(base_bed$baseID), "Length"=lapply(unique(base_bed$baseID), function(x) {sum(base_bed$Length[base_bed$baseID==x])}), check.names=F)
 use_base_length <- (section!="body" & as.logical(snakemake@params[["main_int"]]))
 head(base_bed,10)
 use_base_length
+expr$Length <- count_length$Length[match(rownames(expr),count_length$gene)]
+expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
+expr$RPK <- expr$baseMean*1000/(expr$Length)
+expr$RPKM <- expr$baseMean*1000000000/(expr$Length*mean(norm_sum$internal))
+
 if (use_base_length) {
 expr$Length <- base_bed$Length[match(expr$baseID,base_bed$baseID)]
 } else {
-expr$Length <- express$Length[match(rownames(expr),express$featureID)]
+expr$Length <- count_length$Length[match(rownames(expr),count_length$gene)]
 }
-
-
-expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
-expr$RPKM <- expr$baseMean*1000000000/(expr$Length*mean(norm_sum$internal))
 
 write.table(data.frame("id"=rownames(rpkm),rpkm, check.names=FALSE), file=snakemake@output[["rpkm"]], sep='\t', row.names=F,quote=F,)
 

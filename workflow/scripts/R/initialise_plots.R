@@ -17,17 +17,21 @@ void_col <- "black"
 sig_p <- as.numeric(snakemake@config[["differential_analysis"]][["significant_p"]])
 undetect_p <- as.numeric(snakemake@config[["differential_analysis"]][["undetect_p"]])
 
+# Correlation settings
 r_threshold <- snakemake@config[["group_analysis"]][["r_threshold"]]
 cor_lab_n <- snakemake@config[["group_analysis"]][["label_number"]]
-pos_col <- snakemake@config[["group_analysis"]][["positive_colour"]] 
-neg_col <- snakemake@config[["group_analysis"]][["negative_colour"]]
+cor_page_n <- snakemake@config[["group_analysis"]][["correlation_per_page"]]
+cor_qt <- as.numeric(snakemake@config[["group_analysis"]][["correlation_highlight_pc"]])/100
+positive_col <- snakemake@config[["group_analysis"]][["positive_colour"]] 
+negative_col <- snakemake@config[["group_analysis"]][["negative_colour"]]
+sig_cor_only <- as.logical(snakemake@config[["group_analysis"]][["highlight_sig_cor_only"]])
 
 # Heatmap setting
 heat_name <- "log2FC"
 heat_colours <- lapply(strsplit(as.character(snakemake@config[["heatmap"]][["heat_colours"]]),","),trimws)[[1]]
-heat_lfcbrks <- c(-3:3)
-heat_lfcbrks <- unlist(lapply(heat_lfcbrks, function(x) {((2^(x+1))/((2^x)+1))-1}))
-names(heat_lfcbrks) <- c(-3:3)
+heat_lfcbrks_val <- c( -3 , -2 , -1 , -0.5 , 0 , 0.5 , 1 , 2 , 3 )
+heat_lfcbrks <- unlist(lapply(heat_lfcbrks_val, function(x) {((2^(x+1))/((2^x)+1))-1}))
+names(heat_lfcbrks) <- heat_lfcbrks_val
 heat_scale_pc <- as.numeric(snakemake@config[["heatmap"]][["heat_scale_pc"]])/100
 
 heat_ranks <- c("log2FoldChange","RPKM","Length","GC")

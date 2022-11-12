@@ -92,7 +92,7 @@ differential_plots:
   # Number of most significantly changed and most changed gene names to show in ma and volcano plots
   ma_gene_name_numbers: 10
   volcano_gene_name_numbers: 10
-  lfc_pc_limit: 99.9
+  lfc_pc_limit: 99.999
   # Colour Scheme
   up_colour: orange
   down_colour: blue
@@ -135,11 +135,16 @@ group_analysis:
     heat: "workflow/scripts/R/group_heat.R"
     correlation: "workflow/scripts/R/group_correlation.R"
 #  min_common_set: FALSE # Only use minimum common set of features above minimum differential mean across all data sets of a group  
+  min_rpk: 10 #minimum reads per kilobase for considering a change in group analysis
   common_base_feature: FALSE # Analyse against protperties (length, GC content etc) of the common base feature
   positive_colour: indianred1
   negative_colour: dodgerblue
-  r_threshold: 0.3 # Minimum absolute R value to identify correlated features
-  label_number: 10  # number of most correlated features to highlight
+  r_threshold: 0.3 # Minimum absolute R value to highlight correlated changes
+  correlation_highlight_pc: 15 # 0-100, percentage of changes to highlight on each end of correlated changes
+  label_number: 20  # number of most correlated features to highlight
+  correlation_per_page: 1 # Numbers of correlations to plot per page  
+  highlight_sig_cor_only: FALSE # only highlight genes when correlation is significant 
+
 
 # Ensembl Tags of interest, hashtag out those that are not
 # Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line
@@ -171,8 +176,8 @@ biotypes:
 #  - processed_pseudogene
   - protein_coding
 #  - pseudogene
-#  - ribozyme
-#  - rRNA
+  - ribozyme
+  - rRNA
 #  - rRNA_pseudogene
   - scaRNA
 #  - scRNA

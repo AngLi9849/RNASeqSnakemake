@@ -133,6 +133,7 @@ heatmap_title <- paste(
   "Heatmaps of changes ", difference, " of ", feature_i, " in ", experiment, ".",
   sep="")
 
+heatmap_h <- 7.5
 
 heatmap_caption <- paste(
   "Heatmaps representing fold changes in ", difference, " of ", feature_i, " mapped with at least ", heat_min_reads, " reads on average in ", experiment, ".",

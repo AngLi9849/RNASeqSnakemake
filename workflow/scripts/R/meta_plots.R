@@ -104,7 +104,7 @@ meta_plot <- meta +
 meta_caption <- paste(
   "Normalised coverage over ",meta_gene_n," ", feature_i, " in ", experiment, "." 
 , sep="" )
-
+meta_plot_h <- length(unique(mx_data$rep))*2.3
 meta_plot_title <- paste(gsub("(?<!\\w)(.)","\\U\\1", feature_i, perl = TRUE),"Coverage Profiles.")
 meta_plot_caption <- meta_caption 
 

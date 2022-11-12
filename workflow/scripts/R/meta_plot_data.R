@@ -165,12 +165,12 @@ head(expr_i, 5)
 
 min_mean <- as.numeric(snakemake@config[["metagene"]][["min_reads"]])
 
-min_rpkm <- if (min_rpkm_pc==0) (0) else (as.numeric(quantile(expr_i$rpkm[expr_i$baseMean > 0],min_rpkm_pc/100)))
+min_rpkm <- if (min_rpkm_pc==0) (0) else (as.numeric(quantile(expr_i$RPKM[expr_i$baseMean > 0],min_rpkm_pc/100)))
 min_mean
 min_rpkm
 
 
-expr_i <- expr_i[( (expr_i$baseMean >= min_mean) & (expr_i$rpkm >= min_rpkm) ),]
+expr_i <- expr_i[( (expr_i$baseMean >= min_mean) & (expr_i$RPKM >= min_rpkm) ),]
 
 #expr_i$padj <- ifelse(is.na(expr_i$padj),expr_i$pvalue,expr_i$padj)
 #expr_i <- expr_i[!is.na(expr_i$padj),]

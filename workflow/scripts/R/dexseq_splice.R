@@ -49,7 +49,7 @@ bed <- unique(read.csv(snakemake@input[["bed"]],sep='\t',header=F,check.names=F)
 names(bed) <- c("rootID","featureID","feature_name","baseID")
 
 genes <- genes[genes$geneID %in% bed$rootID,]
-genesc[,c("rootID","featureID","feature_name","baseID")] <- bed$featureID[match(gene$geneID,bed$rootID),c("rootID","featureID","feature_name","baseID")]
+genes[,c("rootID","featureID","feature_name","baseID")] <- bed[match(genes$geneID,bed$rootID),c("rootID","featureID","feature_name","baseID")]
 
 rep_pair <- as.logical(snakemake@params[["paired"]])
 
@@ -174,7 +174,7 @@ expr$featureID <- rownames(expr)
 section <- snakemake@params[["section"]]
 base_bed <- read.csv(snakemake@input[["base_bed"]],header=F, sep='\t', check.names=FALSE)[,c(5,8)]
 names(base_bed) <- c("Length","baseID")
-base_bed <- data.frame("baseID" = unique(base_bed$baseID), "Length"=lapply(unique(base_bed$baseID) function(x) {sum(base_bed$Length[base_bed$baseID==x])}), check.names=F)
+#base_bed <- data.frame("baseID" = unique(base_bed$baseID), "Length"=lapply(unique(base_bed$baseID) function(x) {sum(base_bed$Length[base_bed$baseID==x])}), check.names=F)
 use_base_length <- (section!="body" & as.logical(snakemake@params[["main_int"]]))
 head(base_bed,10)
 use_base_length
@@ -186,6 +186,9 @@ expr$Length <- express$Length[match(rownames(expr),express$featureID)]
 
 expr[,c("GC","AT")] <- nuc[match(rownames(expr),rownames(nuc)),c("GC","AT")]
 expr$RPKM <- express$RPKM[match(rownames(expr),express$featureID)]
+expr$RPK <- express$RPK[match(rownames(expr),express$featureID)]
+
+
 
 #expr$log10P <- -log10(expr$padj)
 #expr$z <- qnorm(expr$pvalue)

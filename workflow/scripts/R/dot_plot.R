@@ -15,7 +15,7 @@ dot_data <- data.frame(
 )
 
 names(dot_data) <- c("value","condition","featureID")
-dot_data$rpkm <- expr$rpkm[match(dot_data$featureID,expr$featureID)]
+dot_data$rpkm <- expr$RPKM[match(dot_data$featureID,expr$featureID)]
 dot_data$top10 <- ifelse(dot_data$rpkm>=quantile(dot_data$rpkm,0.9),dot_data$value,NA)
 dot_data$top50 <- ifelse(dot_data$rpkm>=quantile(dot_data$rpkm,0.5),dot_data$value,NA)
 

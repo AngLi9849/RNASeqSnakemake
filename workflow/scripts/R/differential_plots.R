@@ -370,6 +370,8 @@ lfc_max <- max(c(quantile(abs(expr_i$log2FoldChange),lfc_pc_lim/100,na.rm=T),0))
 expr_i$colour <- ifelse(expr_i$padj < sig_p, ifelse(expr_i$log2FoldChange < 0, down_col, up_col), insig_col)
 
 title_i <- gsub("_"," ",paste(experiment, feature_i, "Differential", toTitleCase(difference),sep=" "))
+head(expr_heat,10)
+head(expr_i,10)
 
 # Summary Plots =============================================
 for ( s in sum_list ) {
@@ -377,6 +379,7 @@ source(snakemake@config[["differential_plots"]][["scripts"]][[paste(s)]])
 }
 # GC, Length and RPKM Bias ===================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["bias"]])
+head(expr_bias,10)
 
 
 # Heatmap
@@ -399,7 +402,7 @@ summary_captions <- paste( "(", LETTERS[1:length(summary_captions)], "). ", summ
 summary_caption <- unlist(list(summary_caption,summary_captions))
 
 summary_caption
-
+summary_h <- 8
 if (difference == "splicing ratio") {
 plots <- list("summary","bias","ma_plot","volcano_plot")
 } else {
@@ -425,11 +428,9 @@ title_p <- fpar(fig_num,ftext(title_p,prop=title_prop))
 
 plot_n <- plot_n + 1
 doc <- body_add(doc,fpar(ftext(toTitleCase(gsub("_"," ",p)), prop=heading_3)),style = "heading 4")
+doc <- body_add(doc,value=plot_p,width = 6, height = get(paste(p,"_h",sep="")), res= plot_dpi,style = "centered")
 if (p=="summary") {
-doc <- body_add(doc,value=plot_p,width = 6, height = 8, res= plot_dpi,style = "centered")
 doc <- body_add(doc,run_pagebreak())
-} else {
-doc <- body_add(doc,value=plot_p,width = 6, height = 7, res= plot_dpi,style = "centered")
 }
 doc <- body_add(doc,title_p)
 # Loop for each line in caption

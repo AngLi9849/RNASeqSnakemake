@@ -113,7 +113,7 @@ Length_plot <- ggplot(data = expr_bias, aes(x=expr_bias$Length, y = expr_bias$ab
 
 # Length to Log2foldChange with P-Value Color scale
 
-rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$rpkm, y = expr_bias$abslog2FoldChange)) +
+rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$RPKM, y = expr_bias$abslog2FoldChange)) +
   geom_point(
     size=0.5,
     color=expr_bias$colour,
@@ -167,3 +167,5 @@ bias_caption <- paste(
   "Log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
 )
 }
+
+bias_h <- 7

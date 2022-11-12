@@ -147,8 +147,8 @@ rule dexseq_splice_ratio:
         section=lambda wildcards : features.loc[wildcards.feature,"section"],
         main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
     resources:
-        mem="16G",
-        rmem="12G",
+        mem="24G",
+        rmem="16G",
     conda:
         "../envs/dexseq.yaml"
     log:

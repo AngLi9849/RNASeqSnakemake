@@ -515,11 +515,17 @@ groups["md5"]=groups.apply(lambda row:
     hashlib.md5((",".join(groups[groups.group==str(row.group)].apply(lambda i: ",".join(str(i))))).encode('utf-8')).hexdigest(),
     axis=1
 )
-groups=groups.set_index(["md5"],drop=False).sort_index()
+groups["gene_sets"]=groups.apply(lambda row: experiments.loc[row.experiment,"gene_sets"],axis=1)
+groups=groups.set_index(["md5"],drop=False)
 
 group_config=groups[["group","md5","group_lineage","group_title"]].drop_duplicates()
 group_config["sample_source"]=group_config.apply(lambda row: pd.unique(groups.loc[row.md5,"sample_source"]).item() if len(pd.unique(groups.loc[row.md5,"sample_source"]))==1 else None, axis=1)
 group_config["valid"]=group_config.apply(lambda row: "annotated" if row.sample_source=="genome" else "validated", axis=1)
+group_config["gene_sets"]=group_config.apply(lambda row: 
+    ",".join(list(filter(lambda i: i!='',pd.unique(",".join(groups.loc[row.md5,"gene_sets"].tolist()).split(",")).tolist()))),
+    axis=1
+)
+
 groups=groups[groups.md5.isin(group_config[group_config.sample_source!=None]["md5"])]
 
 #Set variables for result filenames
@@ -583,6 +589,14 @@ def get_differential_reports():
     docx = expand(
         "diff_reports/experiment_reports/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}.{exp.norm_feat}_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE, mean=MX_MEAN, norm=MX_NORM
+    ),
+    return docx
+
+def get_group_reports():
+    docx = expand(
+        "group_reports/Group.{group.group}.{group.group_title}.{group.md5}.{tag}.docx",
+         group=group_config.itertuples(),
+         tag=TAG,
     ),
     return docx
 

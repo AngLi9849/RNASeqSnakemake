@@ -58,8 +58,8 @@ rule deseq2_expression:
         main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
         dir="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}ReadCount_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}",
     resources:
-        mem="16G",
-        rmem="12G",
+        mem="24G",
+        rmem="16G",
     conda:
         "../envs/differential.yaml"
     log:

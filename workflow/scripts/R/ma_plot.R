@@ -86,3 +86,4 @@ ma_plot_title <- paste(title_i, "MA Plot.")
 ma_plot_caption <- paste(
   ma_caption, " Names of top ", ma_n, " most significantly increased and decreased ", feature_i, " are labelled. ", ifelse(length(goi) > 0, "Genes of particular interest are highlighted with red dot and labelled in bold.", ""),sep=""
 )
+ma_plot_h <- 6
