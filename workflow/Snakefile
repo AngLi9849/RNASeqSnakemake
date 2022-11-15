@@ -1,0 +1,105 @@
+from snakemake.utils import min_version
+
+##### set minimum snakemake version #####
+min_version("6.4.1")
+
+
+##### setup report #####
+configfile: "config/config.yaml"
+
+
+report: "report/workflow.rst"
+
+
+##### setup singularity #####
+
+
+# this container defines the underlying OS for each job when using the workflow
+# with --use-conda --use-singularity
+container: "docker://continuumio/miniconda3"
+
+
+##### load rules #####
+
+
+include: "rules/common.smk"
+include: "rules/utilities.smk"
+#include: "rules/qc.smk"
+include: "rules/trim.smk"
+include: "rules/reference.one_trs.smk"
+include: "rules/features.smk"
+include: "rules/validate_features.gene_only.smk"
+include: "rules/star_align.smk"
+include: "rules/process_alignment.smk"
+include: "rules/scale_factors.smk"
+include: "rules/rmats.smk"
+include: "rules/differential_reports.smk"
+include: "rules/group_analysis.smk"
+include: "rules/differential_express.smk"
+include: "rules/differential_splice.smk"
+#include: "rules/differential_usage.smk"
+include: "rules/bam2bedgraph2bigwig.smk"
+include: "rules/metagene.smk"
+#include: "rules/temp.smk"
+
+
+##### target rules #####
+
+
+rule all:
+    input:
+        #get_bams(),
+        #get_feature_counts()
+        #"results/qc/multiqc_report.html",
+        get_norm_bigwigs(),
+        #get_mx_data(),
+        #get_meta_data(),
+        #get_heat_data(),
+        #get_diffexp_docx(),
+        #get_diffsplice_docx(),
+        get_differential_reports(),
+        get_group_reports(),
+        #get_differential_splicing(),
+        #get_meta_profiles(),
+        #"resources/annotations/ensembl_homo_sapiens_genome.gtf.basic_features.bed"
+        #"resources/annotations/ensembl_homo_sapiens_genome.custom.annotated_basic.GeneBody.bed.nuc.tab"
+        #"HCT_U_UL1-AID_TT-Seq/feature_counts/AllAligned.annotated_basic.GeneBody.lengths.tsv"
+        #"resources/annotations/HCT116.star.splice_junctions.bed"
+        #"resources/annotations/ensembl_homo_sapiens.HCT116.custom.annotated_basic.GeneBody.star_splice_sites.saf"
+        #"HCT_U-AID_Chromatin_RNA-Seq/deseq2/AllAligned.GeneBodyReads.spikein_scale_factors.tsv"
+        #"differential/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/differential_expression/unpaired.internal_mRNAReadCount_normalised/All_Aligned.genome_annotated.custom-137b0876fc9ef82c9b34f6e1f1a90898.basic.GeneBody.lfc.tab",
+        #"deseq2/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.gtf.TotalReadCount.unpaired.summary.tsv"
+        #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.HCT116_validated.custom-{md5}.basic.GeneBody.rpkm.bed".format(
+        #    md5=features.loc["GeneBody","prefix_md5"]
+        #),
+        #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/AllAligned.HCT116_validated.custom-{md5}.basic.GeneBody.plot-{plot_md5}.sig2bg.tab".format(
+#            plot_md5=features.loc["GeneBody","plot_md5"],
+#            md5=features.loc["GeneBody","prefix_md5"]
+#        ),
+        #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/SplicedAligned.HCT116_validated.custom-7e5ff750dfd4716388d8ebad286d805e.basic.GeneBody.star.SpliceSite.counts.tsv"
+        #"resources/annotations/MANE_homo_sapiens.GRCh38.104/genome.gtf.bed12"
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.fasta",
+        #"salmon/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/CCDS_transcripts/quant.sf",
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.basic_transcripts.bed12",
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/transcriptome.basic_confident.bed12",
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/HCT116.gtf.basic_validated.bed"
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_gene_info.tab"
+        #"resources/annotations/homo_sapiens.HCT116.star.splice_junctions.bed"
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_trs_sj.bed"
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/HCT116.gtf.basic_form.tab"
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.gtf.basic_annotated.bed"
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104/genome.custom-7e5ff750dfd4716388d8ebad286d805e.annotated_basic.GeneBody.bed"
+        #"differential/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/differential_expression/unpaired.internal_TotalReadCount_normalised/All_Aligned.genome_annotated.custom-137b0876fc9ef82c9b34f6e1f1a90898.basic.GeneBody.docx"
+        #"bigwigs/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.fwd.raw.bigwig",
+        #"rmats/prep/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/",
+        #"rmats/post/HNRNPU-AID_KO_vs_HCT116_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/temp",
+        #"resources/annotations/homo_sapiens.HCT116.rmats.ret_int.bed",
+        #"matrices/HCT116_Nucleoplasm_RNA-Seq_Replicate_1/lane1/ensembl_homo_sapiens.GRCh38.104/AllAligned.stranded/HCT116_validated.plot-{md5}.basic.GeneBody.sense.sorted_matrix.gz".format(
+        #    md5=features.loc["GeneBody","plot_md5"],
+#),
+        #"resources/annotations/ensembl_homo_sapiens.GRCh38.104_genome.plot-095b4d96d6e4d066a112a711bfe0b4fb.annotated_basic.GeneBody.sense.before.bed"
+        #get_diffexp_docx(),
+        #get_diffsplice_docx(),
+        #"resources/templates/Arial.docx"
+        #"test.tsv"
+        #"featurecounts/HCT116_and_HNRNPU-AID_KO_Nucleoplasm_RNA-Seq/ensembl_homo_sapiens.GRCh38.104/SplicedAligned.HCT116_validated.custom-7e5ff750dfd4716388d8ebad286d805e.basic.GeneBodyReads.lengths.tsv"

@@ -1,0 +1,10 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - bioconductor-dexseq =1.40.0
+  - bioconductor-genomicranges
+  - r-ashr
+  - r-essentials
+  - r-ggrepel
+  - r-ggtext 
