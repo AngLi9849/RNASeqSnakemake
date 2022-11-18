@@ -62,19 +62,11 @@ lfc_cor$y_lfc <- ifelse(lfc_cor$y_lfc > cor_y_uplim, cor_y_uplim, lfc_cor$y_lfc)
 lfc_cor$y_lfc <- ifelse(lfc_cor$y_lfc < cor_y_lowlim, cor_y_lowlim, lfc_cor$y_lfc)
 
 
+
 correlation <- ggplot(data = lfc_cor, aes(
   x=x_lfc, 
-  y=y_lfc,
+  y=y_lfc, 
 )) + 
-  geom_point(
-    size=0.5,
-    color=lfc_cor$Colour,
-    shape = ifelse( 
-      ( (lfc_cor$x_lfc <= cor_x_lowlim) | 
-        (lfc_cor$x_lfc >= cor_x_uplim) | 
-        ( lfc_cor$y_lfc <= cor_y_lowlim) | 
-        (lfc_cor$y_lfc >= cor_y_uplim) ) , 17, 19)
-  ) +
   stat_cor(
     method="pearson",
     label.x.npc = r_lab_pos,
@@ -96,19 +88,6 @@ correlation <- ggplot(data = lfc_cor, aes(
   ) +
   scale_x_continuous(limits=cor_xlim, breaks = cor_xbrks) +
   scale_y_continuous(limits=cor_ylim, breaks = cor_ybrks) +
-  geom_text_repel(
-    mapping=aes(label=Label),
-    size= 3.0,
-    color=  "grey20",
-    fontface= 1,
-    segment.color= "grey20",
-    segment.alpha= 0.5,
-    bg.color= NA,
-    bg.r= NA,
-    max.overlaps=Inf,
-    force=10,
-    force_pull=5
-  ) + 
   xlab(paste(titles[[t]], "log2 FC")) +
   ylab(paste(main,"log2 FC")) +  
   theme(panel.background=element_rect(fill="White",colour="white"),
@@ -124,4 +103,96 @@ correlation <- ggplot(data = lfc_cor, aes(
         axis.title.x = element_text(size=9)
   )
 
-assign(paste("correlation_",cor_n,sep=""), correlation)
+correlate <- correlation + 
+  geom_text_repel(
+    mapping=aes(label=Label),
+    size= 3.0,
+    color=  "grey20",
+    fontface= 1,
+    segment.color= "grey20",
+    segment.alpha= 0.5,
+    bg.color= NA,
+    bg.r= NA,
+    max.overlaps=Inf,
+    force=10,
+    force_pull=5
+  ) +
+  geom_point(
+    size=0.5,
+    color=lfc_cor$Colour,
+    shape = ifelse( 
+      ( (lfc_cor$x_lfc <= cor_x_lowlim) | 
+        (lfc_cor$x_lfc >= cor_x_uplim) | 
+        ( lfc_cor$y_lfc <= cor_y_lowlim) | 
+        (lfc_cor$y_lfc >= cor_y_uplim) ) , 17, 19)
+  )
+
+assign(paste("correlation_",cor_n,sep=""), correlate)
+
+cor_n <- cor_n + 1
+
+for (r in rankings) {
+
+cor_bias_min <- min(unlist(lfc_cor[r]),na.rm=T)
+cor_bias_max <- max(unlist(lfc_cor[r]),na.rm=T)
+cor_bias_range <- cor_bias_max - cor_bias_min
+cor_bias_min <- signif(cor_bias_min - 0.05*cor_bias_range,2)
+cor_bias_max <- signif(cor_bias_max + 0.05*cor_bias_range,2)
+cor_bias_range <- cor_bias_max - cor_bias_min 
+cor_bias_lowqt <- signif(cor_bias_min + 0.25*cor_bias_range,2)
+cor_bias_mid <- signif(cor_bias_min + 0.5*cor_bias_range,2)
+cor_bias_upqt <- signif(cor_bias_min + 0.75*cor_bias_range,2)
+
+cor_bias_lim <- c(cor_bias_min, cor_bias_max)
+
+cor_bias_brks <- c(
+  cor_bias_min,
+  cor_bias_lowqt,
+  cor_bias_mid,
+  cor_bias_upqt,
+  cor_bias_max
+)
+
+cor_bias <- correlation + 
+  geom_point(
+    aes_string(color=r),
+    size=1,
+    alpha=0.5,
+    shape = ifelse(
+      ( (lfc_cor$x_lfc <= cor_x_lowlim) |
+        (lfc_cor$x_lfc >= cor_x_uplim) |
+        ( lfc_cor$y_lfc <= cor_y_lowlim) |
+        (lfc_cor$y_lfc >= cor_y_uplim) ) , 17, 19)
+  ) +
+  geom_smooth(
+    method = "lm",
+    size=0.8,
+    fill="black",
+    colour="black",
+    alpha=0.2) +
+  scale_colour_gradientn(
+    name=r,
+    colours = cor_bias_colours,
+    limits=cor_bias_lim,
+    breaks=cor_bias_brks,
+    guide = guide_colorbar(
+      label = TRUE,
+      draw.ulim = TRUE,
+      draw.llim = TRUE,
+      frame.colour = "black",
+      frame.linewidth = 1,
+      ticks.colour = "black",
+      ticks.linewidth = 1,
+      ticks = TRUE,
+      label.position = "right",
+      barwidth = 0.5,
+      barheight = 6,
+      direction = 'vertical'
+    )
+  )
+assign(paste("correlation_",cor_n,sep=""), cor_bias)
+
+cor_n <- cor_n + 1
+
+}
+

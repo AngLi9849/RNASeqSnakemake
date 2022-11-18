@@ -35,3 +35,9 @@ group	treatment          	splice	feature 	difference	protocols
 8	HB3261          	All	GeneBody	expression	Chromatin_RNA-Seq
 8	HB3280           	All	GeneBody	splicing_ratio	Chromatin_RNA-Seq
 8	HB3280          	All	GeneBody	expression	Chromatin_RNA-Seq
+10	HNRNPU-AID_KO      	FALSE	GeneBody	expression	TT-Seq
+10	HNRNPUL1-AID_KO       	FALSE	GeneBody	expression	TT-Seq
+10	FUS-mAID_+5PhIAA_6hr	FALSE	GeneBody	expression	TT-Seq
+11	HNRNPU-AID_KO      	FALSE	GeneBody	expression	TT-Seq
+11	HNRNPUL1-AID_KO       	FALSE	GeneBody	expression	TT-Seq
+11	FUS-mAID_+5PhIAA_6hr	FALSE	GeneBody	expression	TT-Seq

@@ -304,14 +304,14 @@ expr_heat$log10P <- -log10(expr_heat$padj)
 expr_heat$colour <- ifelse(expr_heat$padj < sig_p, ifelse(expr_heat$log2FoldChange < 0, down_col, up_col), insig_col)
 
 
-total_i <- nrow(expr_i)
+total_i <- nrow(expr_heat)
 
 min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],min_rpkm_pc/100,na.rm=T)
 meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= config_min_mean & expr_i$baseMean >= min_rpkm])
 
 
 
-insuf_i <- sum( (expr_i$baseMean < min_mean) | (!is.na(expr_i$RPKM) & (expr_i$RPKM < min_rpkm)) | (is.na(expr_i$pvalue)) )
+insuf_i <- sum( (expr_heat$baseMean < min_mean) | (!is.na(expr_heat$RPKM) & (expr_heat$RPKM < min_rpkm)) | (is.na(expr_heat$pvalue)),na.rm=T )
 
 expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$RPKM >= min_rpkm),]
 

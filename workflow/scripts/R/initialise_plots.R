@@ -25,6 +25,7 @@ cor_qt <- as.numeric(snakemake@config[["group_analysis"]][["correlation_highligh
 positive_col <- snakemake@config[["group_analysis"]][["positive_colour"]] 
 negative_col <- snakemake@config[["group_analysis"]][["negative_colour"]]
 sig_cor_only <- as.logical(snakemake@config[["group_analysis"]][["highlight_sig_cor_only"]])
+cor_bias_colours <- lapply(strsplit(as.character(snakemake@config[["group_analysis"]][["cor_bias_colours"]]),","),trimws)[[1]]
 
 # Heatmap setting
 heat_name <- "log2FC"

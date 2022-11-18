@@ -189,11 +189,11 @@ doc <- body_add(doc,fpar(ftext("Correlations", prop=heading_3)),style = "heading
 
 cor_n <- 1
 for (t in (1:length(titles))[titles != main]) {
-lfc_cor <- data.frame(lfc_i[[t]][,c("log2FoldChange","featureID","feature_name")],check.names=F)
-names(lfc_cor) <- c("x_lfc","featureID","feature_name")
+#t <- titles[2]
+lfc_cor <- data.frame(lfc_i[[t]][,c("log2FoldChange","featureID","feature_name",rankings)],check.names=F)
+names(lfc_cor) <- c("x_lfc","featureID","feature_name",rankings)
 lfc_cor <- lfc_cor %>% mutate(y_lfc=lfc_rank$log2FoldChange[match(featureID,lfc_rank$featureID)]) %>% ungroup
 source(snakemake@config[["group_analysis"]][["scripts"]][["correlation"]])
-cor_n <- cor_n + 1
 }
 
 cor_n

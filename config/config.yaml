@@ -71,7 +71,7 @@ differential_analysis:
   use_p_adj_min_mean: TRUE # Use p-value cut-off mean read count calculated by differential analysis tools, only if it is higher than the min-reads set above
   minimum_rpkm_percentile: 0 # Only analyse features with normalised rpkm above this percentile after trimming zeros, 0 will include all 
   # P-Value thresholds
-  significant_p: 0.1 # Changes with p-value lower than this is considered significant
+  significant_p: 0.05 # Changes with p-value lower than this is considered significant
   undetect_p: 0.95 # Changes with p-value higher than this is considered undetected
 
 differential_plots:
@@ -141,10 +141,10 @@ group_analysis:
   negative_colour: dodgerblue
   r_threshold: 0.3 # Minimum absolute R value to highlight correlated changes
   correlation_highlight_pc: 15 # 0-100, percentage of changes to highlight on each end of correlated changes
-  label_number: 20  # number of most correlated features to highlight
+  label_number: 10  # number of most correlated features to highlight
   correlation_per_page: 1 # Numbers of correlations to plot per page  
   highlight_sig_cor_only: FALSE # only highlight genes when correlation is significant 
-
+  cor_bias_colours: yellow, blue #Colour scale representing feature property bias
 
 # Ensembl Tags of interest, hashtag out those that are not
 # Untagged features are assigned to "basic", multi-tagged features are assigned to the first tag in their line
