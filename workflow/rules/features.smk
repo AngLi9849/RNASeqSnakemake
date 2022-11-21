@@ -157,7 +157,7 @@ rule custom_feature:
             if (f[i]-0 > 0) {{
               include_first[f[i]]=""
             }} else {{
-              exclude_first[f[i]]=""
+              exclude_first[0-f[i]]=""
             }} ;
           }} ; 
           split(nolast,l,",") ;
@@ -165,12 +165,12 @@ rule custom_feature:
             if (l[i]-0 > 0) {{
               include_last[l[i]]=""
             }} else {{
-              exclude_last[l[i]]=""
+              exclude_last[0-l[i]]=""
             }} ;
           }} ;
           include_all = (f[1]=="" && l[1]=="")? 1 : 0 ;
         }} ;
-        ( (include_all==1) || ( ( (f[1]=="") || ( (f[1]-0 != 0) && ($12 in include_first) && !($12 in exclude_first) ) )  && ( (l[1]=="") || ( (l[1]-0 != 0) && ($13 in include_last) && !($13 in exclude_last) ) ) ) ) {{ 
+        ( (include_all==1) || ( ( (f[1]=="") || ( (f[1]-0 != 0) && ((length(include_first) != 0) && ($12 in include_first)) && !($12 in exclude_first) ) )  && ( (l[1]=="") || ( (l[1]-0 != 0) && ($13 in include_last) && !($13 in exclude_last) ) ) ) ) {{ 
           if ($6=="+") {{ 
             $7="{wildcards.feature}" ; a=$2 ; b=$3 ;
             $2 = ( \

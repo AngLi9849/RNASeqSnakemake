@@ -131,31 +131,29 @@ assign(paste("correlation_",cor_n,sep=""), correlate)
 
 cor_n <- cor_n + 1
 
+cor_rank_pc <- c(0,25,50,75,100)
+
 for (r in rankings) {
 
-cor_bias_min <- min(unlist(lfc_cor[r]),na.rm=T)
-cor_bias_max <- max(unlist(lfc_cor[r]),na.rm=T)
-cor_bias_range <- cor_bias_max - cor_bias_min
-cor_bias_min <- signif(cor_bias_min - 0.05*cor_bias_range,2)
-cor_bias_max <- signif(cor_bias_max + 0.05*cor_bias_range,2)
-cor_bias_range <- cor_bias_max - cor_bias_min 
-cor_bias_lowqt <- signif(cor_bias_min + 0.25*cor_bias_range,2)
-cor_bias_mid <- signif(cor_bias_min + 0.5*cor_bias_range,2)
-cor_bias_upqt <- signif(cor_bias_min + 0.75*cor_bias_range,2)
+lfc_cor <- lfc_cor %>% arrange(!!sym(r)) %>% mutate("Rank" = 1:n()) %>% ungroup
 
-cor_bias_lim <- c(cor_bias_min, cor_bias_max)
+cor_rank_brks <- unlist(lapply(cor_rank_pc, function(p) { quantile(as.numeric(unlist(lfc_cor[,"Rank"])),p/100,na.rm=T) } ) )
+names(cor_rank_brks) <-  unlist(lapply(cor_rank_pc, function(p) {signif(quantile(as.numeric(unlist(lfc_cor[,r])),p/100,na.rm=T),2) } ) )
 
-cor_bias_brks <- c(
-  cor_bias_min,
-  cor_bias_lowqt,
-  cor_bias_mid,
-  cor_bias_upqt,
-  cor_bias_max
-)
+# Aborted Attempt with bias on true values
+#cor_bias_range <- cor_bias_max - cor_bias_min
+#cor_bias_min <- signif(cor_bias_min - 0.05*cor_bias_range,2)
+#cor_bias_max <- signif(cor_bias_max + 0.05*cor_bias_range,2)
+#cor_bias_range <- cor_bias_max - cor_bias_min 
+#cor_bias_lowqt <- signif(cor_bias_min + 0.25*cor_bias_range,2)
+#cor_bias_mid <- signif(cor_bias_min + 0.5*cor_bias_range,2)
+#cor_bias_upqt <- signif(cor_bias_min + 0.75*cor_bias_range,2)
+
+cor_rank_lim <- c(1, nrow(lfc_cor))
 
 cor_bias <- correlation + 
   geom_point(
-    aes_string(color=r),
+    aes_string(color=Rank),
     size=1,
     alpha=0.5,
     shape = ifelse(
@@ -173,8 +171,8 @@ cor_bias <- correlation +
   scale_colour_gradientn(
     name=r,
     colours = cor_bias_colours,
-    limits=cor_bias_lim,
-    breaks=cor_bias_brks,
+    limits=cor_rank_lim,
+    breaks=cor_rank_brks,
     guide = guide_colorbar(
       label = TRUE,
       draw.ulim = TRUE,
@@ -190,6 +188,7 @@ cor_bias <- correlation +
       direction = 'vertical'
     )
   )
+
 assign(paste("correlation_",cor_n,sep=""), cor_bias)
 
 cor_n <- cor_n + 1
