@@ -38,11 +38,11 @@ exp <- gsub("_"," ",as.character(snakemake@wildcards[["experiment"]]))
 doc <- read_docx(snakemake@input[["docx"]])
 doc <- body_add(doc,fpar(ftext(exp, prop=title_bold)),style = "centered")
 
-toc <- block_toc(level=3)
-tof <- block_toc(level=1,seq_id="Figure")
+#toc <- block_toc(level=3)
+#tof <- block_toc(level=1,seq_id="Figure")
 
-doc <- body_add(doc, fpar(ftext("Table of Content",prop=fp_text(bold=TRUE))))
-doc <- body_add(doc,toc)
+#doc <- body_add(doc, fpar(ftext("Table of Content",prop=fp_text(bold=TRUE))))
+#doc <- body_add(doc,toc)
 #doc <- body_add(doc,run_pagebreak())
 #doc <- body_add(doc,fpar(ftext("List of Figures",prop=fp_text(bold=TRUE))))
 #doc <- body_add(doc,tof)
@@ -53,6 +53,8 @@ for (i in plot_list) {
 doc <- body_add(doc,block_pour_docx(i))
 
 }
+
+
 
 print(doc,target=snakemake@output[["docx"]])
 

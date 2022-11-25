@@ -143,7 +143,14 @@ if (rep_pair){
 # Normalise according to supplied size factors
 dds <- estimateSizeFactors(dds)
 sizeFactors(dds) <- size_factors
-dds <- estimateDispersions(dds)
+
+dds <- tryCatch(
+  {estimateDispersions(dds)},
+  error=function(e) {
+   estimateDispersions(dds,fitType="mean")
+  }
+)
+
 dds <- nbinomWaldTest(dds)
 resultsNames(dds)
 

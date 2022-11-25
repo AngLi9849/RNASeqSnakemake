@@ -7,6 +7,7 @@ TT-Seq           	HNRNPU-AID_KO      	HCT116          	homo_sapiens	HCT116      
 TT-Seq             	HNRNPUL1-AID_KO        	HCT116           	homo_sapiens	HCT116        	TRUE	TRUE	saccharomyces_cerevisiae     	             	UL1_snRNA,Histone_example,UUL1FUS,RNA_PolII_snRNA,Histones,IEG,IEG_examples,U4_snRNA
 Chromatin_RNA-Seq   	HNRNPUL1-AID_KO      	HCT116_UL1          	homo_sapiens	HCT116         	FALSE	FALSE	                        	            	UL1_snRNA,Histone_example,UUL1FUS,RNA_PolII_snRNA,Histones,IEG,IEG_examples,U4_snRNA
 TT-Seq            	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr  	homo_sapiens	HCT116         	TRUE	TRUE	saccharomyces_cerevisiae      	          	FUS_Spl,Histone_example,Histones,RNA_PolII_snRNA,IEG,Ribosomal_genes
+#TT-Seq            	FUS-AID2_+5PhIAA_6hr  	FUS-AID2_+DMSO_6hr  	homo_sapiens	HCT116         	TRUE	TRUE	saccharomyces_cerevisiae      	          	FUS_Spl,Histone_example,Histones,RNA_PolII_snRNA,IEG,Ribosomal_genes
 Total_RNA-Seq   	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr	homo_sapiens	HCT116         	FALSE	FALSE	                              	         	FUS_Spl,Ribosomal_genes,Histones
 Total_RNA-Seq   	FUS-mAID_+5PhIAA_48hr 	FUS-mAID_+DMSO_48hr	homo_sapiens	HCT116         	FALSE	FALSE	                              	         	FUS_Spl,Histones,IEG,Ribosomal_genes
 Chromatin_RNA-Seq   	HB3261           	SC3504           	homo_sapiens	Lymphoblastoid	FALSE	FALSE	                        	           	snRNAs,U_Spl,UUL1FUS,U_lncRNA,IEG

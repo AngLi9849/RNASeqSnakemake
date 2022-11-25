@@ -61,7 +61,9 @@ lfc_cor$x_lfc <- ifelse(lfc_cor$x_lfc < cor_x_lowlim, cor_x_lowlim, lfc_cor$x_lf
 lfc_cor$y_lfc <- ifelse(lfc_cor$y_lfc > cor_y_uplim, cor_y_uplim, lfc_cor$y_lfc)
 lfc_cor$y_lfc <- ifelse(lfc_cor$y_lfc < cor_y_lowlim, cor_y_lowlim, lfc_cor$y_lfc)
 
-
+for (r in rankings) {
+  lfc_cor <- lfc_cor %>% arrange(!!sym(r)) %>% mutate(!!paste(r,"_Rank",sep='') := 1:n()) %>% ungroup
+}
 
 correlation <- ggplot(data = lfc_cor, aes(
   x=x_lfc, 
@@ -104,6 +106,15 @@ correlation <- ggplot(data = lfc_cor, aes(
   )
 
 correlate <- correlation + 
+  geom_point(
+    size=0.5,
+    color=lfc_cor$Colour,
+    shape = ifelse( 
+      ( (lfc_cor$x_lfc <= cor_x_lowlim) | 
+        (lfc_cor$x_lfc >= cor_x_uplim) | 
+        ( lfc_cor$y_lfc <= cor_y_lowlim) | 
+        (lfc_cor$y_lfc >= cor_y_uplim) ) , 17, 19)
+  ) +
   geom_text_repel(
     mapping=aes(label=Label),
     size= 3.0,
@@ -116,15 +127,6 @@ correlate <- correlation +
     max.overlaps=Inf,
     force=10,
     force_pull=5
-  ) +
-  geom_point(
-    size=0.5,
-    color=lfc_cor$Colour,
-    shape = ifelse( 
-      ( (lfc_cor$x_lfc <= cor_x_lowlim) | 
-        (lfc_cor$x_lfc >= cor_x_uplim) | 
-        ( lfc_cor$y_lfc <= cor_y_lowlim) | 
-        (lfc_cor$y_lfc >= cor_y_uplim) ) , 17, 19)
   )
 
 assign(paste("correlation_",cor_n,sep=""), correlate)
@@ -135,9 +137,9 @@ cor_rank_pc <- c(0,25,50,75,100)
 
 for (r in rankings) {
 
-lfc_cor <- lfc_cor %>% arrange(!!sym(r)) %>% mutate("Rank" = 1:n()) %>% ungroup
 
-cor_rank_brks <- unlist(lapply(cor_rank_pc, function(p) { quantile(as.numeric(unlist(lfc_cor[,"Rank"])),p/100,na.rm=T) } ) )
+r_rank <- paste(r,"_Rank",sep='')
+cor_rank_brks <- unlist(lapply(cor_rank_pc, function(p) { quantile(as.numeric(unlist(lfc_cor[,r_rank])),p/100,na.rm=T) } ) )
 names(cor_rank_brks) <-  unlist(lapply(cor_rank_pc, function(p) {signif(quantile(as.numeric(unlist(lfc_cor[,r])),p/100,na.rm=T),2) } ) )
 
 # Aborted Attempt with bias on true values
@@ -153,9 +155,9 @@ cor_rank_lim <- c(1, nrow(lfc_cor))
 
 cor_bias <- correlation + 
   geom_point(
-    aes_string(color=Rank),
+    aes_string(colour=r_rank),
     size=1,
-    alpha=0.5,
+    alpha=0.3,
     shape = ifelse(
       ( (lfc_cor$x_lfc <= cor_x_lowlim) |
         (lfc_cor$x_lfc >= cor_x_uplim) |

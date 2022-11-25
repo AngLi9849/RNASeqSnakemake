@@ -170,7 +170,25 @@ rule custom_feature:
           }} ;
           include_all = (f[1]=="" && l[1]=="")? 1 : 0 ;
         }} ;
-        ( (include_all==1) || ( ( (f[1]=="") || ( (f[1]-0 != 0) && ((length(include_first) != 0) && ($12 in include_first)) && !($12 in exclude_first) ) )  && ( (l[1]=="") || ( (l[1]-0 != 0) && ($13 in include_last) && !($13 in exclude_last) ) ) ) ) {{ 
+        ( \
+          (include_all==1) || ( \
+            ( \
+              (f[1]=="") || ( \
+                (f[1]-0 != 0) && ( \
+                  ( (length(include_first) != 0) && ($13 in include_first) ) || \
+                  ( (length(include_first) == 0) && !($13 in exclude_first) ) \
+                ) \
+              ) \
+            ) && ( \
+              (l[1]=="") || ( \
+                (l[1]-0 != 0) && ( \
+                  ( (length(include_last) != 0) && ($13 in include_last) ) || \
+                  ( (length(include_last) == 0) && !($13 in exclude_last) ) \
+                ) \
+              ) \
+            ) \
+          ) \
+        ) {{ 
           if ($6=="+") {{ 
             $7="{wildcards.feature}" ; a=$2 ; b=$3 ;
             $2 = ( \

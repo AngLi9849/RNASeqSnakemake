@@ -1,0 +1,4 @@
+bias	unit	log	percent
+GC	%	FALSE	TRUE
+Length	bps	TRUE	FALSE
+RPKM		TRUE	FALSE

@@ -38,6 +38,7 @@ group	treatment          	splice	feature 	difference	protocols
 10	HNRNPU-AID_KO      	FALSE	GeneBody	expression	TT-Seq
 10	HNRNPUL1-AID_KO       	FALSE	GeneBody	expression	TT-Seq
 10	FUS-mAID_+5PhIAA_6hr	FALSE	GeneBody	expression	TT-Seq
-11	HNRNPU-AID_KO      	FALSE	GeneBody	expression	TT-Seq
-11	HNRNPUL1-AID_KO       	FALSE	GeneBody	expression	TT-Seq
-11	FUS-mAID_+5PhIAA_6hr	FALSE	GeneBody	expression	TT-Seq
+11	HNRNPU-AID_KO      	FALSE	FirstIntron	expression	TT-Seq
+11	HNRNPUL1-AID_KO       	FALSE	FirstIntron	expression	TT-Seq
+11	FUS-mAID_+5PhIAA_6hr	FALSE	FirstIntron	expression	TT-Seq
+

@@ -48,6 +48,9 @@ diff <- as.character(snakemake@wildcards[["difference"]])
 difference <- as.character(diff)
 analysis <- paste("differential", difference, "analysis")
 
+bias <- read.csv(snakemake@config[["bias"]],header=T, sep='\t', check.names=FALSE)
+
+
 if (difference != "splicing_ratio") {
 
   is_antisense <- snakemake@params[["is_antisense"]]==-1
@@ -202,6 +205,15 @@ sep_gene_sets <- gene_sets$set_name[(gene_sets$set_name %in% genesets) & as.logi
 
 sep_gene_sets
 
+analysis_title <- paste(
+  common, ifelse(common=="",""," "), treat, " vs ", control, " ", protocol, " ", prefix, " ", ifelse(difference != "splicing ratio", paste(spikein, " ", normaliser, " normalised "),""), difference,
+#  common, ifelse(common=="",""," "), treat, " vs ", control, " ", protocol, "\n",
+#  prefix, " ", ifelse(difference != "splicing ratio", paste(spikein, " ", normaliser, " normalised "),""), difference, "\n",
+#  valid, " ", tag, " ", feature,
+  sep="")
+
+analysis_title
+
 #goi <- c(snakemake@params[["GOI"]])
 
 #  Import sample config, size factors and count table and conduct DESeq2 Differential Expression Analysis
@@ -268,6 +280,8 @@ if (i =="") {
   expr_i <- expr[expr$group==i,]
 } 
 
+expr_full <- expr_i
+
 i <- gsub("_"," ",i)
 
 head(expr_i, 5)
@@ -284,6 +298,8 @@ sum_i <- t(sum_i)
 }
 head(sum_i,5)
 
+cts_i <- cts[rownames(cts) %in% expr_i$featureID,unlist(lapply(cts,is.numeric))] 
+
 if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"]])) {
   min_mean <- max(expr_i$baseMean[is.na(expr_i$padj)])
 } else {
@@ -294,7 +310,7 @@ config_min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["mini
 
 meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= snakemake@config[["metagene"]][["min_reads"]]])
 
-heat_min_reads <- snakemake@config[["heatmap"]][["min_reads"]]
+heat_min_reads <- snakemake@config[["heatmap"]][["min_reads"]] 
 expr_heat <- expr_i[expr_i$baseMean >= heat_min_reads,]
 expr_heat$padj <- ifelse(is.na(expr_heat$padj),expr_heat$pvalue,expr_heat$padj)
 expr_heat$padj <- ifelse(is.na(expr_heat$padj),1,expr_heat$padj)
@@ -403,10 +419,11 @@ summary_caption <- unlist(list(summary_caption,summary_captions))
 
 summary_caption
 summary_h <- 8
-if (difference == "splicing ratio") {
-plots <- list("summary","bias","ma_plot","volcano_plot")
-} else {
-plots <- list("summary","bias","ma_plot","volcano_plot","meta_plot","heatmap")
+
+plots <- c("summary","bias",paste(bias$bias,"_count_bias",sep=""),"ma_plot","volcano_plot")
+
+if (difference != "splicing ratio") {
+plots <- c(plots,"meta_plot","heatmap")
 }
 
 plot_n <- 1
@@ -480,6 +497,9 @@ doc <- body_add(doc,fpar(ftext("C", prop=bold)),style = "Normal")
 doc <- body_add(doc,value=sum_violin,width = 6, height = 2.2, res= plot_dpi,style = "centered")
 
 #doc <- body_add(doc,run_pagebreak())
+
 doc <- body_add(doc,block_pour_docx(snakemake@output[["docx"]]))
+
+doc <- header_replace_all_text(doc,"",analysis_title)
 
 print(doc, target = snakemake@output[["docx"]])
