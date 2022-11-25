@@ -93,6 +93,7 @@ differential_plots:
   ma_gene_name_numbers: 10
   volcano_gene_name_numbers: 10
   lfc_pc_limit: 99.999
+  label_summary: FALSE #Whether to label summary differential plots
   # Colour Scheme
   up_colour: orange
   down_colour: blue

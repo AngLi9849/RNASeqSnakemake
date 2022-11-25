@@ -60,7 +60,9 @@ volcano <- volcano +
     color="red",
     size=1,
     alpha=1
-  ) +
+  )
+if (label_sum_plots) {
+volcano <- volcano +
   geom_text_repel(
     mapping=aes(label=ifelse((feature_name %in% goi), as.character(feature_name),NA)),
     size=3.0,
@@ -75,6 +77,7 @@ volcano <- volcano +
     force_pull=5
   )
 
+}
 volcano_caption <- paste(
   "Significance (-log10 adjusted p-value) of changes in ", difference, " of each ", feature_i, " is plotted against the log2 fold change value. Dot colours represent significant (p < " ,sig_p,") increases (", up_col, ") and decreases (", down_col, ").",sep=""
 )

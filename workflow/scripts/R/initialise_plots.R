@@ -2,7 +2,7 @@ sink(log)
 sink(log, type="message")
 
 # Import Differential Plotting Parameters
-
+label_sum_plots <- as.logical(snakemake@config[["differential_plots"]][["label_summary"]])
 ma_n <- as.numeric(snakemake@config[["differential_plots"]][["ma_gene_name_numbers"]])
 volc_n <- as.numeric(snakemake@config[["differential_plots"]][["volcano_gene_name_numbers"]])
 meta_trim <- as.numeric(snakemake@config[["metagene"]][["anomaly_trim"]]) 

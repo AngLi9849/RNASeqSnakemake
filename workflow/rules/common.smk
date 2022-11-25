@@ -275,6 +275,17 @@ def get_experiment_samples(experiment):
     sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
     return sample
 
+def get_experiment_qc_samples(experiment):
+    exp = experiments.loc[experiment].squeeze()
+    cond = [exp.control,exp.treatment]
+    sample = samples[samples.protocol == exp.protocol][samples.condition.isin(cond)]
+    sample_fq1 = sample[['sample_name','unit_name']][pd.notna(sample.fq1)]
+    sample_fq1['fq']='fq1'
+    sample_fq2 = sample[['sample_name','unit_name']][pd.notna(sample.fq2)]
+    sample_fq2['fq']='fq2'
+    sample=pd.concat([sample_fq1,sample_fq2])
+    return sample
+
 def get_experiment_controls(experiment):
     exp = experiments.loc[experiment].squeeze()
     cond = [exp.control]
@@ -550,6 +561,13 @@ MX_NORM="norm" if config["metagene"]["norm_per_gene"] else "sum"
 MX_MEAN=["median","mean"] if config["metagene"]["norm_to_median"]=="BOTH" else ["median"] if config["metagene"]["norm_to_median"] else ["mean"]
 
 #Functions for generating results
+def get_multiqc():
+    qc = expand(
+        "qc/multiqc/{exp.experiment}.multiqc.html",
+        exp=experiments.itertuples()   
+    )
+    return qc
+
 def get_bams():
     bams = expand(
         "star/{sample.sample_name}-{sample.unit_name}/{splice}Aligned{demulti}{dedup}.sortedByCoord.out.bam",

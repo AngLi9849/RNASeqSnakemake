@@ -24,7 +24,7 @@ container: "docker://continuumio/miniconda3"
 
 include: "rules/common.smk"
 include: "rules/utilities.smk"
-#include: "rules/qc.smk"
+include: "rules/qc.smk"
 include: "rules/trim.smk"
 include: "rules/reference.one_trs.smk"
 include: "rules/features.smk"
@@ -48,6 +48,7 @@ include: "rules/metagene.smk"
 
 rule all:
     input:
+        get_multiqc(),
         #get_bams(),
         #get_feature_counts()
         #"results/qc/multiqc_report.html",

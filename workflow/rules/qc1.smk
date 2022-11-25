@@ -20,7 +20,7 @@ rule raw_fastqc:
 
 rule trimmed_fastqc:
     input:
-        "reads/trimmed/{sample}_{unit}_{fq}_trimmed.fastq.gz",
+        "trimmed_reads/{sample}_{unit}_{fq}_trimmed.fastq.gz",
     output:
         html="qc/fastqc/{sample}-{unit}-{fq}-trimmed.html",
         zip="qc/fastqc/{sample}-{unit}-{fq}-trimmed_fastqc.zip"
@@ -98,13 +98,13 @@ rule multiqc:
     input:
         lambda wildcards: expand(
             "qc/fastqc/{sample.sample_name}-{sample.unit_name}-{sample.fq}-{trim}_fastqc.zip",
-            sample=get_experiment_qc_samples(wildcards.experiment).itertuples(),
+            sample=get_experiment_qc_samples(wildcards.experiment),
             trim=["raw","trimmed"],
         ),
-        lambda wildcards: list(dict.fromkeys(expand(
-            "star/{sample.sample_name}/{sample.unit_name}/{sample.reference}/AllAligned.sortedByCoord.out.bam",
-            sample=results[results.experiment==wildcards.experiment].itertuples(),
-        ))),
+        lambda wildcards: expand(
+            "star/{sample.sample_name}-{sample.unit_name}/AllAligned.sortedByCoord.out.bam",
+            sample=get_experiment_samples(wildcards.experiment),
+        ),
 #        expand(
 #            "{sample.experiment}/qc/rseqc/{sample.sample_name}-{sample.unit_name}.{file}",
 #            sample=samples.itertuples(),

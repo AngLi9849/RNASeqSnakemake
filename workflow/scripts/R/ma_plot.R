@@ -63,7 +63,10 @@ ma <- ma +
     color="red",
     size=1,
     alpha=1
-  ) +
+  )
+
+if (label_sum_plots) {
+ma <- ma +
   geom_text_repel(
     mapping=aes(label=ifelse((feature_name %in% goi), as.character(feature_name),NA)),
     size=3.0,
@@ -77,6 +80,7 @@ ma <- ma +
     force=10,
     force_pull=5
   )
+}
 
 ma_caption <- paste(
  "Log2 fold change in ", difference, " of each ", feature_i, " is plotted against their mean normalised ", counting, ". Dot colours represent significant (p < " ,sig_p,") increases (", up_col, ") and decreases (", down_col, ").",sep=""

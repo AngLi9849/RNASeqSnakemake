@@ -86,8 +86,9 @@ count_bias <- ggplot(data=count_bias_data, aes(x=Rank,y=Counts,colour=Sample,lin
   )
 
 assign(paste(bias,"_count_bias",sep=""),count_bias)
-assign(paste(bias,"_count_bias_titile",sep=""),paste(bias,"Count Bias"))
-bias_caption <- ""
+assign(paste(bias,"_count_bias_title",sep=""),paste(bias,"Count Bias"))
+bias_caption <- analysis_title
 assign(paste(bias,"_count_bias_caption",sep=""),bias_caption)
+assign(paste(bias,"_count_bias_h",sep=""),6)
 
 }
