@@ -198,7 +198,7 @@ rule validate_main_transcripts:
         bed="resources/annotations/{reference}/genome.gtf.bed",
         transcripts="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.bed",
         trs_idx="resources/annotations/{reference}/genome.gtf.{tag}_transcripts.indexed.bed",
-        trs_sj="resources/annotations/{reference}/genome.gtf.{tag}_trs_sj.bed",
+#        trs_sj="resources/annotations/{reference}/genome.gtf.{tag}_trs_sj.bed",
         salmon_all = lambda wildcards: expand(
             "salmon/{sample.sample_name}/{sample.unit_name}/{sample.reference}/{{tag}}_transcripts/quant.sf",
             sample=lineage[lineage.trs_val.tolist()].loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage].itertuples(),
@@ -208,9 +208,9 @@ rule validate_main_transcripts:
             sample=lineage[lineage.trs_val.tolist()].loc[get_reference_species(wildcards.reference)].loc[wildcards.lineage].itertuples(),
         ),
         gene_tab="resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
-        sj=lambda wildcards: "resources/annotations/{{reference}}/{{lineage}}.star.splice_junctions.bed".format(
-            species=get_reference_species(wildcards.reference),
-        ),
+#        sj=lambda wildcards: "resources/annotations/{{reference}}/{{lineage}}.star.splice_junctions.bed".format(
+#            species=get_reference_species(wildcards.reference),
+#        ),
         confident="resources/annotations/{reference}/genome.gtf.{tag}_confident.bed",
     output:
         expressed="resources/annotations/{reference}/{lineage}.gtf.{tag}_expressed.bed",

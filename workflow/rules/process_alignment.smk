@@ -109,7 +109,7 @@ rule featurecounts:
         bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai",
         saf=lambda w: "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.bed.saf" 
     output:
-        tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}Reads.featurecounts.tab",
+        tab = "featurecounts/{sample}/{unit}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{read}.featurecounts.tab",
     threads: 6 
     resources:
         mem="16G",
@@ -123,6 +123,8 @@ rule featurecounts:
         strand=get_sample_strandedness,
         paired=lambda wildcards:("-p" if is_paired_end(wildcards.sample) else ""),
         overlap="-O" if config["counting"]["count_every_overlap"] else "",
+        fc_opts=get_fc_opts(w) if reads.loc[w.read,"single_nuc"] else "",
+        
     shell:
         """
         if [[ $(du {input.bam} | cut -f1) -gt {params.ram} ]] ;
@@ -162,6 +164,7 @@ rule featurecounts:
 #          done ;
 
         else    
+          if [[ {params.single  ]]
         featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
         fi
         """

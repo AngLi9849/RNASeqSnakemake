@@ -12,6 +12,7 @@ gene_sets: config/gene_sets.tsv
 feature_parameters: config/features.tsv
 references_info: config/references.tsv
 analysis_summary_plots: config/analysis.tsv
+read_alignments: config/read_alignments.tsv
 bias: config/bias.tsv
 
 MANE_gene_range: FALSE # Determine GRCh38 gene ranges and principal structures using MANE project annotated transcripts, if validating features, validated principal transcripts may take priority
@@ -86,6 +87,7 @@ differential_plots:
     dot: "workflow/scripts/R/dot_plot.R"
     pie: "workflow/scripts/R/pie_chart.R"
     bias: "workflow/scripts/R/bias_plot.R"   
+    count_bias: "workflow/scripts/R/count_bias.R"
     overview: "workflow/scripts/R/overview_plots.R"
   # Resolution of output files. Typically publications require at least 300 dpi.
   dpi: 400

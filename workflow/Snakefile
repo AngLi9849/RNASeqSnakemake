@@ -24,7 +24,7 @@ container: "docker://continuumio/miniconda3"
 
 include: "rules/common.smk"
 include: "rules/utilities.smk"
-include: "rules/qc.smk"
+include: "rules/qc1.smk"
 include: "rules/trim.smk"
 include: "rules/reference.one_trs.smk"
 include: "rules/features.smk"

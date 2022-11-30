@@ -20,7 +20,7 @@ rule raw_fastqc:
 
 rule trimmed_fastqc:
     input:
-        "trimmed_reads/{sample}_{unit}_{fq}_trimmed.fastq.gz",
+        "reads/trimmed/{sample}_{unit}_{fq}_trimmed.fastq.gz",
     output:
         html="qc/fastqc/{sample}-{unit}-{fq}-trimmed.html",
         zip="qc/fastqc/{sample}-{unit}-{fq}-trimmed_fastqc.zip"
@@ -96,15 +96,15 @@ rule rseqc:
 
 rule multiqc:
     input:
-        lambda wildcards: expand(
+        fastqc = lambda wildcards: expand(
             "qc/fastqc/{sample.sample_name}-{sample.unit_name}-{sample.fq}-{trim}_fastqc.zip",
-            sample=get_experiment_qc_samples(wildcards.experiment),
+            sample=get_experiment_qc_samples(wildcards.experiment).itertuples(),
             trim=["raw","trimmed"],
         ),
-        lambda wildcards: expand(
-            "star/{sample.sample_name}-{sample.unit_name}/AllAligned.sortedByCoord.out.bam",
-            sample=get_experiment_samples(wildcards.experiment),
-        ),
+        star = lambda wildcards: list(dict.fromkeys(expand(
+            "star/{sample.sample_name}/{sample.unit_name}/{sample.reference}/AllAligned.sortedByCoord.out.bam",
+            sample=results[results.experiment==wildcards.experiment].itertuples(),
+        ))),
 #        expand(
 #            "{sample.experiment}/qc/rseqc/{sample.sample_name}-{sample.unit_name}.{file}",
 #            sample=samples.itertuples(),
@@ -124,7 +124,14 @@ rule multiqc:
 #            sample=samples.itertuples(),
 #        ),
     output:
-        "qc/multiqc/{experiment}.multiqc.html",
+#        temp=directory("qc/multiqc/{experiment}_temp"),
+        temp = "qc/temp/{experiment}/multiqc.html",
+        multiqc = "qc/multiqc/{experiment}.multiqc.html"
+    params:
+#        input_temp=lambda w: "qc/multiqc/" + str(w.experiment) + "_temp",
+        temp_dir=lambda w, output: dirname(output.temp),
+        temp_name=lambda w, output: basename(output.temp),
+        options="",        
     threads: 1 
     resources:
         mem="36G",
@@ -133,5 +140,12 @@ rule multiqc:
         "logs/{experiment}/multiqc.log",
     conda:
         "../envs/multiqc.yaml"
-    script:
-        "../scripts/py/multiqc.py"
+    shell:
+        """
+        rm -r {params.temp_dir} &&
+        mkdir {params.temp_dir} &&
+        for i in {input.fastqc} ; do ln -s $(readlink -f $i) {params.temp_dir}/ ; done &&
+        for i in {input.star} ; do ln -s $(readlink -f $i) {params.temp_dir}/$(awk -v i="$i" 'BEGIN {{ a = gensub(/\//,".","g",i) ; print a}}') ; done &&
+        multiqc {params.options} --force -o {params.temp_dir} -n {params.temp_name} {params.temp_dir} 2>{log} &&
+        cp {output.temp} {output.multiqc}
+        """

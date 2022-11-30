@@ -17,14 +17,14 @@ rule pca:
 
 rule deseq2_expression:
     input:
-        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}.{read}.Count.{{spikein}}_{{pair}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
-        length = lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}Reads.lengths.tsv".format(
+        length = lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}.{{read}}.lengths.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
-        counts= lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}Reads.counts.tsv".format(
+        counts= lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}.{{read}}.counts.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
         total_sum = lambda w: "deseq2/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.gtf.TotalReadCount.{{pair}}.summary.tsv".format(
@@ -45,25 +45,25 @@ rule deseq2_expression:
             f=features.loc[wildcards.feature,"group"]
         ) ),
     output:
-        counts="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
-        lfc="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
-        levels="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
-        rpkm="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.tsv",
-        toptable="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.toptable.tsv",
+        counts="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
+        lfc="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
+        levels="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
+        rpkm="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.tsv",
+        toptable="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.toptable.tsv",
     params:
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
         treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],
         paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
         section=lambda wildcards : features.loc[wildcards.feature,"section"],
         main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
-        dir="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}ReadCount_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}",
+        dir="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}.{read}.Count_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}",
     resources:
         mem="24G",
         rmem="16G",
     conda:
         "../envs/differential.yaml"
     log:
-        "logs/{experiment}/{reference}/deseq2/{splice}ed{prefix}.{lineage}_{valid}.{type}.{tag}_{spikein}_{feature}_{pair}_{normaliser}ReadCount.diffexp.log",
+        "logs/{experiment}/{reference}/deseq2/{splice}ed{prefix}.{lineage}_{valid}.{type}.{tag}_{spikein}_{feature}_{pair}_{normaliser}.{read}.Count.diffexp.log",
     threads: 1
     script:
         "../scripts/R/deseq2_express.R"

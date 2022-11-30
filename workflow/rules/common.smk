@@ -6,8 +6,10 @@ import pandas as pd
 import hashlib as hashlib
 import re
 from os.path import dirname
+from os.path import basename
 from snakemake.remote import FTP
 from snakemake.utils import validate
+
 
 ftp = FTP.RemoteProvider()
 
@@ -191,6 +193,18 @@ gene_sets = gene_sets.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 gene_sets = gene_sets.mask(gene_sets == '')
 gene_sets = (gene_sets.set_index(["set_name"], drop=False).sort_index())
 
+# Read read processing configs
+reads = (pd.read_csv(config["read_alignments"], sep="\t", dtype={ "name": str}, comment="#"))
+reads.columns=reads.columns.str.strip()
+reads = reads.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+reads = reads.mask(reads == '')
+reads = (reads.set_index(["name"], drop=False).sort_index())
+reads["single_nuc"] = reads.apply(lambda row:\
+    row.sn_pos > 0 or row.sn_pos < 0,
+    axis=1
+)
+
+   
 # Read experimentss config table into pandas dataframe
 experiments = (pd.read_csv(config["experiments"], sep="\t", dtype={"protocol": str, "sample_lineage" : str}, comment="#"))
 experiments.columns=experiments.columns.str.strip()
@@ -202,7 +216,7 @@ experiments["experiment"] = experiments.apply( lambda row: \
 experiments = (experiments.set_index(["experiment"], drop=False).sort_index())
 
 experiments["trs_val"]=experiments.apply(
-    lambda row: protocols.loc[row.protocol,"trs_val"], axis=1)
+    lambda row: row.trs_val & protocols.loc[row.protocol,"trs_val"], axis=1)
 experiments["splice"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"splice"], axis=1)
 experiments["norm_feat"]=experiments.apply(
@@ -678,9 +692,6 @@ def get_part_bin_number(feature,part):
            part_bin = float(features.loc[feature,part]) * int(features.loc[feature,"bin_n"]) * float(features.loc[feature,"befaftr"]) / (float(features.loc[feature,"plotaft"]) + float(features.loc[feature,"plotbef"]))
         return int(part_bin)
 
-
-
-
 def feature_descript(wildcards):
     descript = ( str(wildcards.feature) + " is based on " + "{v}"  + " " + str(wildcards.tag) + " {root}s" + "{ref}." ).format(
         v="annotated" if wildcards.valid=="annotated" else ( str( experiments.loc[wildcards.experiment].squeeze(axis=0)["sample_lineage"] ) + " validated" ) if wildcards.valid=="validated" else "provided",
@@ -744,7 +755,6 @@ def get_rmats_exp_libtype(experiment):
     strand=strands.item() if len(strands)==1 else "no"
     lib="fr-secondstrand" if strand=="reverse" else "fr-firststrand" if strand=="yes" else "fr-unstranded"
     return lib
-
 
 def sort_raw_reads(wildcards):
     files = list(
@@ -857,6 +867,27 @@ def get_sample_strandedness(wildcards):
               return 2
           else :
               return 0
+
+def get_read_flag(w):
+    strand=get_sample_strandedness(w)
+    if reads.loc[w.read,"sn_pos"] > 0 :
+        flag=128 if strand==2 else 64
+    elif reads.loc[w.read,"sn_pos"] < 0 :
+        flag=128 if strand!=2 else 64
+    return flag
+        
+
+def get_bamcov_options(w):
+    strand = get_sample_strandedness(w)
+    paired = 1 if is_paired_end(w.sample) else 0
+    offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0) else 1
+    offset = ("--Offset " + str(reads.loc[w.read,"sn_pos"]*mod) + " " + str(reads.loc[w.read,"sn_pos"]*mod) )if reads.loc[w.read,"single_nuc"] else ""
+    saminc = ("--samFlagInclude " + str(get_read_flag(w))) + if (paired==1 and reads.loc[w.read,"single_nuc"]) else ""
+    options = offset + " " + saminc
+    return options
+    
+def get_featurecount_single_nuc(w):
+    
 
 def get_deseq2_threads(wildcards=None):
     # https://twitter.com/mikelove/status/918770188568363008

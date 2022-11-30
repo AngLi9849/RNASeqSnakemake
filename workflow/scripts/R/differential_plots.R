@@ -48,8 +48,9 @@ diff <- as.character(snakemake@wildcards[["difference"]])
 difference <- as.character(diff)
 analysis <- paste("differential", difference, "analysis")
 
-bias <- read.csv(snakemake@config[["bias"]],header=T, sep='\t', check.names=FALSE)
-
+biases <- read.csv(snakemake@config[["bias"]],header=T, sep='\t', check.names=FALSE)
+biases
+paste(biases$bias,"_count_bias",sep='')
 
 if (difference != "splicing_ratio") {
 
@@ -265,9 +266,9 @@ min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_
 
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- c(c(""),unique(expr$group[expr$biotype %in% biotypes]),sep_gene_sets)
-for (i in i_group) {
+#for (i in i_group) {
 
-#i <- "multiexonic protein coding"
+i <- "multiexonic protein coding"
 
 #i <- "Histones"
 
@@ -325,8 +326,6 @@ total_i <- nrow(expr_heat)
 min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],min_rpkm_pc/100,na.rm=T)
 meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= config_min_mean & expr_i$baseMean >= min_rpkm])
 
-
-
 insuf_i <- sum( (expr_heat$baseMean < min_mean) | (!is.na(expr_heat$RPKM) & (expr_heat$RPKM < min_rpkm)) | (is.na(expr_heat$pvalue)),na.rm=T )
 
 expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$RPKM >= min_rpkm),]
@@ -334,13 +333,11 @@ expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$RPKM >= min_rpkm),]
 expr_i$padj <- ifelse(is.na(expr_i$padj),expr_i$pvalue,expr_i$padj)
 expr_i <- expr_i[!is.na(expr_i$padj),]
 
-
 feature_i <- ifelse(i=="", feature, paste(i,feature))
 base_i <- ifelse(i=="", paste("base", base), paste("base", i,base)) 
 
 title_feature_i <- gsub("(?<!\\w)(.)","\\U\\1", feature_i, perl = TRUE)
 title_base_i <- gsub("(?<!\\w)(.)","\\U\\1", base_i, perl = TRUE)
-
 
 # Write heading for this analysis group
 group_heading <- toTitleCase(ifelse(i=="","All",i))
@@ -396,6 +393,7 @@ source(snakemake@config[["differential_plots"]][["scripts"]][[paste(s)]])
 # GC, Length and RPKM Bias ===================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["bias"]])
 head(expr_bias,10)
+source(snakemake@config[["differential_plots"]][["scripts"]][["count_bias"]])
 
 
 # Heatmap
@@ -420,7 +418,7 @@ summary_caption <- unlist(list(summary_caption,summary_captions))
 summary_caption
 summary_h <- 8
 
-plots <- c("summary","bias",paste(bias$bias,"_count_bias",sep=""),"ma_plot","volcano_plot")
+plots <- c("summary","bias",paste(biases$bias,"_count_bias",sep=""),"ma_plot","volcano_plot")
 
 if (difference != "splicing ratio") {
 plots <- c(plots,"meta_plot","heatmap")
@@ -460,9 +458,125 @@ if ( (plot_n-1) == length(plots)) {
 }
 
 }
-}
+
 }
 
+#}
+#=====Test====
+
+bias_bin <- 100
+bias_lim <- c(1,bias_bin)
+sample_colours <- sample_table$colour
+names(sample_colours) <- sample_table$sample_name
+sample_brks <- gsub("_"," ",sample_table$sample_name)
+
+bias <- "GC"
+
+expr_full$ntile <- ntile(x=unlist(expr_full[bias]),n=bias_bin)
+count_data <- cts_i
+count_data['rank'] <- expr_full$ntile[match(rownames(count_data),expr_full$featureID)]
+count_data <- aggregate(count_data[colnames(count_data)!="rank"],by=list(rank=count_data$rank),FUN=sum)
+
+count_sum <- count_data[colnames(count_data)!="rank"]
+
+count_bias_data <- data.frame(
+  unlist(
+    lapply(colnames(count_sum), function (x) {
+      count_data[paste(x)]
+    })),
+  unlist(
+    lapply(colnames(count_sum), function (x) {
+      replicate(nrow(count_sum),paste(x))
+    })),
+  rep(count_data$rank,ncol(count_sum))
+)
+
+
+names(count_bias_data) <- c("Counts","Sample","Rank")
+
+count_bias_data$replicate <- sample_table$replicate[match(count_bias_data$Sample,sample_table$sample_name)]
+
+bias_lab <- paste(bias, " (", biases$unit[biases$bias==bias],")",sep="")
+
+bias_brks <- c(
+  1,
+  bias_bin/4,
+  bias_bin/2,
+  bias_bin*0.75,
+  bias_bin
+)
+
+names(bias_brks) <- c(
+  min(expr_full[bias],na.rm=T),
+  quantile(expr_full[bias],0.25,na.rm=T),
+  quantile(expr_full[bias],0.5,na.rm=T),
+  quantile(expr_full[bias],0.75,na.rm=T),
+  max(expr_full[bias],na.rm=T)
+)
+
+sample_lines <- sample_table$replicate
+names(sample_lines) <- sample_table$sample_name
+
+count_bias <- ggplot(data=count_bias_data, aes(x=Rank,y=Counts)) +
+  geom_smooth(
+    size=0.8,
+    method="loess",
+    n=300,
+    span=0.5,
+    alpha=0.2,
+    aes(colour=Sample,linetype=Sample,fill=Sample)
+  ) +
+  scale_colour_manual(
+    breaks=sample_brks,
+    values=sample_colours,
+  ) +
+  scale_fill_manual(
+    breaks=sample_brks,
+    values=sample_colours,
+  ) +
+  scale_x_continuous(
+    limits=bias_lim,
+    breaks=bias_brks,
+  ) +
+  scale_linetype_manual(
+    breaks = sample_brks,
+    values = sample_lines,
+  ) +
+  labs(
+    subtitle=paste(analysis)
+  ) +
+  xlab(bias_lab) +
+  ylab("Read Counts") +
+  theme(
+    panel.background=element_rect(fill="White",colour="white"),
+    panel.border=element_rect(fill=NA,colour="black",size=0.7),
+    strip.text=element_text(face="bold"),
+    strip.background=element_rect(colour="white",fill="white",size=0.1),
+    legend.background=element_rect(fill="White"),
+    legend.key=element_rect(colour="white",fill="White"),
+    legend.position="top",
+    axis.text=element_text(colour="black"),
+    axis.text.x = if (length(heat_xbrks)>2) (element_text(angle = 45, vjust = 1, hjust=1,colour="black")) else (element_text(colour="black")),
+    axis.line=element_line(colour="black",size=0.1),
+    axis.line.x.top=element_line(colour="black",size=0.1),
+    axis.line.y.right=element_line(colour="black",size=0.1)
+  )
+
+
+assign(paste(bias,"_count_bias",sep=""),count_bias)
+assign(paste(bias,"_count_bias_title",sep=""),paste(bias,"Count Bias"))
+bias_caption <- analysis_title
+assign(paste(bias,"_count_bias_caption",sep=""),bias_caption)
+assign(paste(bias,"_count_bias_h",sep=""),6)
+
+#=====testEnd======
+
+
+GC_count_bias
+head(count_bias_data,5)
+GC_count_bias_title
+GC_count_bias_h
+GC_count_bias_caption
 sum_bar_data
 
 head(sum_bar_data,5)
@@ -500,6 +614,7 @@ doc <- body_add(doc,value=sum_violin,width = 6, height = 2.2, res= plot_dpi,styl
 
 doc <- body_add(doc,block_pour_docx(snakemake@output[["docx"]]))
 
-doc <- header_replace_all_text(doc,"",analysis_title)
+doc <- headers_replace_all_text(doc,"",analysis_title)
 
 print(doc, target = snakemake@output[["docx"]])
+save.image(file = snakemake@output[["rdata"]])

@@ -111,11 +111,11 @@ rule total_read_count_size_factors:
 
 rule feature_count_scale_factors:
     input:
-        counts="featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.basic.{feature}Reads.counts.tsv",
+        counts="featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.basic.{feature}.{read}.counts.tsv",
         bed="resources/annotations/{reference}/genome.{type}.annotated_basic.{feature}.bed"
     output:
-        paired = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{feature}ReadCount.{spikein}_paired.scale_factors.tsv",
-        unpaired = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{feature}ReadCount.{spikein}_unpaired.scale_factors.tsv",
+        paired = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{feature}.{read}.Count.{spikein}_paired.scale_factors.tsv",
+        unpaired = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{feature}.{read}.Count.{spikein}_unpaired.scale_factors.tsv",
     params:
         sample_table="config/samples.tsv",
     resources:
@@ -126,7 +126,7 @@ rule feature_count_scale_factors:
     conda:
         "../envs/deseq2.yaml"
     log:
-        "logs/deseq2/{norm_group}/{reference}/{prefix}_{spikein}.{lineage}_{valid}.{type}.{feature}Reads_scale.log",
+        "logs/deseq2/{norm_group}/{reference}/{prefix}_{spikein}.{lineage}_{valid}.{type}.{feature}.{read}.Count_scale.log",
     script:
         "../scripts/R/deseq2_feature_scale.R"
 

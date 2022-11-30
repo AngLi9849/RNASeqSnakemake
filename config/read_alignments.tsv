@@ -1,0 +1,6 @@
+# Position is considered as relative to the sequenced nucleotide (interpreted based on sample sequenced strand and pair-end-ness)
+# 5 and 3-truncations (trunc) accept 0 or positive integers
+# Single Nulceotided Position (sn_pos), 1-based integers, blank or zero means not single nucleotide, positive means 5' position, negative means 3' position, intepreted per sample based on read strandedness and paired-end 
+name       	sn_pos	peak
+Read       		FALSE
+eCLIP     	1	FALSE

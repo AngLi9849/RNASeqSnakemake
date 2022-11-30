@@ -39,7 +39,7 @@ rule stranded_bam:
         """
 
 
-rule unstranded_genomecov:
+rule unstranded_bamcov:
     input:
         bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
         bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai", 
@@ -49,7 +49,7 @@ rule unstranded_genomecov:
         txt="bedgraph/{sample}/{unit}/{reference}/{prefix}.BaseCoverage.txt",
         bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.unstranded.raw.bigwig",
     params:
-        bin_size=config["bigwig_bin_size"]
+        bin_size=config["bigwig_bin_size"],
         single_nuc = 1 if reads.loc[w.read,"single_nuc"] else 0,
         bamcov_opts = get_bamcov_options(w),
     resources:
@@ -58,18 +58,18 @@ rule unstranded_genomecov:
     log:
         "logs/deeptools/{sample}/{unit}/{reference}/{prefix}_unstranded_bamcoverage.log",
     conda:
-        "../envs/bedtools.yaml",
+        "../envs/deeptools.yaml",
     threads: 2
     shell:
         """
-        if [ {params.single_nuc} -eq 1 ] ; 
+        if [[ {params.single_nuc} -eq 1 ]] ;
           then
           bedtools genomecov -ibam {input.bam} -bga -split > {output.bg}
           else
-          bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs 1 {params.bamcov_opts} --skipNAs
+          bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs {bin_size} -p max {params.bamcov_opts} --skipNAs
         fi &&
 
-        cat {output.bg} |
+        cat {output.bg} | 
         awk -v OFS='\\t' -F'\\t' '
           BEGIN {{ i = 0 ; s = 0 }}
           $1 !~ "spikein_" {{i += $4 }}
@@ -78,6 +78,7 @@ rule unstranded_genomecov:
             print "{wildcards.sample}", i, s >> "{output.txt}"
           }}' |
         LC_COLLATE=C sort -k1,1 -k2,2n -o {output.bg} &&
+
         bedGraphToBigWig {output.bg} {input.chr_size} {output.bw} ;
         """
         
@@ -87,19 +88,21 @@ rule stranded_genomecov:
         bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.{strand}.bam.bai",
         chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + "_genome.fasta.chrom.sizes")
     output:
-        bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.{strand}.bedgraph",
-        bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
+        bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.{strand}.{read}.bedgraph",
+        bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.{read}.bigwig",
     params:
-        bin_size=config["bigwig_bin_size"]
+        bin_size=config["bigwig_bin_size"],
+        single_nuc = 1 if reads.loc[w.read,"single_nuc"] else 0,
+        bamcov_opts = get_bamcov_options(w),
     resources:
         mem="6G",
         rmem="4G",
     wildcard_constraints:
         strand=r"((?!unstranded).)*"
     log:
-        "logs/deeptools/{sample}/{unit}/{reference}/{prefix}.{strand}_bamcoverage.log",
+        "logs/deeptools/{sample}/{unit}/{reference}/{prefix}.{strand}.{read}.Coverage.log",
     conda:
-        "../envs/bedtools.yaml",
+        "../envs/deeptools.yaml",
     threads: 2
     shell:
         """
@@ -107,9 +110,9 @@ rule stranded_genomecov:
           then
           bedtools genomecov -ibam {input.bam} -bga -split > {output.bg}
           else
-          bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs 1 {params.bamcov_opts} --skipNAs
+          bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs {bin_size} -p max {params.bamcov_opts} --skipNAs
         fi &&
-        cat {output.bg} |
+        cat {output.bg} | 
         LC_COLLATE=C sort -k1,1 -k2,2n -o {output.bg} &&
         bedGraphToBigWig {output.bg} {input.chr_size} {output.bw} ;
         """
