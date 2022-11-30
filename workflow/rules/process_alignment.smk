@@ -124,15 +124,15 @@ rule featurecounts:
         paired=lambda wildcards:("-p" if is_paired_end(wildcards.sample) else ""),
         overlap="-O" if config["counting"]["count_every_overlap"] else "",
         fc_opts=get_fc_opts(w) if reads.loc[w.read,"single_nuc"] else "",
-        
+        samflag="--include-flags"
     shell:
         """
         if [[ $(du {input.bam} | cut -f1) -gt {params.ram} ]] ;
         then 
           for i in $(cut -f2 {input.saf} | sort | uniq) ; do
-            samtools view -bh -@ 5 {input.bam} $i > {input.bam}"$i".bam && 
-            samtools index -b -@ 5 {input.bam}"$i".bam {input.bam}"$i".bam.bai && 
-            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab}"$i".chr.tab {input.bam}"$i".bam ;
+            samtools view -bh -@ 5 {input.bam} $i > {input.bam}."$i".bam && 
+            samtools index -b -@ 5 {input.bam}."$i".bam {input.bam}."$i".bam.bai && 
+            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab}."$i".chr.tab {input.bam}."$i".bam ;
           done &&
 
           for i in $(cut -f2 {input.saf} | sort | uniq) ; do
@@ -164,8 +164,14 @@ rule featurecounts:
 #          done ;
 
         else    
-          if [[ {params.single  ]]
-        featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
+          if [[ {params.single_nuc} -eq 1  ]] ;
+            then
+            samtools view -b -@ 5 --include-flags {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
+            samtools index -b -@ 5 {input.bam}.filtered.bam {input.bam}.filtered.bam.bai &&
+            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
+            else
+            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
+            fi
         fi
         """
 

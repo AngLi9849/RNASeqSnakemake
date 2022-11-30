@@ -886,8 +886,16 @@ def get_bamcov_options(w):
     options = offset + " " + saminc
     return options
     
-def get_featurecount_single_nuc(w):
-    
+def get_fc_sn_opt(w):
+    strand = get_sample_strandedness(w)
+    paired = 1 if is_paired_end(w.sample) else 0
+    offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0) else 1
+    offset = reads.loc[w.read,"sn_pos"]*mod
+    offset_val = abs(offset)
+    pos = "--read2pos " + ("5" if offset > 0 else "3")
+    shift_type = "--readShiftType " + ("downstream" if offset > 0 else "upstream")
+    options = end + " " + shift_type
+    return options 
 
 def get_deseq2_threads(wildcards=None):
     # https://twitter.com/mikelove/status/918770188568363008
