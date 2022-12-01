@@ -880,21 +880,21 @@ def get_read_flag(w):
 def get_bamcov_options(w):
     strand = get_sample_strandedness(w)
     paired = 1 if is_paired_end(w.sample) else 0
-    offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0) else 1
+    offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0)) else 1
     offset = ("--Offset " + str(reads.loc[w.read,"sn_pos"]*mod) + " " + str(reads.loc[w.read,"sn_pos"]*mod) )if reads.loc[w.read,"single_nuc"] else ""
-    saminc = ("--samFlagInclude " + str(get_read_flag(w))) + if (paired==1 and reads.loc[w.read,"single_nuc"]) else ""
-    options = offset + " " + saminc
+    saminc = (" --samFlagInclude " + str(get_read_flag(w))) + str(get_read_flag(w)) if (paired==1 and reads.loc[w.read,"single_nuc"]) else ""
+    options = offset + saminc
     return options
     
 def get_fc_sn_opt(w):
     strand = get_sample_strandedness(w)
     paired = 1 if is_paired_end(w.sample) else 0
-    offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0) else 1
+    offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0)) else 1
     offset = reads.loc[w.read,"sn_pos"]*mod
     offset_val = abs(offset)
     pos = "--read2pos " + ("5" if offset > 0 else "3")
-    shift_type = "--readShiftType " + ("downstream" if offset > 0 else "upstream")
-    options = end + " " + shift_type
+    shift_type = ( " --readShiftType " + ("downstream" if offset > 1 else "upstream") ) if (offset_val > 1) else ""
+    options = end + shift_type
     return options 
 
 def get_deseq2_threads(wildcards=None):

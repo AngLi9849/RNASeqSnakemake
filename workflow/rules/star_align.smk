@@ -26,6 +26,7 @@ rule star_align:
         "star/{sample}/{unit}/{reference}/ReadsPerGene.out.tab",
         "star/{sample}/{unit}/{reference}/Aligned.toTranscriptome.out.bam",
         "star/{sample}/{unit}/{reference}/SJ.out.tab",
+        "star/{sample}/{unit}/{reference}/Log.final.out",
     log:
         "logs/star/{reference}-{sample}-{unit}.log",
     params:

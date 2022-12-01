@@ -1,6 +1,6 @@
 rule sort_raw_reads:
     input:
-        sort_raw_reads,
+        lambda w: sample.loc[w.sample].loc[w.unit,w.fq],
     output:
         "reads/raw/{sample}_{unit}_{fq}_raw.{ext}",
     log:
@@ -12,7 +12,14 @@ rule sort_raw_reads:
         ext=r"fastq|fastq\.gz",
     threads: 1
     shell:
-        "cat {input} > {output} 2> {log}"
+        """
+        if [[ -f "{input}" ]] ;
+          then
+          ln -s $(readlink -f {input}) {output} 2> {log}
+          else
+          wget {input} -O {output} 2> {log}
+        fi
+        """
 
 rule get_sra:
     output:
@@ -61,3 +68,4 @@ rule cutadapt_se:
         rmem="6G",
     wrapper:
         "0.80.2/bio/cutadapt/se"
+

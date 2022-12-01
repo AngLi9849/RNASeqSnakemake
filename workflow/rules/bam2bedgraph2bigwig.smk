@@ -49,9 +49,9 @@ rule unstranded_genomecov:
         txt="bedgraph/{sample}/{unit}/{reference}/{prefix}.BaseCoverage.txt",
         bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.unstranded.raw.bigwig",
     params:
-        bin_size=config["bigwig_bin_size"]
-        single_nuc = 1 if reads.loc[w.read,"single_nuc"] else 0,
-        bamcov_opts = get_bamcov_options(w),
+        bin_size=config["bigwig_bin_size"],
+        single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
+        bamcov_opts = lambda w: get_bamcov_options(w),
     resources:
         mem="6G",
         rmem="4G",
@@ -90,7 +90,9 @@ rule stranded_genomecov:
         bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.{strand}.bedgraph",
         bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
     params:
-        bin_size=config["bigwig_bin_size"]
+        single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
+        bamcov_opts = lambda w: get_bamcov_options(w),
+        bin_size=config["bigwig_bin_size"],
     resources:
         mem="6G",
         rmem="4G",

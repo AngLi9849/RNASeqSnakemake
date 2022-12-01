@@ -4,7 +4,7 @@ max_ram_gb: 64 # Highest ram available in a single machine
 # path or URL to sample sheet (TSV format, columns: sample, unit, condition, fq1, fq2)
 # Units are biological or technical replicates of experiment or sequencing lanes.
 # Conditions are compared in differential expression analysis.
-samples: config/samples.tsv
+samples: config/samples1.tsv
 experiments: config/experiments.tsv
 groups: config/groups.tsv
 protocols: config/protocols.tsv

@@ -102,7 +102,7 @@ rule multiqc:
             trim=["raw","trimmed"],
         ),
         star = lambda wildcards: list(dict.fromkeys(expand(
-            "star/{sample.sample_name}/{sample.unit_name}/{sample.reference}/AllAligned.sortedByCoord.out.bam",
+            "star/{sample.sample_name}/{sample.unit_name}/{sample.reference}/Log.final.out",
             sample=results[results.experiment==wildcards.experiment].itertuples(),
         ))),
 #        expand(
@@ -145,7 +145,7 @@ rule multiqc:
         rm -r {params.temp_dir} &&
         mkdir {params.temp_dir} &&
         for i in {input.fastqc} ; do ln -s $(readlink -f $i) {params.temp_dir}/ ; done &&
-        for i in {input.star} ; do ln -s $(readlink -f $i) {params.temp_dir}/$(awk -v i="$i" 'BEGIN {{ a = gensub(/\//,".","g",i) ; print a}}') ; done &&
+        for i in {input.star} ; do ln -s $(dirname $(readlink -f $i)) {params.temp_dir}/$(awk -v i="$(dirname $i)" 'BEGIN {{ a = gensub(/\//,".","g",i) ; print a}}') ; done &&
         multiqc {params.options} --force -o {params.temp_dir} -n {params.temp_name} {params.temp_dir} 2>{log} &&
         cp {output.temp} {output.multiqc}
         """

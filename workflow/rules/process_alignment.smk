@@ -103,6 +103,31 @@ rule samtools_deduplicate:
     wrapper:
         "0.80.2/bio/samtools/view"
 
+rule umi_dedup:
+    input:
+        bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
+    output:
+        stats="star/{sample}/{unit}/{reference}/{prefix}UMI-deduplicate.txt",
+        bam="star/{sample}/{unit}/{reference}/{prefix}UMI-deduplicated.sortedByCoord.out.bam",
+    threads: 1
+    resources:
+        mem="8G",
+        rmem="6G",
+    log:
+        "logs/samtools/{sample}/{unit}/{reference}/{prefix}UMI-deduplicate.log"
+    conda:
+        "../envs/umi_tools.yaml"
+    shell:
+        """
+        
+        umi_tools dedup \
+        --random-seed 1 \
+        -I {input.bam} \
+        --method unique \
+        --output-stats {output.stats} \
+        -S {output.bam}       
+        """
+
 rule featurecounts:
     input:
         bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
@@ -115,24 +140,25 @@ rule featurecounts:
         mem="16G",
         rmem="12G",
     log:
-        "logs/featurecounts/{sample}/{unit}/{reference}/{prefix}_{lineage}_{valid}.{type}.{tag}_{feature}Reads.log"
+        "logs/featurecounts/{sample}/{unit}/{reference}/{prefix}_{lineage}_{valid}.{type}.{tag}_{feature}.{read}.log"
     conda:
         "../envs/subread.yaml",
     params:
         ram=int(0.75 * config["max_ram_gb"] * 1000000),
         strand=get_sample_strandedness,
         paired=lambda wildcards:("-p" if is_paired_end(wildcards.sample) else ""),
+        single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
         overlap="-O" if config["counting"]["count_every_overlap"] else "",
-        fc_opts=get_fc_opts(w) if reads.loc[w.read,"single_nuc"] else "",
-        samflag="--include-flags"
+        fc_opts=lambda w: get_fc_sn_opts(w) if reads.loc[w.read,"single_nuc"] else "",
+        samflag=lambda w: ( "--include-flags " + str(get_read_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",
     shell:
         """
         if [[ $(du {input.bam} | cut -f1) -gt {params.ram} ]] ;
         then 
           for i in $(cut -f2 {input.saf} | sort | uniq) ; do
-            samtools view -bh -@ 5 {input.bam} $i > {input.bam}."$i".bam && 
+            samtools view {params.samflag} -bh -@ 5 {input.bam} $i > {input.bam}."$i".bam && 
             samtools index -b -@ 5 {input.bam}."$i".bam {input.bam}."$i".bam.bai && 
-            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab}."$i".chr.tab {input.bam}."$i".bam ;
+            featureCounts {params.fc_opts} -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab}."$i".chr.tab {input.bam}."$i".bam ;
           done &&
 
           for i in $(cut -f2 {input.saf} | sort | uniq) ; do
@@ -155,20 +181,19 @@ rule featurecounts:
               }}
             }}
            ' - |
-           sort -k1,1 >> {output.tab}
+           sort -k1,1 >> {output.tab} &&
 
-#          for i in $(cut -f2 {input.saf} | sort | uniq) ; do
-#            rm {input.bam}"$i".bam.bai ;
-#            rm {input.bam}"$i".bam ;
-#            rm {output.tab}"$i".chr.tab ;
-#          done ;
+           rm {input.bam}.*.bam &&
+           rm {input.bam}.*.bam.bai           
 
         else    
           if [[ {params.single_nuc} -eq 1  ]] ;
             then
-            samtools view -b -@ 5 --include-flags {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
+            samtools view -b -@ 5 {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
             samtools index -b -@ 5 {input.bam}.filtered.bam {input.bam}.filtered.bam.bai &&
-            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
+            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam} &&
+            rm {input.bam}.filtered.bam &&
+            rm {input.bam}.filtered.bam.bai
             else
             featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
             fi
