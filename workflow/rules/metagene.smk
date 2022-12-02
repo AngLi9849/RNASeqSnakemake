@@ -64,15 +64,15 @@ rule feature_metagene_annotations:
 rule compute_raw_matrix:
     input:        
         bed= "resources/annotations/{reference}/{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_{part}.bed",
-        bigwig = "raw_bw/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
+        bigwig = "raw_bw/{sample}/{unit}/{reference}/{prefix}.{read}.{strand}.raw.bigwig",
     output:
-        matrix="matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.gz",
+        matrix="matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{read}.{sense}_{part}.{bin}bins.matrix.gz",
     log:
-        "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.log",
+        "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{read}.{sense}_{part}.{bin}bins.matrix.log",
     params:
         strand = lambda wildcards:  "+" if (wildcards.strand == "fwd") else "-" if (wildcards.strand == "rev") else "+-",
-        temp = "resources/annotations/{reference}/{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{sense}_{part}.{strand}.bed",
-        temp_gz = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}_{part}.{bin}bins.matrix.temp.gz",
+        temp = "resources/annotations/{reference}/{lineage}.plot-{md5}.{valid}_{tag}.{feature}.{read}.{sense}_{part}.{strand}.bed",
+        temp_gz = "matrices/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{read}.{sense}_{part}.{bin}bins.matrix.temp.gz",
     threads: 4
     resources:
         mem="10G",
@@ -97,14 +97,14 @@ rule compute_raw_matrix:
 
 rule feature_signal2background:
     input:
-        rpk = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpk.bed",
+        rpk = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{read}.rpk.bed",
         sense = "resources/annotations/{reference}/{lineage}.{type}.{valid}_{tag}.{feature}.sense.bed",
         genetab = "resources/annotations/{reference}/genome.gtf.{tag}_gene_info.tab",
-        background = lambda wildcards: expand("featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{feat.valid}.{feat.type}.{{tag}}.{feat.feature_name}.rpk.bed",
+        background = lambda wildcards: expand("featurecounts/{{norm_group}}/{{reference}}/{{prefix}}.{{lineage}}_{feat.valid}.{feat.type}.{{tag}}.{feat.feature_name}.{{read}}.rpk.bed",
             feat=features.loc[str(features.loc[wildcards.feature,"backgrd"]).split(",")].itertuples()
         ) ,
     output:
-        tab = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.plot-{md5}.sig2bg.tab",
+        tab = "featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{read}.plot-{md5}.sig2bg.tab",
     params:
         compat_bt=lambda wildcards: features.loc[wildcards.feature,"comp_bt"],
         bef= lambda wildcards: features.loc[wildcards.feature,"plotbef"],
@@ -188,23 +188,23 @@ rule sort_raw_matrices:
           id = features.loc[w.feature,"prefix_md5"] 
         ),
         bef = lambda wildcards : [] if features.loc[wildcards.feature,"plotbef_bin"]==0 else expand(
-          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotbef.{bin}bins.matrix.gz",
+          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{read}}.{{sense}}_plotbef.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
           bin= features.loc[wildcards.feature,"plotbef_bin"],
         ), 
         main = lambda wildcards : expand(
-          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_main.{bin}bins.matrix.gz",
+          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{read}}.{{sense}}_main.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
           bin = features.loc[wildcards.feature,"bin_n"],
         ),
         aft = lambda wildcards : [] if features.loc[wildcards.feature,"plotaft_bin"]==0 else expand(
-          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{sense}}_plotaft.{bin}bins.matrix.gz",
+          "matrices/{{sample}}/{{unit}}/{{reference}}/{{prefix}}.{strand}/{{lineage}}_{{valid}}.plot-{{md5}}.{{tag}}.{{feature}}.{{read}}.{{sense}}_plotaft.{bin}bins.matrix.gz",
           strand = ["fwd","rev"] if wildcards.strand=="stranded" else "unstranded",
           bin= features.loc[wildcards.feature,"plotaft_bin"],
         ),
     output:
-        sum_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.{mean}_sum_matrix.gz",
-        norm_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{sense}.{mean}_norm_matrix.gz",
+        sum_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{read}.{sense}.{mean}_sum_matrix.gz",
+        norm_mx = "norm_mx/{sample}/{unit}/{reference}/{prefix}.{strand}/{lineage}_{valid}.plot-{md5}.{tag}.{feature}.{read}.{sense}.{mean}_norm_matrix.gz",
     threads: 1
     resources:
         mem="20G",

@@ -45,18 +45,22 @@ rule unstranded_genomecov:
         bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai", 
         chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + ".fasta.chrom.sizes")
     output:
-        bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.unstranded.bedgraph",
-        txt="bedgraph/{sample}/{unit}/{reference}/{prefix}.BaseCoverage.txt",
-        bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.unstranded.raw.bigwig",
+        bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.{read}.unstranded.bedgraph",
+        txt="bedgraph/{sample}/{unit}/{reference}/{prefix}.{read}.Coverage.txt",
+        bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.{read}.unstranded.raw.bigwig",
     params:
         bin_size=config["bigwig_bin_size"],
         single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
         bamcov_opts = lambda w: get_bamcov_options(w),
+        single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
+        gencov_pos = lambda w: get_gencov_pos(w) if reads.loc[w.read,"end_nuc"] else "",
+        end_nuc = 1 if reads.loc[w.read,"end_nuc"] else 0,
+        samflag=lambda w: ( "--include-flags " + str(get_read_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/deeptools/{sample}/{unit}/{reference}/{prefix}_unstranded_bamcoverage.log",
+        "logs/deeptools/{sample}/{unit}/{reference}/{prefix}_{read}_unstranded_bamcoverage.log",
     conda:
         "../envs/bedtools.yaml",
     threads: 2
@@ -64,9 +68,18 @@ rule unstranded_genomecov:
         """
         if [ {params.single_nuc} -eq 1 ] ; 
           then
-          bedtools genomecov -ibam {input.bam} -bga -split > {output.bg}
+          if [[ {params.end_nuc} -eq 1  ]] ;
+            then
+            samtools view -b -@ 5 {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
+            samtools index -b -@ 5 {input.bam}.filtered.bam {input.bam}.filtered.bam.bai &&
+            bedtools genomecov -ibam {input.bam}.filter.bam {params.gencov_pos} -bga -split > {output.bg}
+            rm {input.bam}.filtered.bam &&
+            rm {input.bam}.filtered.bam.bai
+            else
+            bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs {params.bin_size} {params.bamcov_opts} --skipNAs
+            fi
           else
-          bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs 1 {params.bamcov_opts} --skipNAs
+          bedtools genomecov -ibam {input.bam} -bga -split > {output.bg}
         fi &&
 
         cat {output.bg} |
@@ -87,29 +100,41 @@ rule stranded_genomecov:
         bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.{strand}.bam.bai",
         chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + "_genome.fasta.chrom.sizes")
     output:
-        bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.{strand}.bedgraph",
-        bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.{strand}.raw.bigwig",
+        bg="bedgraph/{sample}/{unit}/{reference}/{prefix}.{read}.{strand}.bedgraph",
+        bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.{read}.{strand}.raw.bigwig",
     params:
         single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
         bamcov_opts = lambda w: get_bamcov_options(w),
         bin_size=config["bigwig_bin_size"],
+        gencov_pos = lambda w: get_gencov_pos(w) if reads.loc[w.read,"end_nuc"] else "",
+        end_nuc = 1 if reads.loc[w.read,"end_nuc"] else 0,
+        samflag=lambda w: ( "--include-flags " + str(get_read_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",        
     resources:
         mem="6G",
         rmem="4G",
     wildcard_constraints:
         strand=r"((?!unstranded).)*"
     log:
-        "logs/deeptools/{sample}/{unit}/{reference}/{prefix}.{strand}_bamcoverage.log",
+        "logs/deeptools/{sample}/{unit}/{reference}/{prefix}.{read}.{strand}_bamcoverage.log",
     conda:
         "../envs/bedtools.yaml",
     threads: 2
     shell:
         """
-        if [ {params.single_nuc} -eq 1 ] ;
+        if [[ {params.single_nuc} -eq 1 ]] ;
           then
-          bedtools genomecov -ibam {input.bam} -bga -split > {output.bg}
+          if [[ {params.end_nuc} -eq 1  ]] ;
+            then
+            samtools view -b -@ 5 {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
+            samtools index -b -@ 5 {input.bam}.filtered.bam {input.bam}.filtered.bam.bai &&
+            bedtools genomecov -ibam {input.bam}.filter.bam {params.gencov_pos} -bga -split > {output.bg}
+            rm {input.bam}.filtered.bam &&
+            rm {input.bam}.filtered.bam.bai
+            else
+            bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs {params.bin_size} {params.bamcov_opts} --skipNAs
+            fi
           else
-          bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs 1 {params.bamcov_opts} --skipNAs
+          bedtools genomecov -ibam {input.bam} -bga -split > {output.bg}
         fi &&
         cat {output.bg} |
         LC_COLLATE=C sort -k1,1 -k2,2n -o {output.bg} &&
@@ -118,16 +143,16 @@ rule stranded_genomecov:
  
 rule scale_bedgraph2bigwig:
     input:
-       scale = lambda w: "deseq2/{{norm_group}}/{{reference}}/All{{prefix}}.{lineage}_{valid}.{norm_type}.{{normaliser}}ReadCount.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+       scale = lambda w: "deseq2/{{norm_group}}/{{reference}}/All{{prefix}}.{lineage}_{valid}.{norm_type}.{{normaliser}}.{norm_read}.Count.{{spikein}}_{{pair}}.scale_factors.tsv".format(
             lineage=results.loc[w.sample].loc[w.unit,"diff_lineage"][0],
             valid=VALID,
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
         ),
-       bedgraph = "bedgraph/{sample}/{unit}/{reference}/{splice}{prefix}.{strand}.bedgraph",
+       bedgraph = "bedgraph/{sample}/{unit}/{reference}/{splice}{prefix}.{read}.{strand}.bedgraph",
        chr_size = lambda wildcards: ("resources/genomes/" + str(wildcards.reference) + "_genome.fasta.chrom.sizes")
     output:
-       bg = "bedgraph/{norm_group}/{reference}/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.norm.bedgraph",
-       bw = "norm_bw/{norm_group}/{reference}/bigwigs/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.normalised.bigwig",
+       bg = "bedgraph/{norm_group}/{reference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.{read}.norm.bedgraph",
+       bw = "norm_bw/{norm_group}/{reference}/bigwigs/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}{prefix}/{sample}_{unit}.{strand}_{splice}.{read}.norm.bigwig",
     conda:
        "../envs/bedtools.yaml"
     threads: 1
@@ -135,7 +160,7 @@ rule scale_bedgraph2bigwig:
         mem="12G",
         rmem="8G",
     log:
-       "logs/{norm_group}/bg2bw/{sample}_{unit}/{reference}/{strand}_by_{spikein}_{pair}_{normaliser}_{prefix}_{splice}_{strand}_bg2bw.log"
+       "logs/{norm_group}/bg2bw/{sample}_{unit}/{reference}/{strand}_by_{spikein}_{pair}_{normaliser}.{norm_read}_{prefix}_{splice}_{read}_{strand}_bg2bw.log"
     shell:
        """
        awk -F'\\t' -v OFS='\\t' '

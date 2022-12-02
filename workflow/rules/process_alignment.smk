@@ -112,10 +112,10 @@ rule umi_dedup:
         bam="star/{sample}/{unit}/{reference}/{prefix}UMI-deduplicated.sortedByCoord.out.bam",
     threads: 1
     params:
-        paired="--paired " if pd.notna(samples.loc
+        paired=lambda w: "--paired" if pd.notna(samples.loc[w.sample].loc[w.unit,"fq2"]) else "",
     resources:
-        mem="8G",
-        rmem="6G",
+        mem="16G",
+        rmem="12G",
     log:
         "logs/samtools/{sample}/{unit}/{reference}/{prefix}UMI-deduplicate.log"
     conda:
@@ -125,9 +125,10 @@ rule umi_dedup:
         umi_tools dedup \
         --random-seed 1 \
         -I {input.bam} \
-        
+        --umi-separator=":" \
+        --spliced-is-unique \
         --output-stats {output.stats} \
-        -S {output.bam}       
+        {params.paired} -S {output.bam}       
         """
 
 rule featurecounts:

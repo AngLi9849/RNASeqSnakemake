@@ -203,7 +203,10 @@ reads["single_nuc"] = reads.apply(lambda row:\
     row.sn_pos > 0 or row.sn_pos < 0,
     axis=1
 )
-
+reads["end_nuc"]=reads.apply(lambda row:\
+    (row.sn_pos > 0 or row.sn_pos < 0) and abs(row.sn_pos)==1,
+    axis=1
+)
    
 # Read experimentss config table into pandas dataframe
 experiments = (pd.read_csv(config["experiments"], sep="\t", dtype={"protocol": str, "sample_lineage" : str}, comment="#"))
@@ -222,9 +225,9 @@ experiments["splice"]=experiments.apply(
 experiments["norm_feat"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"norm_feat"], axis=1)
 experiments["demultimap"]=experiments.apply(
-    lambda row: protocols.loc[row.protocol,"demulti"], axis=1)
+    lambda row: protocols.loc[row.protocol,"demulti"]=="TRUE", axis=1)
 experiments["deduplicate"]=experiments.apply(
-    lambda row: protocols.loc[row.protocol,"dedup"], axis=1)
+    lambda row: protocols.loc[row.protocol,"dedup"]=="TRUE", axis=1)
 experiments["sep_spl"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"sep_spl"], axis=1)
 
@@ -329,10 +332,11 @@ def get_norm_group_samples(norm_group):
     sample = samples[samples.protocol == protocol][samples.condition.isin(cond)]
     return sample
 
+experiments["umi"]=experiments.apply( lambda row: True if get_experiment_samples(row.experiment)["umi"].all() else False, axis=1)
 experiments["paired"]=experiments.apply( lambda row: "paired" if row.pairRep else "unpaired" , axis = 1 )
 experiments["diff_lineage"]=experiments.sample_lineage if config['features']['validate_features'] else "genome"
 experiments["demulti"]=experiments.apply(lambda row: "Demultimapped" if row.demultimap else "", axis=1)
-experiments["dedup"]=experiments.apply(lambda row: "Deduplicated" if row.deduplicate else "", axis=1)
+experiments["dedup"]=experiments.apply(lambda row: "UMI-deduplicated" if (row.umi and row.deduplicate) else "Deduplicated" if row.deduplicate else "", axis=1)
 
 
 # Create a summary data frame to assign samples to lineages
@@ -356,45 +360,7 @@ def get_reference_species(reference):
     species=lineage[lineage.reference==reference].species[0]
     return species
 
-# Define keywords for obtaining sample-specific bigwigs
-bw_samples=[]
-
-for i in range(0,len(experiments)):
-    samps = get_experiment_samples(experiments.experiment[i])[["sample_name","unit_name","strandedness"]]
-    samps["experiment"]=experiments.experiment[i]
-    samps["reference"] = get_source(experiments.experiment[i])
-    samps["lineage"] = experiments.sample_lineage[i]
-    samps["group"] = experiments.group_name[i]
-    samps["spikein"]=experiments.normaliser[i]
-    samps["deduplicate"]=experiments.deduplicate[i]
-    samps["demultimap"]=experiments.demultimap[i]
-    samps["sep_spl"]=experiments.sep_spl[i]
-    samps["norm_feat"]=experiments.norm_feat[i]
-    samps["pairRep"]="paired" if experiments.pairRep[i] else "unpaired"
-    samps["stranded"]=samps.apply(lambda row: "unstranded" if (row.strandedness=="no" or pd.isna(row.strandedness))  else "stranded", axis=1)
-    unstrand=samps[samps.stranded=="unstranded"]
-    unstrand["strand"]="unstranded"
-    fwd=samps[samps.stranded=="stranded"]
-    fwd["strand"]="fwd"
-    rev=fwd.copy(deep=True)
-    rev["strand"]="rev"
-    bw_samples.append(unstrand)
-    bw_samples.append(fwd)
-    bw_samples.append(rev)
-
-bw_samples = pd.concat(bw_samples).drop_duplicates()
-bw_samples=bw_samples.set_index(["sample_name","unit_name"], drop=False).sort_index()
-
-bw_samples["demulti"]=bw_samples.apply(
-    lambda row: ['','Demultimapped'] if row.demultimap=="BOTH" else ['Demultimapped'] if row.demultimap=="TRUE" else [''], axis=1)
-bw_samples["dedup"]=bw_samples.apply(
-    lambda row: ['','Deduplicated'] if row.deduplicate=="BOTH" else ['Deduplicated'] if row.deduplicate=="TRUE" else [''], axis=1)
-bw_samples["splice_prefix"]=bw_samples.apply(
-    lambda row: ['All','Spliced','Unspliced'] if row.sep_spl else ['All'], axis=1)
-bw_samples["demulti"]=bw_samples["demulti"].astype('object')
-bw_samples["dedup"]=bw_samples["dedup"].astype('object')
-bw_samples["splice_prefix"]=bw_samples["splice_prefix"].astype('object')
-
+# Define keywords for obtaining sample-specific results
 results=[]
 
 for i in range(0,len(experiments)):
@@ -412,13 +378,13 @@ for i in range(0,len(experiments)):
     samps["pairRep"] = "paired" if experiments.pairRep[i] else "unpaired"
     samps["stranded"] = samps.apply(lambda row: "unstranded" if (row.strandedness=="no" or pd.isna(row.strandedness))  else "stranded", axis=1)
     samps["demulti"] = samps.apply(lambda row: "Demultimapped" if (row.demultimap=="TRUE")  else "", axis=1)
-    samps["dedup"] = samps.apply(lambda row: "Deduplicated" if (row.deduplicate=="TRUE")  else "", axis=1)
+    samps["dedup"] = samps.apply(lambda row: "UMI-deduplicated" if (experiments.umi[i] and row.deduplicate=="TRUE") else "Deduplicated" if (row.deduplicate=="TRUE")  else "", axis=1)
     samps["splice_prefix"] = "All" 
     samp_ls=None
     samp_ls=[]
     samp_ls.append(samps)
     dedup_both=samps[samps.deduplicate=="BOTH"]
-    dedup_both["dedup"]="Deduplicated"
+    dedup_both["dedup"]= dedup_both.apply(lambda row: "UMI-deduplicated" if (experiments.umi[i]==True) else "Deduplicated",axis=1)
     samp_ls.append(dedup_both)
     samps=pd.concat(samp_ls).drop_duplicates()
     demulti_both=samps[(samps.demultimap=="BOTH")]
@@ -591,7 +557,7 @@ def get_bams():
 
 def get_norm_bigwigs():
     bigwigs = expand(
-        "norm_bw/{sample.group}/{sample.reference}/bigwigs/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}ReadCount_normalised/{sample.splice_prefix}Aligned{sample.demulti}{sample.dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{sample.splice_prefix}.normalised.bigwig",
+        "norm_bw/{sample.group}/{sample.reference}/bigwigs/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}ReadCount_normalised/{sample.splice_prefix}Aligned{sample.demulti}{sample.dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{sample.splice_prefix}.{sample.read}.norm.bigwig",
         sample=results.itertuples(), splice=SPLICE
     )
     return bigwigs
@@ -605,7 +571,7 @@ def get_feature_counts():
 
 def get_diffexp_docx():
     counts = expand(
-        "diff_plots/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        "diff_plots/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.{exp.read}.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples(), mean=MX_MEAN, norm=MX_NORM,
     ),
     return counts
@@ -729,7 +695,7 @@ def get_cutadapt_input(wildcards):
         ending = ".gz"
     else :
         ending = ""
-    raw_dir = "umi_extracted" if pd.notna(sampple["umi_bc"]) else "raw"
+    raw_dir = "umi_extracted" if pd.notna(sample["umi_bc"]) else "raw"
     if pd.isna(sample["fq2"]):
         # single end local sample
         fq1_read = "fq1_" if pd.notna(sampple["umi_bc"]) else ""
@@ -877,6 +843,13 @@ def get_read_flag(w):
         flag=128 if strand!=2 else 64
     return flag
         
+def get_gencov_pos(w):
+    strand = get_sample_strandedness(w)
+    paired = 1 if is_paired_end(w.sample) else 0
+    offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0)) else 1
+    offset = reads.loc[w.read,"sn_pos"]*mod
+    pos = "-5" offset > 0 else "-3"
+    return pos
 
 def get_bamcov_options(w):
     strand = get_sample_strandedness(w)

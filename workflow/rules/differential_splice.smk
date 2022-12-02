@@ -130,16 +130,16 @@ rule dexseq_splice_ratio:
         bed=lambda w: "resources/annotations/{source}/{{lineage}}.{{type}}.{{valid}}_{{tag}}.{{feature}}.bed".format(
             source=  str( get_sample_source(w.experiment) ),
         ),
-        express="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
+        express="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
         base_bed=lambda wildcards: ("resources/annotations/{source}/{{lineage}}.{s}.{{valid}}_{{tag}}.{f}.bed".format(
             source=  str( get_sample_source(wildcards.experiment) ),
             s=features.loc[features.loc[wildcards.feature,"group"],"type"] if (features.loc[wildcards.feature,"group"] in features["feature_name"].tolist()) else "gtf",
             f=features.loc[wildcards.feature,"group"]
         ) ),
     output:
-        lfc="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
-        levels="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
-        counts="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
+        lfc="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
+        levels="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
+        counts="differential/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
     params:
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
         treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],
@@ -152,7 +152,7 @@ rule dexseq_splice_ratio:
     conda:
         "../envs/dexseq.yaml"
     log:
-        "logs/dexseq/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}ReadCount_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
+        "logs/dexseq/{experiment}/{reference}/differential_splicing_ratio/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.log",
     threads: get_deseq2_threads()
     script:
         "../scripts/R/dexseq_splice.R"
