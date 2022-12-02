@@ -106,10 +106,13 @@ rule samtools_deduplicate:
 rule umi_dedup:
     input:
         bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
+        bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai",
     output:
         stats="star/{sample}/{unit}/{reference}/{prefix}UMI-deduplicate.txt",
         bam="star/{sample}/{unit}/{reference}/{prefix}UMI-deduplicated.sortedByCoord.out.bam",
     threads: 1
+    params:
+        paired="--paired " if pd.notna(samples.loc
     resources:
         mem="8G",
         rmem="6G",
@@ -119,11 +122,10 @@ rule umi_dedup:
         "../envs/umi_tools.yaml"
     shell:
         """
-        
         umi_tools dedup \
         --random-seed 1 \
         -I {input.bam} \
-        --method unique \
+        
         --output-stats {output.stats} \
         -S {output.bam}       
         """

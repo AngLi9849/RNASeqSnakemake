@@ -145,7 +145,7 @@ heat_xlim <- c(heat_x_min-0.5,heat_x_max+0.5)
 }
 
 # Import wildcards as text
-prefix <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["prefix"]]))
+prefix <- gsub("([[:lower:]])([[:upper:]])",perl=TRUE,"\\1 \\2",as.character(snakemake@wildcards[["prefix"]]))
 tag <- toTitleCase(as.character(snakemake@wildcards[["tag"]]))
 valid <- toTitleCase(as.character(snakemake@wildcards[["valid"]]))
 feature <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["feature"]])))

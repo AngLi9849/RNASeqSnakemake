@@ -1,13 +1,14 @@
 rule sort_raw_reads:
-    input:
-        lambda w: sample.loc[w.sample].loc[w.unit,w.fq],
     output:
-        "reads/raw/{sample}_{unit}_{fq}_raw.{ext}",
+        "reads/raw/{sample}_{unit}_{fq}_raw.fastq.gz",
     log:
-        "logs/sort/{sample}_{unit}_{fq}_raw.{ext}.log",
+        "logs/sort/{sample}_{unit}_{fq}_raw.log",
     resources:
         mem="6G",
         rmem="4G",
+    params:
+        gzipped=lambda w, input: 1 if input[0].endswith(".gz") else 0,
+        unzipped_out = "reads/raw/{sample}_{unit}_{fq}_raw.fastq",
     wildcard_constraints:
         ext=r"fastq|fastq\.gz",
     threads: 1
@@ -15,9 +16,20 @@ rule sort_raw_reads:
         """
         if [[ -f "{input}" ]] ;
           then
-          ln -s $(readlink -f {input}) {output} 2> {log}
+            if [[ {params.gzipped} -eq 1 ]] ;
+              then             
+              ln -s $(readlink -f {input}) {output} 2> {log}
+              else
+              gzip -c {input} > {output} 2>{log}
+            fi
           else
-          wget {input} -O {output} 2> {log}
+          if [[ {params.gzipped} -eq 1 ]] ;
+            then
+            wget {input} -O {output} 2> {log}
+            else
+            wget {input} -O {params.unzipped_out} 2> {log} &&
+            gzip {params.unzipped_out} 2>>{log}
+          fi
         fi
         """
 
@@ -30,6 +42,44 @@ rule get_sra:
     wrapper:
         "0.77.0/bio/sra-tools/fasterq-dump"
 
+rule umi_extract_se:
+    input:
+       "reads/raw/{sample}_{unit}_fq1_raw.fastq.gz",
+    output:
+       fq="reads/umi_extracted/{sample}_{unit}_raw.fastq.gz",
+    params:
+       bc_pattern=lambda w: samples.loc[w.sample].loc[w.unit, "umi_bc"],
+    log:
+       "logs/sort/{sample}_{unit}_{fq}_raw.log"   
+    shell:
+       """
+       umi_tools extract \
+       --stdin={input} \
+       --bc-pattern={params.bc_pattern} \
+       --log={log} \
+       --stdout {output}  
+       """ 
+    
+rule umi_extract_pe:
+    input:
+       fq1="reads/raw/{sample}_{unit}_fq1_raw.fastq.gz",
+       fq2="reads/raw/{sample}_{unit}_fq2_raw.fastq.gz",
+    output:
+       fq1="reads/umi_extracted/{sample}_{unit}_fq1_raw.fastq.gz",
+       fq2="reads/umi_extracted/{sample}_{unit}_fq2_raw.fastq.gz",
+    params:
+       bc_pattern=lambda w: samples.loc[w.sample].loc[w.unit, "umi_bc"],
+    log:
+       "logs/sort/{sample}_{unit}_{fq}_raw.log"
+    shell:
+       """
+       umi_tools extract \
+       -I {input.fq1} \
+       --bc-pattern={params.bc_pattern} \ 
+       --read2-in={input.fq2} \
+       --stdout={output.fq1} \
+       --read2-out={output.fq2}
+       """
 
 rule cutadapt_pe:
     input:
