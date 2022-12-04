@@ -70,10 +70,27 @@ rule umi_extract_pe:
        fq2="reads/umi_extracted/{sample}_{unit}_fq2_raw.fastq.gz",
     params:
        bc_pattern=lambda w: samples.loc[w.sample].loc[w.unit, "umi_bc"],
+       
     log:
        "logs/umi/{sample}_{unit}_pe_extract.log"
     shell:
        """
+       zcat {input.fq1} |       
+       awk '
+         $0~/^@/ {{
+           split($1,a,":") ; 
+           if (gensub("@","","g",a[1]) ~ /[^ACTGN]/) {{
+             print
+           }} else {{
+             id=$1 ;
+             match(a[1],/@([ACTGN]*)/,b) ;
+             $1=gensub(b[1]":","","g",id)"_"b[1] ;
+             print
+           }}
+         }}
+         $0 !~ /^@/ {{
+           print
+         }}' - 
        umi_tools extract \
        -I {input.fq1} \
        --bc-pattern={params.bc_pattern} \ 
