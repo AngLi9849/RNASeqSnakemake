@@ -125,7 +125,6 @@ rule umi_dedup:
         umi_tools dedup \
         --random-seed 1 \
         -I {input.bam} \
-        --umi-separator=":" \
         --spliced-is-unique \
         --output-stats {output.stats} \
         {params.paired} -S {output.bam}       

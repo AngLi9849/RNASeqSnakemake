@@ -45,59 +45,73 @@ rule get_sra:
 
 rule umi_extract_se:
     input:
-       "reads/raw/{sample}_{unit}_fq1_raw.fastq.gz",
+        "reads/raw/{sample}_{unit}_fq1_raw.fastq.gz",
     output:
-       fq="reads/umi_extracted/{sample}_{unit}_raw.fastq.gz",
+        fq="reads/umi_extracted/{sample}_{unit}_se_raw.fastq.gz",
     params:
-       bc_pattern=lambda w: samples.loc[w.sample].loc[w.unit, "umi_bc"],
+        bc_pattern=lambda w: samples.loc[w.sample].loc[w.unit, "umi_bc"],
+        no_umi=lambda w: 1 if str(samples.loc[w.sample].loc[w.unit, "umi_bc"])=="nan" else 0,
+        begin_umi="workflow/scripts/awk/begin_umi.awk",
+    conda:
+        "../envs/umi_tools.yaml"
+    resources:
+         mem="8G",
+         rmem="6G",
     log:
-       "logs/umi/{sample}_{unit}_se_extract.log"   
+        "logs/umi/{sample}_{unit}_se_extract.log"   
     shell:
-       """
-       umi_tools extract \
-       --stdin={input} \
-       --bc-pattern={params.bc_pattern} \
-       --log={log} \
-       --stdout {output}  
-       """ 
+        """
+        if [[ {params.no_umi} -eq 1 ]] ;
+          then
+          zcat {input} |
+          awk -f {params.begin_umi} - |
+          gzip > {output}
+          else
+          umi_tools extract \
+          --stdin={input} \
+          --bc-pattern={params.bc_pattern} \
+          --log={log} \
+          --stdout {output}
+        fi  
+        """ 
     
 rule umi_extract_pe:
     input:
-       fq1="reads/raw/{sample}_{unit}_fq1_raw.fastq.gz",
-       fq2="reads/raw/{sample}_{unit}_fq2_raw.fastq.gz",
+        fq1="reads/raw/{sample}_{unit}_fq1_raw.fastq.gz",
+        fq2="reads/raw/{sample}_{unit}_fq2_raw.fastq.gz",
     output:
-       fq1="reads/umi_extracted/{sample}_{unit}_fq1_raw.fastq.gz",
-       fq2="reads/umi_extracted/{sample}_{unit}_fq2_raw.fastq.gz",
+        fq1="reads/umi_extracted/{sample}_{unit}_fq1_raw.fastq.gz",
+        fq2="reads/umi_extracted/{sample}_{unit}_fq2_raw.fastq.gz",
     params:
-       bc_pattern=lambda w: samples.loc[w.sample].loc[w.unit, "umi_bc"],
-       
+        bc_pattern=lambda w: samples.loc[w.sample].loc[w.unit, "umi_bc"],
+        no_umi=lambda w: 1 if str(samples.loc[w.sample].loc[w.unit, "umi_bc"])=="nan" else 0,
+        begin_umi="workflow/scripts/awk/begin_umi.awk",
     log:
-       "logs/umi/{sample}_{unit}_pe_extract.log"
+        "logs/umi/{sample}_{unit}_pe_extract.log"
+    conda:
+        "../envs/umi_tools.yaml"
+    resources:
+         mem="8G",
+         rmem="6G",
     shell:
-       """
-       zcat {input.fq1} |       
-       awk '
-         $0~/^@/ {{
-           split($1,a,":") ; 
-           if (gensub("@","","g",a[1]) ~ /[^ACTGN]/) {{
-             print
-           }} else {{
-             id=$1 ;
-             match(a[1],/@([ACTGN]*)/,b) ;
-             $1=gensub(b[1]":","","g",id)"_"b[1] ;
-             print
-           }}
-         }}
-         $0 !~ /^@/ {{
-           print
-         }}' - 
-       umi_tools extract \
-       -I {input.fq1} \
-       --bc-pattern={params.bc_pattern} \ 
-       --read2-in={input.fq2} \
-       --stdout={output.fq1} \
-       --read2-out={output.fq2}
-       """
+        """
+        if [[ {params.no_umi} -eq 1 ]] ;
+          then
+          zcat {input.fq1} |        
+          awk -f {params.begin_umi} - |
+          gzip > {output.fq1} &&
+          zcat {input.fq2} |
+          awk -f {params.begin_umi} - |
+          gzip > {output.fq2}
+          else  
+          umi_tools extract \
+          -I {input.fq1} \
+          --bc-pattern={params.bc_pattern} \ 
+          --read2-in={input.fq2} \
+          --stdout={output.fq1} \
+          --read2-out={output.fq2}
+        fi
+        """
 
 rule cutadapt_pe:
     input:

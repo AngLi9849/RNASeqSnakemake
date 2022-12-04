@@ -723,10 +723,10 @@ def get_cutadapt_input(wildcards):
         ending = ".gz"
     else :
         ending = ""
-    raw_dir = "umi_extracted" if pd.notna(sample["umi_bc"]) else "raw"
+    raw_dir = "umi_extracted" if sample["umi"] else "raw"
     if pd.isna(sample["fq2"]):
         # single end local sample
-        fq1_read = "fq1_" if pd.notna(sampple["umi_bc"]) else ""
+        fq1_read = "fq1_" if sample["umi"] else "se_"
         return "reads/{raw}/{S}_{U}_{read}raw.fastq{E}".format(
             S=sample.sample_name, U=sample.unit_name, E=ending, raw=raw_dir, read=fq1_read
         )
