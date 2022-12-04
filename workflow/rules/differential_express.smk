@@ -15,7 +15,7 @@ rule pca:
     script:
         "../scripts/R/plot-pca.R"
 
-rule deseq2_expression:
+rule deseq2_read_count:
     input:
         size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}.{{norm_read}}.Count.{{spikein}}_{{pair}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
@@ -27,7 +27,7 @@ rule deseq2_expression:
         counts= lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}.{{read}}.counts.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
-        total_sum = lambda w: "deseq2/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.gtf.TotalReadCount.{{pair}}.summary.tsv".format(
+        total_sum = lambda w: "deseq2/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.gtf.Total.Read.Count.{{pair}}.summary.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
         genetab=lambda w: "resources/annotations/{source}/genome.gtf.{{tag}}_gene_info.tab".format(
@@ -45,18 +45,18 @@ rule deseq2_expression:
             f=features.loc[wildcards.feature,"group"]
         ) ),
     output:
-        counts="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{read}.counts.tab",
-        lfc="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{read}.lfc.tab",
-        levels="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{read}.levels.tab",
-        rpkm="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{read}.rpkm.tsv",
-        toptable="differential/{experiment}/{reference}/differential_expression/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{read}.toptable.tsv",
+        counts="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
+        lfc="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
+        levels="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
+        rpkm="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.tsv",
+        toptable="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.toptable.tsv",
     params:
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
         treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],
         paired=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["pairRep"]),
         section=lambda wildcards : features.loc[wildcards.feature,"section"],
         main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
-        dir="results/{experiment}/{reference}/differential_expression/{spikein}_{normaliser}.{norm_read}.Count_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{read}",
+        dir="results/{experiment}/{reference}/differential_{read}.Count/{spikein}_{normaliser}.{norm_read}.Count_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}",
     resources:
         mem="24G",
         rmem="16G",

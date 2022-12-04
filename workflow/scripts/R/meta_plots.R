@@ -1,3 +1,4 @@
+meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= config_min_mean & expr_i$baseMean >= min_rpkm])
 mx_data <- mx_df[mx_df$i_group == i,]
 
 sample_colours <- as.character(unique(mx_data$colour))

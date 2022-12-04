@@ -7,27 +7,28 @@ rule sort_raw_reads:
         mem="6G",
         rmem="4G",
     params:
-        gzipped=lambda w, input: 1 if input[0].endswith(".gz") else 0,
+        input=lambda w: samples.loc[w.sample].loc[w.unit].loc[w.fq],
+        gzipped=lambda w, input: 1 if samples.loc[w.sample].loc[w.unit].loc[w.fq].endswith(".gz") else 0,
         unzipped_out = "reads/raw/{sample}_{unit}_{fq}_raw.fastq",
     wildcard_constraints:
         ext=r"fastq|fastq\.gz",
     threads: 1
     shell:
         """
-        if [[ -f "{input}" ]] ;
+        if [[ -f "{params.input}" ]] ;
           then
             if [[ {params.gzipped} -eq 1 ]] ;
               then             
-              ln -s $(readlink -f {input}) {output} 2> {log}
+              ln -s $(readlink -f {params.input}) {output} 2> {log}
               else
-              gzip -c {input} > {output} 2>{log}
+              gzip -c {params.input} > {output} 2>{log}
             fi
           else
           if [[ {params.gzipped} -eq 1 ]] ;
             then
-            wget {input} -O {output} 2> {log}
+            wget {params.input} -O {output} 2> {log}
             else
-            wget {input} -O {params.unzipped_out} 2> {log} &&
+            wget {params.input} -O {params.unzipped_out} 2> {log} &&
             gzip {params.unzipped_out} 2>>{log}
           fi
         fi
@@ -50,7 +51,7 @@ rule umi_extract_se:
     params:
        bc_pattern=lambda w: samples.loc[w.sample].loc[w.unit, "umi_bc"],
     log:
-       "logs/sort/{sample}_{unit}_{fq}_raw.log"   
+       "logs/umi/{sample}_{unit}_se_extract.log"   
     shell:
        """
        umi_tools extract \
@@ -70,7 +71,7 @@ rule umi_extract_pe:
     params:
        bc_pattern=lambda w: samples.loc[w.sample].loc[w.unit, "umi_bc"],
     log:
-       "logs/sort/{sample}_{unit}_{fq}_raw.log"
+       "logs/umi/{sample}_{unit}_pe_extract.log"
     shell:
        """
        umi_tools extract \

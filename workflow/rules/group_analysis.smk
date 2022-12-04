@@ -1,7 +1,7 @@
 rule group_plots:
     input:
         lfc=lambda wildcards: expand(
-            "differential/{exp.experiment}/{exp.reference}/differential_{exp.difference}/{exp.paired}.{exp.normaliser}_{exp.norm_feat}ReadCount_normalised/{exp.splice}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{exp.valid}.{exp.type}.{{tag}}.{exp.feature}.lfc.tab",
+            "differential/{exp.experiment}/{exp.reference}/differential_{exp.difference}/{exp.paired}.{exp.normaliser}_{exp.norm_feat}.{exp.norm_read}.Count_normalised/{exp.splice}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{exp.valid}.{exp.type}.{{tag}}.{exp.feature}.lfc.tab",
             exp=groups.loc[wildcards.md5].itertuples(),
         ),
         docx="resources/templates/{c}_{f}.docx".format(

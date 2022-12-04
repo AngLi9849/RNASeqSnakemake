@@ -30,7 +30,7 @@ expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', chec
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 
-sig_bg <- read.csv(snakemake@input[["sig_bg"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+#sig_bg <- read.csv(snakemake@input[["sig_bg"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 sig <- as.numeric(snakemake@params[["sig"]])
 bg <- as.numeric(snakemake@params[["bg"]])
 section <- snakemake@params[["section"]]
@@ -57,6 +57,7 @@ if (difference != "splicing_ratio") {
   is_antisense <- snakemake@params[["is_antisense"]]==-1
   difference <- "expression levels"
   difference_unit <- "expression levels (RPKM)"
+  sig_bg <- read.csv(snakemake@input[["sig_bg"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 
   mx_df <- read.csv(snakemake@input[["mx_data"]],header=T, sep='\t', check.names=FALSE)
   bef_bin <- snakemake@params[["bef_bin"]]
@@ -309,7 +310,7 @@ if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"
 
 config_min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
 
-meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= snakemake@config[["metagene"]][["min_reads"]]])
+#meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= snakemake@config[["metagene"]][["min_reads"]]])
 
 heat_min_reads <- snakemake@config[["heatmap"]][["min_reads"]] 
 expr_heat <- expr_i[expr_i$baseMean >= heat_min_reads,]
@@ -324,7 +325,7 @@ expr_heat$colour <- ifelse(expr_heat$padj < sig_p, ifelse(expr_heat$log2FoldChan
 total_i <- nrow(expr_heat)
 
 min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],min_rpkm_pc/100,na.rm=T)
-meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= config_min_mean & expr_i$baseMean >= min_rpkm])
+#meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= config_min_mean & expr_i$baseMean >= min_rpkm])
 
 insuf_i <- sum( (expr_heat$baseMean < min_mean) | (!is.na(expr_heat$RPKM) & (expr_heat$RPKM < min_rpkm)) | (is.na(expr_heat$pvalue)),na.rm=T )
 

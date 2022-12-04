@@ -12,5 +12,5 @@ Total_RNA-Seq   	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr	homo_sapiens	HCT116  
 Total_RNA-Seq   	FUS-mAID_+5PhIAA_48hr 	FUS-mAID_+DMSO_48hr	homo_sapiens	HCT116         	TRUE	FALSE	FALSE	                              	Read    	         	FUS_Spl,Histones,IEG,Ribosomal_genes
 Chromatin_RNA-Seq   	HB3261           	SC3504           	homo_sapiens	Lymphoblastoid	TRUE	FALSE	FALSE	                        	Read    	           	snRNAs,U_Spl,UUL1FUS,U_lncRNA,IEG
 Chromatin_RNA-Seq   	HB3280            	SC3504           	homo_sapiens	Lymphoblastoid	TRUE	FALSE	FALSE	                        	Read    	         	snRNAs,U_Spl,UUL1FUS,U_lncRNA,IEG
-Yeo_Lab_eCLIP       	HepG2_FUS          	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP        	             	snRNAs,Ribosomal_genes
-Yeo_Lab_eCLIP       	K562_FUS          	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP        	             	snRNAs,Ribosomal_genes
+Yeo_Lab_eCLIP       	HepG2_FUS          	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Yeo_Lab_eCLIP       	K562_FUS          	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes

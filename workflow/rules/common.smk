@@ -207,6 +207,11 @@ reads["end_nuc"]=reads.apply(lambda row:\
     (row.sn_pos > 0 or row.sn_pos < 0) and abs(row.sn_pos)==1,
     axis=1
 )
+
+reads["difference"] = reads.apply(lambda row:\
+    row.name + ".Count",
+    axis=1
+)
    
 # Read experimentss config table into pandas dataframe
 experiments = (pd.read_csv(config["experiments"], sep="\t", dtype={"protocol": str, "sample_lineage" : str}, comment="#"))
@@ -224,6 +229,8 @@ experiments["splice"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"splice"], axis=1)
 experiments["norm_feat"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"norm_feat"], axis=1)
+experiments["norm_read"]=experiments.apply(
+    lambda row: "Read" if row.norm_feat=="Total" else protocols.loc[row.protocol,"norm_read"], axis=1)
 experiments["demultimap"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"demulti"]=="TRUE", axis=1)
 experiments["deduplicate"]=experiments.apply(
@@ -375,10 +382,14 @@ for i in range(0,len(experiments)):
     samps["demultimap"] = experiments.demultimap[i]
     samps["sep_spl"] = experiments.sep_spl[i]
     samps["norm_feat"] = experiments.norm_feat[i]
+    samps["norm_read"] = experiments.norm_read[i]
+    samps["readtypes"] = experiments.readtypes[i]
+    samps["read"] = samps.apply(lambda row: row.readtypes.split(","),axis=1)
+    samps = samps.explode("read") 
     samps["pairRep"] = "paired" if experiments.pairRep[i] else "unpaired"
     samps["stranded"] = samps.apply(lambda row: "unstranded" if (row.strandedness=="no" or pd.isna(row.strandedness))  else "stranded", axis=1)
-    samps["demulti"] = samps.apply(lambda row: "Demultimapped" if (row.demultimap=="TRUE")  else "", axis=1)
-    samps["dedup"] = samps.apply(lambda row: "UMI-deduplicated" if (experiments.umi[i] and row.deduplicate=="TRUE") else "Deduplicated" if (row.deduplicate=="TRUE")  else "", axis=1)
+    samps["demulti"] = samps.apply(lambda row: "Demultimapped" if (row.demultimap)  else "", axis=1)
+    samps["dedup"] = samps.apply(lambda row: "UMI-deduplicated" if (experiments.umi[i] and row.deduplicate) else "Deduplicated" if (row.deduplicate)  else "", axis=1)
     samps["splice_prefix"] = "All" 
     samp_ls=None
     samp_ls=[]
@@ -413,16 +424,33 @@ results = results.set_index(["sample_name","unit_name"], drop=False).sort_index(
 
 feat_res=[]
 
+for i in range(0,len(experiments)):
+    exp_feat_ls=[]
+    exp_feat=features
+    exp_feat['experiment']=experiments.experiment[i]
+    exp_feat_spl=exp_feat[exp_feat.dif_spl==True]
+    exp_feat_spl['diff']="splicing_ratio"
+    exp_feat_ls.append(exp_feat_spl)
+    read_ls = experiments.readtypes[i].split(",")
+    for i in read_ls:
+      exp_feat_read = exp_feat[exp_feat.dif_exp==True]
+      exp_feat_read['diff']=str(i) + ".Count"
+      exp_feat_ls.append(exp_feat_read)
+    exp_feat = pd.concat(exp_feat_ls).drop_duplicates()
+    feat_res.append(exp_feat)
+   
+    
+
 dif_exp=features[features.dif_exp==True]
 dif_exp["diff"]="expression"
 dif_spl=features[features.dif_spl==True]
 dif_spl["diff"]="splicing_ratio"
 
-feat_res.append(dif_exp)
-feat_res.append(dif_spl)
+#feat_res.append(dif_exp)
+#feat_res.append(dif_spl)
 
 feat_res=pd.concat(feat_res).drop_duplicates()
-feat_res = feat_res.set_index(["feature_name"], drop=False).sort_index()
+feat_res = feat_res.set_index(["experiment","feature_name"], drop=False).sort_index()
 
 
 # Define groups for group analysis
@@ -473,8 +501,8 @@ groups=pd.DataFrame(
     columns=["group","experiment","splice","difference","feature"]
 )
 
-groups[["control","treatment","protocol","reference","norm_feat","normaliser","paired","diff_lineage","demulti","dedup"]]=groups.apply(lambda row:
-    experiments.loc[row.experiment,["control","treatment","protocol","reference","norm_feat","normaliser","paired","diff_lineage","demulti","dedup"]],
+groups[["control","treatment","protocol","reference","norm_feat","norm_read","normaliser","paired","diff_lineage","demulti","dedup"]]=groups.apply(lambda row:
+    experiments.loc[row.experiment,["control","treatment","protocol","reference","norm_feat","norm_read","normaliser","paired","diff_lineage","demulti","dedup"]],
     axis=1
 )
 
@@ -556,10 +584,10 @@ def get_bams():
     return bams
 
 def get_norm_bigwigs():
-    bigwigs = expand(
-        "norm_bw/{sample.group}/{sample.reference}/bigwigs/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}ReadCount_normalised/{sample.splice_prefix}Aligned{sample.demulti}{sample.dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{sample.splice_prefix}.{sample.read}.norm.bigwig",
+    bigwigs = list(dict.fromkeys(expand(
+        "norm_bw/{sample.group}/{sample.reference}/bigwigs/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}.{sample.norm_read}.Count_normalised/{sample.splice_prefix}Aligned{sample.demulti}{sample.dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{sample.splice_prefix}.{sample.read}.norm.bigwig",
         sample=results.itertuples(), splice=SPLICE
-    )
+    )))
     return bigwigs
 
 def get_feature_counts():
@@ -571,23 +599,23 @@ def get_feature_counts():
 
 def get_diffexp_docx():
     counts = expand(
-        "diff_plots/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.{exp.read}.docx",
+        "diff_plots/{exp.experiment}/{exp.reference}/differential_{exp.read}.Count/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}.{exp.norm_read}.Count_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples(), mean=MX_MEAN, norm=MX_NORM,
     ),
     return counts
 
 def get_diffsplice_docx():
     counts = expand(
-        "diff_plots/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        "diff_plots/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}.{exp.norm_read.Count_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_spl.tolist()].itertuples(), mean=MX_MEAN, norm=MX_NORM,
     ),
     return counts
 
 def get_differential_reports():
-    docx = expand(
-        "diff_reports/experiment_reports/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}.{exp.norm_feat}_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
+    docx = list(dict.fromkeys(expand(
+        "diff_reports/experiment_reports/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}_{exp.norm_feat}.{exp.norm_read}.Count_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE, mean=MX_MEAN, norm=MX_NORM
-    ),
+    ))),
     return docx
 
 def get_group_reports():
@@ -613,10 +641,10 @@ def get_heat_data():
     return counts
 
 def get_differential_exp():
-    diff_exp = expand(
+    diff_exp = list(dict.fromkeys(expand(
         "results/{contrast.experiment}/differential_expression/{contrast.contrast}/{contrast.normaliser}_normalised.{splice}Aligned{demulti}{dedup.{feature}",
         contrast=contrasts.itertuples(), dedup=DEDUP, feature=features[features.diffexp==True].itertuples(), demulti=DEMULTI, splice=SPLICING,
-    ),
+    ))),
     return diff_exp
 
 def get_differential_usage():
@@ -847,28 +875,28 @@ def get_gencov_pos(w):
     strand = get_sample_strandedness(w)
     paired = 1 if is_paired_end(w.sample) else 0
     offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0)) else 1
-    offset = reads.loc[w.read,"sn_pos"]*mod
-    pos = "-5" offset > 0 else "-3"
+    offset = reads.loc[w.read,"sn_pos"]*offset_mod
+    pos = "-5" if offset > 0 else "-3"
     return pos
 
 def get_bamcov_options(w):
     strand = get_sample_strandedness(w)
     paired = 1 if is_paired_end(w.sample) else 0
     offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0)) else 1
-    offset = ("--Offset " + str(reads.loc[w.read,"sn_pos"]*mod) + " " + str(reads.loc[w.read,"sn_pos"]*mod) )if reads.loc[w.read,"single_nuc"] else ""
+    offset = ("--Offset " + str(reads.loc[w.read,"sn_pos"]*offset_mod) + " " + str(reads.loc[w.read,"sn_pos"]*offset_mod) )if reads.loc[w.read,"single_nuc"] else ""
     saminc = (" --samFlagInclude " + str(get_read_flag(w))) + str(get_read_flag(w)) if (paired==1 and reads.loc[w.read,"single_nuc"]) else ""
     options = offset + saminc
     return options
     
-def get_fc_sn_opt(w):
+def get_fc_sn_opts(w):
     strand = get_sample_strandedness(w)
     paired = 1 if is_paired_end(w.sample) else 0
     offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0)) else 1
-    offset = reads.loc[w.read,"sn_pos"]*mod
+    offset = reads.loc[w.read,"sn_pos"]*offset_mod
     offset_val = abs(offset)
     pos = "--read2pos " + ("5" if offset > 0 else "3")
     shift_type = ( " --readShiftType " + ("downstream" if offset > 1 else "upstream") ) if (offset_val > 1) else ""
-    options = end + shift_type
+    options = pos + shift_type
     return options 
 
 def get_deseq2_threads(wildcards=None):

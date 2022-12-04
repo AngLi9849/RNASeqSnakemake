@@ -60,9 +60,9 @@ rule total_read_count_size_factors:
             sample=get_norm_group_samples(wildcards.norm_group).itertuples(),
         ),
     output:
-        summary = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.TotalReadCount.{pair}.summary.tsv",
-        internal = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.TotalReadCount.internal_{pair}.scale_factors.tsv",
-        spikein = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.TotalReadCount.spikein_{pair}.scale_factors.tsv",
+        summary = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.Total.Read.Count.{pair}.summary.tsv",
+        internal = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.Total.Read.Count.internal_{pair}.scale_factors.tsv",
+        spikein = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.Total.Read.Count.spikein_{pair}.scale_factors.tsv",
     resources:
         mem="6G",
         rmem="4G",

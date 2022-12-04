@@ -50,11 +50,10 @@ rule unstranded_genomecov:
         bw="raw_bw/{sample}/{unit}/{reference}/{prefix}.{read}.unstranded.raw.bigwig",
     params:
         bin_size=config["bigwig_bin_size"],
-        single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
         bamcov_opts = lambda w: get_bamcov_options(w),
         single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
         gencov_pos = lambda w: get_gencov_pos(w) if reads.loc[w.read,"end_nuc"] else "",
-        end_nuc = 1 if reads.loc[w.read,"end_nuc"] else 0,
+        end_nuc = lambda w: 1 if reads.loc[w.read,"end_nuc"] else 0,
         samflag=lambda w: ( "--include-flags " + str(get_read_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",
     resources:
         mem="6G",
@@ -107,7 +106,7 @@ rule stranded_genomecov:
         bamcov_opts = lambda w: get_bamcov_options(w),
         bin_size=config["bigwig_bin_size"],
         gencov_pos = lambda w: get_gencov_pos(w) if reads.loc[w.read,"end_nuc"] else "",
-        end_nuc = 1 if reads.loc[w.read,"end_nuc"] else 0,
+        end_nuc = lambda w: 1 if reads.loc[w.read,"end_nuc"] else 0,
         samflag=lambda w: ( "--include-flags " + str(get_read_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",        
     resources:
         mem="6G",
@@ -143,7 +142,7 @@ rule stranded_genomecov:
  
 rule scale_bedgraph2bigwig:
     input:
-       scale = lambda w: "deseq2/{{norm_group}}/{{reference}}/All{{prefix}}.{lineage}_{valid}.{norm_type}.{{normaliser}}.{norm_read}.Count.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+       scale = lambda w: "deseq2/{{norm_group}}/{{reference}}/All{{prefix}}.{lineage}_{valid}.{norm_type}.{{normaliser}}.{{norm_read}}.Count.{{spikein}}_{{pair}}.scale_factors.tsv".format(
             lineage=results.loc[w.sample].loc[w.unit,"diff_lineage"][0],
             valid=VALID,
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",

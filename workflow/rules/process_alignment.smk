@@ -106,7 +106,7 @@ rule samtools_deduplicate:
 rule umi_dedup:
     input:
         bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
-        bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai",
+        bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai",
     output:
         stats="star/{sample}/{unit}/{reference}/{prefix}UMI-deduplicate.txt",
         bam="star/{sample}/{unit}/{reference}/{prefix}UMI-deduplicated.sortedByCoord.out.bam",
