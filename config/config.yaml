@@ -74,6 +74,8 @@ differential_analysis:
   # P-Value thresholds
   significant_p: 0.05 # Changes with p-value lower than this is considered significant
   undetect_p: 0.95 # Changes with p-value higher than this is considered undetected
+  min_read_overlap_bases: 10 #minimum overlapping bases
+  min_read_overlap_portion: 0.067 #minimum overlapping portion of a read on a feature to be counted,
 
 differential_plots:
   scripts:

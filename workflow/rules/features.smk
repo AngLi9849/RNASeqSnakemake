@@ -175,8 +175,8 @@ rule custom_feature:
             ( \
               (f[1]=="") || ( \
                 (f[1]-0 != 0) && ( \
-                  ( (length(include_first) != 0) && ($13 in include_first) ) || \
-                  ( (length(include_first) == 0) && !($13 in exclude_first) ) \
+                  ( (length(include_first) != 0) && ($12 in include_first) ) || \
+                  ( (length(include_first) == 0) && !($12 in exclude_first) ) \
                 ) \
               ) \
             ) && ( \

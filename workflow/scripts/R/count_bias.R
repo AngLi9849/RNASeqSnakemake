@@ -4,9 +4,9 @@ sample_colours <- sample_table$colour
 names(sample_colours) <- gsub("_"," ",sample_table$sample_name)
 sample_brks <- gsub("_"," ",sample_table$sample_name)
 
-for (bias in biases$bias) {
+for (b in biases$bias) {
 
-expr_full$ntile <- ntile(x=unlist(expr_full[bias]),n=bias_bin)
+expr_full$ntile <- ntile(x=unlist(expr_full[b]),n=bias_bin)
 count_data <- cts_i
 count_data['rank'] <- expr_full$ntile[match(rownames(count_data),expr_full$featureID)]
 count_data <- aggregate(count_data[colnames(count_data)!="rank"],by=list(rank=count_data$rank),FUN=sum)
@@ -28,9 +28,9 @@ count_bias_data <- data.frame(
 
 names(count_bias_data) <- c("Counts","Sample","Rank")
 
-count_bias_data$replicate <- sample_table$replicate[match(count_bias_data$Sample,sample_table$sample_name)]
+count_bias_data$replicate <- sample_table$replicate[match(count_bias_data$Sample,gsub("_"," ",sample_table$sample_name))]
 
-bias_lab <- paste(bias, " (", biases$unit[biases$bias==bias],")",sep="")
+bias_lab <- paste(bias, " (", biases$unit[biases$bias==b],")",sep="")
 
 bias_brks <- c(
   1,
@@ -41,11 +41,11 @@ bias_brks <- c(
 )
 
 names(bias_brks) <- c(
-  min(expr_full[bias],na.rm=T),
-  quantile(expr_full[bias],0.25,na.rm=T),
-  quantile(expr_full[bias],0.5,na.rm=T),
-  quantile(expr_full[bias],0.75,na.rm=T),
-  max(expr_full[bias],na.rm=T)
+  min(expr_full[b],na.rm=T),
+  quantile(expr_full[b],0.25,na.rm=T),
+  quantile(expr_full[b],0.5,na.rm=T),
+  quantile(expr_full[b],0.75,na.rm=T),
+  max(expr_full[b],na.rm=T)
 )
 
 sample_lines <- sample_table$replicate
@@ -100,10 +100,10 @@ count_bias <- ggplot(data=count_bias_data, aes(x=Rank,y=Counts)) +
     axis.line.y.right=element_line(colour="black",size=0.1)
   )
 
-assign(paste(bias,"_count_bias",sep=""),count_bias)
-assign(paste(bias,"_count_bias_title",sep=""),paste(bias,"Count Bias"))
+assign(paste(b,"_count_bias",sep=""),count_bias)
+assign(paste(b,"_count_bias_title",sep=""),paste(b,"Count Bias"))
 bias_caption <- analysis_title
-assign(paste(bias,"_count_bias_caption",sep=""),bias_caption)
-assign(paste(bias,"_count_bias_h",sep=""),8)
+assign(paste(b,"_count_bias_caption",sep=""),bias_caption)
+assign(paste(b,"_count_bias_h",sep=""),7.5)
 
 }

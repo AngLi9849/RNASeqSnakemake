@@ -46,6 +46,7 @@ use_base_length
 # Identify analysis
 diff <- as.character(snakemake@wildcards[["difference"]])
 difference <- as.character(diff)
+
 analysis <- paste("differential", difference, "analysis")
 
 biases <- read.csv(snakemake@config[["bias"]],header=T, sep='\t', check.names=FALSE)
@@ -55,9 +56,11 @@ paste(biases$bias,"_count_bias",sep='')
 if (difference != "splicing_ratio") {
 
   is_antisense <- snakemake@params[["is_antisense"]]==-1
-  difference <- "expression levels"
-  difference_unit <- "expression levels (RPKM)"
+  difference <- gsub("[_.]"," ",diff)
+  difference_unit <- paste(difference, "(RPKM)")
   sig_bg <- read.csv(snakemake@input[["sig_bg"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+
+  measurement <- "Count"
 
   mx_df <- read.csv(snakemake@input[["mx_data"]],header=T, sep='\t', check.names=FALSE)
   bef_bin <- snakemake@params[["bef_bin"]]
@@ -143,6 +146,7 @@ heat_xlim <- c(heat_x_min-0.5,heat_x_max+0.5)
 } else {
   difference <- gsub("_"," ",difference)
   difference_unit <- gsub("_"," ",difference)
+  measurement <- diff
 }
 
 # Import wildcards as text
@@ -208,7 +212,7 @@ sep_gene_sets <- gene_sets$set_name[(gene_sets$set_name %in% genesets) & as.logi
 sep_gene_sets
 
 analysis_title <- paste(
-  common, ifelse(common=="",""," "), treat, " vs ", control, " ", protocol, " ", prefix, " ", ifelse(difference != "splicing ratio", paste(spikein, " ", normaliser, " normalised "),""), difference,
+  common, ifelse(common=="",""," "), treat, " vs ", control, " ", protocol, " ", prefix, " ", ifelse(difference != "splicing ratio", paste(spikein, " ", normaliser, " normalised ",sep=""),""), difference,
 #  common, ifelse(common=="",""," "), treat, " vs ", control, " ", protocol, "\n",
 #  prefix, " ", ifelse(difference != "splicing ratio", paste(spikein, " ", normaliser, " normalised "),""), difference, "\n",
 #  valid, " ", tag, " ", feature,
@@ -255,8 +259,11 @@ for (i in unique(expr$biotype[!is.na(expr$exon)])) {
 head(expr[expr$biotype=="snRNA",],5)
 
 analysis_plots <- read.csv(snakemake@config[["analysis_summary_plots"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
-analysis_plots
-sum_list <- as.list(colnames(analysis_plots)[analysis_plots[rownames(analysis_plots)==diff,]==TRUE])
+measurements <- unlist(lapply(rownames(analysis_plots),trimws))
+analysis_plots <- data.frame(lapply(analysis_plots,trimws),check.names=F)
+rownames(analysis_plots) <- measurements
+measurement
+sum_list <- as.list(colnames(analysis_plots)[analysis_plots[rownames(analysis_plots)==measurement,]==TRUE])
 sum_list
 sum_list <- c(sum_list,"ma","volcano")
 
@@ -267,9 +274,9 @@ min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_
 
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- c(c(""),unique(expr$group[expr$biotype %in% biotypes]),sep_gene_sets)
-#for (i in i_group) {
+for (i in i_group) {
 
-i <- "multiexonic protein coding"
+#i <- "multiexonic protein coding"
 
 #i <- "Histones"
 
@@ -462,113 +469,10 @@ if ( (plot_n-1) == length(plots)) {
 
 }
 
-#}
+}
+
+
 #=====Test====
-
-bias_bin <- 100
-bias_lim <- c(1,bias_bin)
-sample_colours <- sample_table$colour
-names(sample_colours) <- sample_table$sample_name
-sample_brks <- gsub("_"," ",sample_table$sample_name)
-
-bias <- "GC"
-
-expr_full$ntile <- ntile(x=unlist(expr_full[bias]),n=bias_bin)
-count_data <- cts_i
-count_data['rank'] <- expr_full$ntile[match(rownames(count_data),expr_full$featureID)]
-count_data <- aggregate(count_data[colnames(count_data)!="rank"],by=list(rank=count_data$rank),FUN=sum)
-
-count_sum <- count_data[colnames(count_data)!="rank"]
-
-count_bias_data <- data.frame(
-  unlist(
-    lapply(colnames(count_sum), function (x) {
-      count_data[paste(x)]
-    })),
-  unlist(
-    lapply(colnames(count_sum), function (x) {
-      replicate(nrow(count_sum),paste(x))
-    })),
-  rep(count_data$rank,ncol(count_sum))
-)
-
-
-names(count_bias_data) <- c("Counts","Sample","Rank")
-
-count_bias_data$replicate <- sample_table$replicate[match(count_bias_data$Sample,sample_table$sample_name)]
-
-bias_lab <- paste(bias, " (", biases$unit[biases$bias==bias],")",sep="")
-
-bias_brks <- c(
-  1,
-  bias_bin/4,
-  bias_bin/2,
-  bias_bin*0.75,
-  bias_bin
-)
-
-names(bias_brks) <- c(
-  min(expr_full[bias],na.rm=T),
-  quantile(expr_full[bias],0.25,na.rm=T),
-  quantile(expr_full[bias],0.5,na.rm=T),
-  quantile(expr_full[bias],0.75,na.rm=T),
-  max(expr_full[bias],na.rm=T)
-)
-
-sample_lines <- sample_table$replicate
-names(sample_lines) <- sample_table$sample_name
-
-count_bias <- ggplot(data=count_bias_data, aes(x=Rank,y=Counts)) +
-  geom_smooth(
-    size=0.8,
-    method="loess",
-    n=300,
-    span=0.5,
-    alpha=0.2,
-    aes(colour=Sample,linetype=Sample,fill=Sample)
-  ) +
-  scale_colour_manual(
-    breaks=sample_brks,
-    values=sample_colours,
-  ) +
-  scale_fill_manual(
-    breaks=sample_brks,
-    values=sample_colours,
-  ) +
-  scale_x_continuous(
-    limits=bias_lim,
-    breaks=bias_brks,
-  ) +
-  scale_linetype_manual(
-    breaks = sample_brks,
-    values = sample_lines,
-  ) +
-  labs(
-    subtitle=paste(analysis)
-  ) +
-  xlab(bias_lab) +
-  ylab("Read Counts") +
-  theme(
-    panel.background=element_rect(fill="White",colour="white"),
-    panel.border=element_rect(fill=NA,colour="black",size=0.7),
-    strip.text=element_text(face="bold"),
-    strip.background=element_rect(colour="white",fill="white",size=0.1),
-    legend.background=element_rect(fill="White"),
-    legend.key=element_rect(colour="white",fill="White"),
-    legend.position="top",
-    axis.text=element_text(colour="black"),
-    axis.text.x = if (length(heat_xbrks)>2) (element_text(angle = 45, vjust = 1, hjust=1,colour="black")) else (element_text(colour="black")),
-    axis.line=element_line(colour="black",size=0.1),
-    axis.line.x.top=element_line(colour="black",size=0.1),
-    axis.line.y.right=element_line(colour="black",size=0.1)
-  )
-
-
-assign(paste(bias,"_count_bias",sep=""),count_bias)
-assign(paste(bias,"_count_bias_title",sep=""),paste(bias,"Count Bias"))
-bias_caption <- analysis_title
-assign(paste(bias,"_count_bias_caption",sep=""),bias_caption)
-assign(paste(bias,"_count_bias_h",sep=""),6)
 
 #=====testEnd======
 

@@ -14,20 +14,33 @@ cts <- sapply(cts,as.numeric)
 row.names(cts) <- cts_names
 spikein <- as.character(snakemake@wildcards[["spikein"]])
 
-sample_table <- read.table(snakemake@params[["sample_table"]], sep='\t',header=TRUE, check.names=FALSE)
+sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
 sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
-rownames(sample_table) <- sample_table$sample_name
+
+samples
+
 sample_table <- sample_table[match(samples,sample_table$sample_name),]
+rownames(sample_table) <- sample_table$sample_name
+
+sample_table
+
 
 coldata <- sample_table[,c("condition","replicate")]
 coldata <- coldata[order(row.names(coldata)), , drop=F]
 
-designs <- c(~ condition + replicate, ~ condition)
-names(designs) <- c("paired", "unpaired")
+#designs <- c(~ condition + replicate, ~ condition)
+#names(designs) <- c("paired", "unpaired")
 
-for ( n in names(designs) ) {
+
+#for ( n in names(designs) ) {
 # Generate Scale factors for Replicate-paired analysis
-dds <- DESeqDataSetFromMatrix(countData=cts,colData=coldata,design=unname(designs[n])[[1]])
+
+head(cts,5)
+
+coldata
+
+designs <- ~ condition
+dds <- DESeqDataSetFromMatrix(countData=cts,colData=coldata,design=designs)
 
 # remove uninformative columns
 dds <- dds[ rowSums(counts(dds)) > 1, ]
@@ -45,5 +58,5 @@ if (spikein == "spikein") {
 }
 
 # Write sample size and scale factors as table
-write.table(data.frame(sizeFactors(dds),1/sizeFactors(dds)),file=snakemake@output[[n]],sep='\t',row.names = TRUE, quote = FALSE, col.names = (c("sample_name\tsize_factor","scale_factor")))
-}
+write.table(data.frame(sizeFactors(dds),1/sizeFactors(dds)),file=snakemake@output[[1]],sep='\t',row.names = TRUE, quote = FALSE, col.names = (c("sample_name\tsize_factor","scale_factor")))
+#}

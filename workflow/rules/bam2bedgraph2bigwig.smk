@@ -54,14 +54,14 @@ rule unstranded_genomecov:
         single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
         gencov_pos = lambda w: get_gencov_pos(w) if reads.loc[w.read,"end_nuc"] else "",
         end_nuc = lambda w: 1 if reads.loc[w.read,"end_nuc"] else 0,
-        samflag=lambda w: ( "--include-flags " + str(get_read_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",
+        samflag=lambda w: ( "-F " + str(get_exclude_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",
     resources:
         mem="6G",
         rmem="4G",
     log:
         "logs/deeptools/{sample}/{unit}/{reference}/{prefix}_{read}_unstranded_bamcoverage.log",
     conda:
-        "../envs/bedtools.yaml",
+        "../envs/deeptools.yaml",
     threads: 2
     shell:
         """
@@ -71,9 +71,7 @@ rule unstranded_genomecov:
             then
             samtools view -b -@ 5 {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
             samtools index -b -@ 5 {input.bam}.filtered.bam {input.bam}.filtered.bam.bai &&
-            bedtools genomecov -ibam {input.bam}.filter.bam {params.gencov_pos} -bga -split > {output.bg}
-            rm {input.bam}.filtered.bam &&
-            rm {input.bam}.filtered.bam.bai
+            bedtools genomecov -ibam {input.bam}.filtered.bam {params.gencov_pos} -bga > {output.bg}
             else
             bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs {params.bin_size} {params.bamcov_opts} --skipNAs
             fi
@@ -107,7 +105,7 @@ rule stranded_genomecov:
         bin_size=config["bigwig_bin_size"],
         gencov_pos = lambda w: get_gencov_pos(w) if reads.loc[w.read,"end_nuc"] else "",
         end_nuc = lambda w: 1 if reads.loc[w.read,"end_nuc"] else 0,
-        samflag=lambda w: ( "--include-flags " + str(get_read_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",        
+        samflag=lambda w: ( "-F " + str(get_exclude_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",
     resources:
         mem="6G",
         rmem="4G",
@@ -116,7 +114,7 @@ rule stranded_genomecov:
     log:
         "logs/deeptools/{sample}/{unit}/{reference}/{prefix}.{read}.{strand}_bamcoverage.log",
     conda:
-        "../envs/bedtools.yaml",
+        "../envs/deeptools.yaml",
     threads: 2
     shell:
         """
@@ -126,9 +124,7 @@ rule stranded_genomecov:
             then
             samtools view -b -@ 5 {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
             samtools index -b -@ 5 {input.bam}.filtered.bam {input.bam}.filtered.bam.bai &&
-            bedtools genomecov -ibam {input.bam}.filter.bam {params.gencov_pos} -bga -split > {output.bg}
-            rm {input.bam}.filtered.bam &&
-            rm {input.bam}.filtered.bam.bai
+            bedtools genomecov -ibam {input.bam}.filtered.bam {params.gencov_pos} -bga > {output.bg}
             else
             bamCoverage -b {input.bam} -o {output.bg} -of bedgraph -bs {params.bin_size} {params.bamcov_opts} --skipNAs
             fi

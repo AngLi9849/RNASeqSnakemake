@@ -60,14 +60,14 @@ rule total_read_count_size_factors:
             sample=get_norm_group_samples(wildcards.norm_group).itertuples(),
         ),
     output:
-        summary = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.Total.Read.Count.{pair}.summary.tsv",
-        internal = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.Total.Read.Count.internal_{pair}.scale_factors.tsv",
-        spikein = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.Total.Read.Count.spikein_{pair}.scale_factors.tsv",
+        summary = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.Total.Read.Count.summary.tsv",
+        internal = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.Total.Read.Count.internal.scale_factors.tsv",
+        spikein = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.gtf.Total.Read.Count.spikein.scale_factors.tsv",
     resources:
         mem="6G",
         rmem="4G",
     log:
-        "logs/scale_factors/{norm_group}/{reference}/{prefix}_{lineage}_{valid}_{pair}_totalreadcount_scale.log",
+        "logs/scale_factors/{norm_group}/{reference}/{prefix}_{lineage}_{valid}_totalreadcount_scale.log",
     shell:
         """
         cat {input} > {output.summary} &&
@@ -114,8 +114,7 @@ rule feature_count_scale_factors:
         counts="featurecounts/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.basic.{feature}.{read}.counts.tsv",
         bed="resources/annotations/{reference}/genome.{type}.annotated_basic.{feature}.bed"
     output:
-        paired = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{feature}.{read}.Count.{spikein}_paired.scale_factors.tsv",
-        unpaired = "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{feature}.{read}.Count.{spikein}_unpaired.scale_factors.tsv",
+        "deseq2/{norm_group}/{reference}/{prefix}.{lineage}_{valid}.{type}.{feature}.{read}.Count.{spikein}.scale_factors.tsv",
     params:
         sample_table="config/samples.tsv",
     resources:

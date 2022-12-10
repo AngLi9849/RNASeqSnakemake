@@ -108,14 +108,13 @@ rule umi_dedup:
         bam="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam",
         bai="star/{sample}/{unit}/{reference}/{prefix}.sortedByCoord.out.bam.bai",
     output:
-        stats="star/{sample}/{unit}/{reference}/{prefix}UMI-deduplicate.txt",
         bam="star/{sample}/{unit}/{reference}/{prefix}UMI-deduplicated.sortedByCoord.out.bam",
     threads: 1
     params:
         paired=lambda w: "--paired" if pd.notna(samples.loc[w.sample].loc[w.unit,"fq2"]) else "",
     resources:
-        mem="16G",
-        rmem="12G",
+        mem="96G",
+        rmem="48G",
     log:
         "logs/samtools/{sample}/{unit}/{reference}/{prefix}UMI-deduplicate.log"
     conda:
@@ -126,9 +125,9 @@ rule umi_dedup:
         --random-seed 1 \
         -I {input.bam} \
         --spliced-is-unique \
-        --output-stats {output.stats} \
         {params.paired} -S {output.bam}       
         """
+#        --output-stats={output.bam}.UMI.stats \
 
 rule featurecounts:
     input:
@@ -152,7 +151,8 @@ rule featurecounts:
         single_nuc = lambda w: 1 if reads.loc[w.read,"single_nuc"] else 0,
         overlap="-O" if config["counting"]["count_every_overlap"] else "",
         fc_opts=lambda w: get_fc_sn_opts(w) if reads.loc[w.read,"single_nuc"] else "",
-        samflag=lambda w: ( "--include-flags " + str(get_read_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",
+        samflag=lambda w: ( "-F " + str(get_exclude_flag(w)) ) if reads.loc[w.read,"single_nuc"] else "",
+        min_overlap= config["differential_analysis"]["min_read_overlap_bases"] 
     shell:
         """
         if [[ $(du {input.bam} | cut -f1) -gt {params.ram} ]] ;
@@ -183,21 +183,15 @@ rule featurecounts:
               }}
             }}
            ' - |
-           sort -k1,1 >> {output.tab} &&
-
-           rm {input.bam}.*.bam &&
-           rm {input.bam}.*.bam.bai           
-
+           sort -k1,1 >> {output.tab}
         else    
           if [[ {params.single_nuc} -eq 1  ]] ;
             then
             samtools view -b -@ 5 {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
             samtools index -b -@ 5 {input.bam}.filtered.bam {input.bam}.filtered.bam.bai &&
-            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam} &&
-            rm {input.bam}.filtered.bam &&
-            rm {input.bam}.filtered.bam.bai
+            featureCounts -s {params.strand} {params.paired} -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}.filtered.bam
             else
-            featureCounts -s {params.strand} {params.paired} --minOverlap 10 -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
+            featureCounts -s {params.strand} {params.paired} --minOverlap {params.min_overlap} -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}
             fi
         fi
         """

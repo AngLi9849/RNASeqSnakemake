@@ -8,7 +8,7 @@ rule heatmap_data:
             sample=results[results.experiment==wildcards.experiment].itertuples(),
             plot_md5=features.loc[wildcards.feature,"plot_md5"],
         ))),
-        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}.{{norm_read}}.Count.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}.{{norm_read}}.Count.{{spikein}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
@@ -45,7 +45,7 @@ rule meta_plot_data:
             sample=results[results.experiment==wildcards.experiment].itertuples(),
             plot_md5=features.loc[wildcards.feature,"plot_md5"],
         ))),
-        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}.{{norm_read}}.Count.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}.{{norm_read}}.Count.{{spikein}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
@@ -109,7 +109,7 @@ rule differential_plots:
         counts="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
         mx_data=lambda wildcards: [] if wildcards.difference=="splicing_ratio" else "meta_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{mean}_{norm}.mx_data.tab",
         heat_data = lambda wildcards: [] if wildcards.difference=="splicing_ratio" else "heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.{mean}_heat_data.tab",
-        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}.{{norm_read}}.Count.{{spikein}}_{{pair}}.scale_factors.tsv".format(
+        size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}.{{norm_read}}.Count.{{spikein}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),

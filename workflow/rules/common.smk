@@ -276,6 +276,11 @@ samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol": str, "rep
 samples["sample_name"]=samples.apply(lambda row: str(row.condition) + "_" + str(row.protocol) + "_Replicate_" + str(row.replicate), axis=1)
 samples=samples.set_index(["sample_name","unit_name"], drop=False).sort_index()
 samples = samples.mask(samples == '')
+samples["min_overlap"] = samples.apply( lambda row:\
+    int(config["differential_analysis"]["min_read_overlap_portion"]*row.readlen),
+    axis=1
+)
+
 
 # Helper functions for samples
 
@@ -428,6 +433,9 @@ for i in range(0,len(experiments)):
     exp_feat_ls=[]
     exp_feat=features
     exp_feat['experiment']=experiments.experiment[i]
+    exp_feat['protocol'] = experiments.protocol[i]
+    exp_feat['dif_spl'] = exp_feat.apply(lambda row: row.dif_spl if protocols.loc[row.protocol,"dif_spl"] else False, axis=1)
+    exp_feat['dif_exp'] = exp_feat.apply(lambda row: row.dif_exp if protocols.loc[row.protocol,"dif_exp"] else False, axis=1)
     exp_feat_spl=exp_feat[exp_feat.dif_spl==True]
     exp_feat_spl['diff']="splicing_ratio"
     exp_feat_ls.append(exp_feat_spl)
@@ -863,12 +871,12 @@ def get_sample_strandedness(wildcards):
           else :
               return 0
 
-def get_read_flag(w):
+def get_exclude_flag(w):
     strand=get_sample_strandedness(w)
     if reads.loc[w.read,"sn_pos"] > 0 :
-        flag=128 if strand==2 else 64
+        flag=64 if strand==2 else 128
     elif reads.loc[w.read,"sn_pos"] < 0 :
-        flag=128 if strand!=2 else 64
+        flag=64 if strand!=2 else 128
     return flag
         
 def get_gencov_pos(w):
@@ -884,7 +892,7 @@ def get_bamcov_options(w):
     paired = 1 if is_paired_end(w.sample) else 0
     offset_mod = -1 if ((strand==2 and paired==0) or (paired==1 and reads.loc[w.read,"sn_pos"] < 0)) else 1
     offset = ("--Offset " + str(reads.loc[w.read,"sn_pos"]*offset_mod) + " " + str(reads.loc[w.read,"sn_pos"]*offset_mod) )if reads.loc[w.read,"single_nuc"] else ""
-    saminc = (" --samFlagInclude " + str(get_read_flag(w))) + str(get_read_flag(w)) if (paired==1 and reads.loc[w.read,"single_nuc"]) else ""
+    saminc = (" --samFlagExclude " + str(get_exclude_flag(w))) if (paired==1 and reads.loc[w.read,"single_nuc"]) else ""
     options = offset + saminc
     return options
     

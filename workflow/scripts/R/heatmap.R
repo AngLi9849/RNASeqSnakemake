@@ -12,27 +12,27 @@ heat_gene_n <- length(unique(heat_data$featureID))
 
 heat_data$Sense <- factor(heat_data$Sense, levels=c("Sense","Antisense"))
 
-heat_scale <- quantile(abs(heat_data$heat),heat_scale_pc,na.rm=T)
+heat_scale <- quantile(abs(heat_data$heat[heat_data$heat!=0]),heat_scale_pc,na.rm=T)
 heat_data$heat <- heat_data$heat/heat_scale
 heat_data$heat <- ifelse(heat_data$heat >= 1, 1, ifelse(heat_data$heat <= -1, -1, heat_data$heat))
 
 heat_lfcbrks_i <- heat_lfcbrks/heat_scale
 
-for (i in heat_config$Ranking) {
+for (r in heat_config$Ranking) {
 
-heat_unit <- heat_config$unit[heat_config$Ranking==i]
-i_unit <- ifelse(heat_unit=="","",paste("(",heat_unit,")",sep=""))
-heat_data$Rank <- as.numeric(unlist(expr_heat[match(heat_data$featureID,expr_heat$featureID),paste(i,"_Rank",sep='')]))
-heat_ybrks <- unlist(lapply(heat_pc, function(p) { quantile(as.numeric(unlist(expr_heat[,paste(i, "_Rank",sep='')])),p/100,na.rm=T) } ) )
-names(heat_ybrks) <-  unlist(lapply(heat_pc, function(p) {ifelse(heat_unit=="%",100,1)*signif(quantile(as.numeric(unlist(expr_heat[,paste(i)])),p/100,na.rm=T),2) } ) )
+heat_unit <- heat_config$unit[heat_config$Ranking==r]
+r_unit <- ifelse(heat_unit=="","",paste("(",heat_unit,")",sep=""))
+heat_data$Rank <- as.numeric(unlist(expr_heat[match(heat_data$featureID,expr_heat$featureID),paste(r,"_Rank",sep='')]))
+heat_ybrks <- unlist(lapply(heat_pc, function(p) { quantile(as.numeric(unlist(expr_heat[,paste(r, "_Rank",sep='')])),p/100,na.rm=T) } ) )
+names(heat_ybrks) <-  unlist(lapply(heat_pc, function(p) {ifelse(heat_unit=="%",100,1)*signif(quantile(as.numeric(unlist(expr_heat[,paste(r)])),p/100,na.rm=T),2) } ) )
 
 heat_gene_lab <- heat_data$Rank
 names(heat_gene_lab) <- heat_data$root_name
 
-i_lab <- ifelse(i =="log2FoldChange", paste(toTitleCase(difference), "log2FoldChange"),i)
-i_lab <- ifelse(i_lab =="Length", paste(ifelse(use_base_length,title_base,title_feature),"Length"),i_lab)
+r_lab <- ifelse(r =="log2FoldChange", paste(toTitleCase(difference), "log2FoldChange"),r)
+r_lab <- ifelse(r_lab =="Length", paste(ifelse(use_base_length,title_base,title_feature),"Length"),r_lab)
 
-heat_ylab <- paste(gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",i_lab)),i_unit)
+heat_ylab <- paste(gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",r_lab)),r_unit)
 
 heat_ybrks <- if (heat_gene_n <= 30) (heat_gene_lab) else (heat_ybrks)
 
@@ -121,7 +121,7 @@ heatmap <- heatmap + facet_wrap(vars(Sense),ncol=1,strip.position="top")
 
 }
 
-assign(paste(i,"_heat",sep=""),heatmap) 
+assign(paste(r,"_heat",sep=""),heatmap) 
 
 }
 

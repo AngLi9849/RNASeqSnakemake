@@ -111,13 +111,20 @@ coldata <- data.frame(lapply(dds_coldata,function(x) { gsub("[\\+|-|_]",".",x) }
 rownames(coldata) <- rownames(dds_coldata)
 
 names(cts) <- rownames(coldata)
-
+head(cts,10)
+head(rpkm,10)
 # Caculate mean expression levels of each condtion
 c(control_cond,treatment)
 sample_table[,c("sample_name","condition")]
 mean_level <- data.frame(
   lapply(c(control_cond,treatment), function(x) {
-    apply(rpkm[,match(sample_table$sample_name[sample_table$condition==x],names(rpkm))],1,FUN=mean)}))
+    if ( sum(!is.na(match(sample_table$sample_name[sample_table$condition==x],names(rpkm))))==1 ) {
+      rpkm[,match(sample_table$sample_name[sample_table$condition==x],names(rpkm))]
+    } else {
+    apply(rpkm[,match(sample_table$sample_name[sample_table$condition==x],names(rpkm))],1,FUN=mean)
+    }
+  }))
+
 names(mean_level) <- c(control_cond,treatment)
 
 levels <- rpkm

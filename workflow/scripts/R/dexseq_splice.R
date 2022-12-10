@@ -206,7 +206,11 @@ splice_ratio <- data.frame(splice_cts/(splice_cts + 2*unsplice_cts),check.names=
 head(splice_ratio,10)
 
 splice_ratio_mean <- data.frame(lapply(c(control_cond,treatment),function(x) {
-    apply(splice_ratio[,colnames(splice_ratio) %in% sample_table$sample_name[sample_table$condition==x]],1,FUN=mean)
+    if ( sum(colnames(splice_ratio) %in% sample_table$sample_name[sample_table$condition==x])==1 ) {
+      splice_ratio[,colnames(splice_ratio) %in% sample_table$sample_name[sample_table$condition==x]] 
+    } else {
+      apply(splice_ratio[,colnames(splice_ratio) %in% sample_table$sample_name[sample_table$condition==x]],1,FUN=mean)
+    }
   }))
 names(splice_ratio_mean) <- c(control_cond,treatment)
 splice_ratio_mean <- splice_ratio_mean[rownames(splice_ratio_mean) %in% expr$featureID,]
