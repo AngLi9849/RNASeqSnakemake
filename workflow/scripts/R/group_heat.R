@@ -26,9 +26,9 @@ scale_fill_gradientn(
     draw.ulim = TRUE,
     draw.llim = TRUE,
     frame.colour = "black",
-    frame.linewidth = 1,
+    frame.linewidth = 0.3,
     ticks.colour = "black",
-    ticks.linewidth = 1,
+    ticks.linewidth = 0.3,
     ticks = TRUE,
     label.position = "right",
     barwidth = 0.5,
@@ -55,7 +55,7 @@ theme(
   panel.border=element_rect(
     fill=NA,
     colour="black",
-    size=0.7
+    linewidth=0.7
     ),
   panel.grid.major = element_blank(),
   panel.grid.minor = element_blank(),
@@ -68,13 +68,13 @@ theme(
     ),
   axis.line=element_line(
     colour=NA,
-    size=NA
+    linewidth=NA
     ),
   axis.title.y = element_text(size=9),
   axis.title.x = element_text(size=9),
   legend.title = element_text(size=9),
   strip.text=element_text(face="bold"),
-  strip.background=element_rect(colour="white",fill="white",size=0.1),
+  strip.background=element_rect(colour="white",fill="white",linewidth=0.1),
   axis.text.y = element_blank(),
   axis.text.x = element_text(angle = 45, vjust = 0, hjust=0,colour="black")
   )

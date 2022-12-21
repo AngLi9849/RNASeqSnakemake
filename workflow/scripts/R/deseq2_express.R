@@ -215,5 +215,6 @@ write.table(data.frame(expr[c(1,2,5,6:9)], check.names=FALSE),file=snakemake@out
 
 write.table(data.frame("id"=rownames(mean_level),mean_level, check.names=FALSE),file=snakemake@output[["levels"]],sep='\t',row.names=F,quote=F)
 
+save.image(file = snakemake@output[["rdata"]])
 
 

@@ -628,7 +628,7 @@ def get_differential_reports():
 
 def get_group_reports():
     docx = expand(
-        "group_reports/Group.{group.group}.{group.group_title}.{group.md5}.{tag}.docx",
+        "group_reports/Group.{group.group}.{group.md5}.{tag}.docx",
          group=group_config.itertuples(),
          tag=TAG,
     ),

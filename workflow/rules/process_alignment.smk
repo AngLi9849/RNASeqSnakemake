@@ -187,7 +187,7 @@ rule featurecounts:
         else    
           if [[ {params.single_nuc} -eq 1  ]] ;
             then
-            samtools view -b -@ 5 {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
+            samtools view -bh -@ 5 {params.samflag} {input.bam} > {input.bam}.filtered.bam &&
             samtools index -b -@ 5 {input.bam}.filtered.bam {input.bam}.filtered.bam.bai &&
             featureCounts -s {params.strand} {params.paired} -M {params.overlap} -T {threads} -F SAF --verbose -a {input.saf} -o {output.tab} {input.bam}.filtered.bam
             else

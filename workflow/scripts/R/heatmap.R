@@ -7,6 +7,18 @@ heat_pc = c(0,25,50,75,100)
 heat_data <- heat_df[heat_df$featureID %in% expr_heat$featureID,]
 heat_data$root_name <- expr_heat$root_name[match(heat_data$featureID,expr_heat$featureID)]
 
+heat_data$covered <- ifelse(heat_data$coverage==0,0,1)
+
+heat_data <- heat_data %>% arrange(Sense,covered,coverage) %>% group_by(Sense,covered,featureID) %>% mutate(feat_cov_rank = (1:n())/n() ) %>% ungroup
+
+heat_data <- heat_data %>% arrange(Sense,covered,coverage) %>% group_by(Sense,covered) %>% mutate(heat_cov_rank = (1:n())/n() ) %>% ungroup
+
+heat_data$feat_cov_rank <- heat_data$feat_cov_rank * heat_data$covered
+
+heat_data$heat_cov_rank <- heat_data$heat_cov_rank * heat_data$covered
+
+heat_data$heat <- ifelse(heat_data$coverage > 0 & heat_data$coverage >= min_heat_cov & heat_data$heat_cov_rank >= min_heat_cov_pc & heat_data$feat_cov_rank >= min_heat_cov_pc, heat_data$heat,0)
+
 heat_ls <- paste(heat_ranks,"_heat",sep="")
 heat_gene_n <- length(unique(heat_data$featureID))
 
@@ -57,9 +69,9 @@ scale_fill_gradientn(
     draw.ulim = TRUE, 
     draw.llim = TRUE,
     frame.colour = "black",
-    frame.linewidth = 1,
+    frame.linewidth = 0.3,
     ticks.colour = "black",
-    ticks.linewidth = 1,
+    ticks.linewidth = 0.3,
     ticks = TRUE, 
     label.position = "right",
     barwidth = 0.5,
@@ -91,7 +103,7 @@ theme(
   panel.border=element_rect(
     fill=NA,
     colour="black",
-    size=0.7
+    linewidth=0.7
     ), 
   panel.grid.major = element_blank(), 
   panel.grid.minor = element_blank(), 
@@ -133,7 +145,7 @@ heatmap_title <- paste(
   "Heatmaps of changes ", difference, " of ", feature_i, " in ", experiment, ".",
   sep="")
 
-heatmap_h <- 7.5
+heatmap_h <- 7.2
 
 heatmap_caption <- paste(
   "Heatmaps representing fold changes in ", difference, " of ", feature_i, " mapped with at least ", heat_min_reads, " reads on average in ", experiment, ".",

@@ -226,4 +226,5 @@ write.table(data.frame("id"=rownames(cts),cts, check.names=FALSE),file=snakemake
 
 
 #}
+save.image(file = snakemake@output[["rdata"]])
 

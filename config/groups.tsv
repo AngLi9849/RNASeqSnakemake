@@ -41,4 +41,11 @@ group	treatment          	splice	feature 	difference	protocols
 11	HNRNPU-AID_KO      	FALSE	FirstIntron	Read.Count	TT-Seq
 11	HNRNPUL1-AID_KO       	FALSE	FirstIntron	Read.Count	TT-Seq
 11	FUS-mAID_+5PhIAA_6hr	FALSE	FirstIntron	Read.Count	TT-Seq
-
+12	FUS-mAID_+5PhIAA_6hr	FALSE	GeneBody	Read.Count	TT-Seq
+12	FUS-mAID_+5PhIAA_6hr	All	mRNA        	Read.Count	Total_RNA-Seq
+12	FUS-mAID_+5PhIAA_48hr	All	mRNA         	Read.Count	Total_RNA-Seq
+12	K562_FUS            	All	GeneBody       	eCLIP.Count	Yeo_Lab_eCLIP
+12	HepG2_FUS       	All	GeneBody   	eCLIP.Count	Yeo_Lab_eCLIP
+13	FUS-mAID_+5PhIAA_6hr	FALSE	FirstIntron	Read.Count	TT-Seq
+13	K562_FUS            	FALSE	FirstIntron	eCLIP.Count	Yeo_Lab_eCLIP
+13	HepG2_FUS       	FALSE	FirstIntron	eCLIP.Count	Yeo_Lab_eCLIP

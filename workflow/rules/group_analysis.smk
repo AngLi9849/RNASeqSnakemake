@@ -18,9 +18,9 @@ rule group_plots:
         group_title=lambda wildcards: str(group_config.loc[wildcards.md5,"group_title"]),
         genesets=lambda wildcards: str(group_config.loc[wildcards.md5,"gene_sets"]).split(","),
     output:
-        docx="group_reports/Group.{group}.{title}.{md5}.{tag}.docx",
+        docx="group_reports/Group.{group}.{md5}.{tag}.docx",
     log:
-        logs="logs/Group.{group}.{title}.{md5}.{tag}.log",
+        logs="logs/Group.{group}.{md5}.{tag}.log",
     conda:
         "../envs/differential.yaml"
     script:

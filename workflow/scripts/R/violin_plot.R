@@ -48,12 +48,12 @@ violin <- ggplot(data = violin_data, aes(x=condition, y=value)) +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),
-    strip.background=element_rect(colour="white",fill="white",size=0.1),
+    strip.background=element_rect(colour="white",fill="white",linewidth=0.1),
     legend.background=element_rect(fill="White"),
     legend.key=element_rect(colour="white",fill="White"),
     legend.position="none",
     axis.text = element_text(colour="black"),
-    axis.line=element_line(colour="black",size=0.5),
+    axis.line=element_line(colour="black",linewidth=0.5),
     axis.title.x=element_blank(),
     axis.title.y = element_text(size=9)
   )

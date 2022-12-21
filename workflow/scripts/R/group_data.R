@@ -41,7 +41,7 @@ group_title
 titles
 descripts
 
-heat_w <- max(min(length(titles)*1.3,6),3)
+heat_w <- max(min(length(titles)*0.5 + 1,6),3)
 
 for (n in 1:length(titles)) {
 doc <- body_add(doc,fpar(ftext(titles[[n]], prop=bold)),style = "Normal")
@@ -210,7 +210,7 @@ cor_row <- ceiling(length(c)/2)
 correlation_chunk <- ggarrange(plotlist=cor_plots_ls, ncol=1, nrow=cor_row)
 #doc <- body_add(doc,value=correlation_1,width = 6, height = cor_height, res= plot_dpi,style = "centered")
 
-doc <- body_add(doc,value=correlation_chunk,width = 5, height = cor_height, res= plot_dpi,style = "centered")
+doc <- body_add(doc,value=correlation_chunk,width = 6, height = cor_height, res= plot_dpi,style = "centered")
 doc <- body_add(doc,run_pagebreak())
 
 

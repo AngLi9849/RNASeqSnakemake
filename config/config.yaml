@@ -70,7 +70,7 @@ differential_analysis:
   # feature expression/abundance thresholds
   minimum_mean_reads: 10
   use_p_adj_min_mean: TRUE # Use p-value cut-off mean read count calculated by differential analysis tools, only if it is higher than the min-reads set above
-  minimum_rpkm_percentile: 0 # Only analyse features with normalised rpkm above this percentile after trimming zeros, 0 will include all 
+  minimum_rpkm_percentile: 0.01 # A number as percentage, (1 for 1%) Only analyse features with normalised rpkm above this percentile after trimming zeros, 0 will include all 
   # P-Value thresholds
   significant_p: 0.05 # Changes with p-value lower than this is considered significant
   undetect_p: 0.95 # Changes with p-value higher than this is considered undetected
@@ -92,7 +92,7 @@ differential_plots:
     count_bias: "workflow/scripts/R/count_bias.R"
     overview: "workflow/scripts/R/overview_plots.R"
   # Resolution of output files. Typically publications require at least 300 dpi.
-  dpi: 400
+  dpi: 300
   # Number of most significantly changed and most changed gene names to show in ma and volcano plots
   ma_gene_name_numbers: 10
   volcano_gene_name_numbers: 10
@@ -130,9 +130,11 @@ metagene:
 
 heatmap:
   min_reads: 10
+  min_rpkm_pc: 0 # A number as percentage, (e.g. 1 for 1%) Only analyse features with normalised rpkm above this percentile after trimming zeros, 0 will include all
   bin_number: 100
   heat_colours: royalblue,skyblue,white,goldenrod1,red #Colours for representing lowest to highest log2 foldchange from -4 to 4 , middle one will represent 0
-  min_fc_cov: 5 # minimum mean read depth in a bin to calculate fold change, belowe this threshold, fold change is set to zero 
+  min_cov: 0 # minimum mean read depth in a bin to calculate fold change, read depth of 0 or below this threshold, fold change is set to zero 
+  min_cov_pc: 0.3 # Percentile of per-bin read depth in a heatmap to set heat to zero
   heat_scale_pc : 99 # numerber between 0-100, Cap color depth to this percentile of fold change per bin and scale smaller changes up, lower number makes smaller changes mroe noticeable
 
 group_analysis:

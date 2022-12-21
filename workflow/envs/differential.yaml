@@ -15,3 +15,6 @@ dependencies:
   - r-stringr
   - r-officer
   - r-rvg 
+  - r-gridgraphics
+  - r-gridextra
+  - r-cowplot

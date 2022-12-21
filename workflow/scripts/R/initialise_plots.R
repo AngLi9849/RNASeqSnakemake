@@ -40,7 +40,8 @@ heat_units <- c("","","bps","%")
 
 heat_config <- data.frame(heat_ranks,heat_units)
 names(heat_config) <- c("Ranking","unit")
-
+min_heat_cov <- snakemake@config[["heatmap"]][["min_cov"]]
+min_heat_cov_pc <- snakemake@config[["heatmap"]][["min_cov_pc"]]
 
 # General plotting settings
 plot_dpi <- as.numeric(snakemake@config[["differential_plots"]][["dpi"]])

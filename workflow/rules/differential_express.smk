@@ -27,7 +27,7 @@ rule deseq2_read_count:
         counts= lambda w: "featurecounts/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.{{type}}.{{tag}}.{{feature}}.{{read}}.counts.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
-        total_sum = lambda w: "deseq2/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.gtf.Total.Read.Count.{{pair}}.summary.tsv".format(
+        total_sum = lambda w: "deseq2/{norm_group}/{{reference}}/{{splice}}{{prefix}}.{{lineage}}_{{valid}}.gtf.Total.Read.Count.summary.tsv".format(
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
         genetab=lambda w: "resources/annotations/{source}/genome.gtf.{{tag}}_gene_info.tab".format(
@@ -50,6 +50,7 @@ rule deseq2_read_count:
         levels="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
         rpkm="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.tsv",
         toptable="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.toptable.tsv",
+        rdata="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.Rdata",
     params:
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
         treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],

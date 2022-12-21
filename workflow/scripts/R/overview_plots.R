@@ -30,13 +30,13 @@ sum_pie <- ggplot(data = sum_pie_data, aes(x=group, y=Numbers, fill=fct_inorder(
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),
-    strip.background=element_rect(colour="white",fill="white",size=0.1),
+    strip.background=element_rect(colour="white",fill="white",linewidth=0.1),
     legend.background=element_rect(fill="White"),
     legend.key=element_rect(colour="white",fill="White"),
     legend.title=element_text(size=9),
     axis.text = element_text(colour="black"),
     axis.text.x = if (sum_group_n > 3) (element_text(angle = 45, vjust = 1, hjust=1)) else (element_text()),
-    axis.line=element_line(colour="black",size=0.5),
+    axis.line=element_line(colour="black",linewidth=0.5),
     axis.title.x=element_blank(),
     axis.title.y = element_text(size=9)
   )
@@ -66,13 +66,13 @@ sum_bar <- ggplot(data = sum_bar_data, aes(fill=condition, y=mean, x = group)) +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),
-    strip.background=element_rect(colour="white",fill="white",size=0.1),
+    strip.background=element_rect(colour="white",fill="white",linewidth=0.1),
     legend.background=element_rect(fill="White"),
     legend.key=element_rect(colour="white",fill="White"),
     legend.title=element_text(size=9),
     axis.text = element_text(colour="black"),
     axis.text.x = if (sum_group_n > 3) (element_text(angle = 45, vjust = 1, hjust=1)) else (element_text()),
-    axis.line=element_line(colour="black",size=0.5),
+    axis.line=element_line(colour="black",linewidth=0.5),
     axis.title.x=element_blank(),
     axis.title.y = element_text(size=9)
   )
@@ -107,13 +107,13 @@ sum_violin <- ggplot(data = sum_violin_data, aes(x=group, group=interaction(grou
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),
-    strip.background=element_rect(colour="white",fill="white",size=0.1),
+    strip.background=element_rect(colour="white",fill="white",linewidth=0.1),
     legend.background=element_rect(fill="White"),
     legend.key=element_rect(colour="white",fill="White"),
     legend.title=element_text(size=9),
     axis.text = element_text(colour="black"),
     axis.text.x = if (sum_group_n > 3) (element_text(angle = 45, vjust = 1, hjust=1)) else (element_text()),
-    axis.line=element_line(colour="black",size=0.5),
+    axis.line=element_line(colour="black",linewidth=0.5),
     axis.title.x=element_blank(),
     axis.title.y = element_text(size=9)
   )

@@ -110,7 +110,7 @@ rule prefix_spikein_genome:
 
 rule prefix_spikein_annotation:
     input:
-        gtf="resources/annotations/{species}_genome.gtf",
+        gtf="resources/annotations/{species}/genome.gtf",
     output:
         gtf="resources/annotations/spikein_{species}/genome.gtf",
     resources:

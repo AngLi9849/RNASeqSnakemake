@@ -94,13 +94,13 @@ correlation <- ggplot(data = lfc_cor, aes(
   ylab(paste(main,"log2 FC")) +  
   theme(panel.background=element_rect(fill="White",colour="white"),
         strip.text=element_text(face="bold"),
-        strip.background=element_rect(colour="white",fill="white",size=0.1),
-        panel.border=element_rect(fill=NA,colour="black",size=0.7),
+        strip.background=element_rect(colour="white",fill="white",linewidth=0.1),
+        panel.border=element_rect(fill=NA,colour="black",linewidth=0.7),
         legend.background=element_rect(fill="White"),
         legend.key=element_rect(colour="white",fill="White"),
-        axis.line=element_line(colour="black",size=0.1),
-        axis.line.x.top=element_line(colour="black",size=0.1),
-        axis.line.y.right=element_line(colour="black",size=0.1),
+        axis.line=element_line(colour="black",linewidth=0.1),
+        axis.line.x.top=element_line(colour="black",linewidth=0.1),
+        axis.line.y.right=element_line(colour="black",linewidth=0.1),
         axis.title.y = element_text(size=9),
         axis.title.x = element_text(size=9)
   )
@@ -166,7 +166,7 @@ cor_bias <- correlation +
   ) +
   geom_smooth(
     method = "lm",
-    size=0.8,
+    linewidth=0.8,
     fill="black",
     colour="black",
     alpha=0.2) +

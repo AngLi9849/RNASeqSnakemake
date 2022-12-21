@@ -7,6 +7,9 @@ options(error=function()traceback(2))
 library(dplyr)
 library(tools)
 library(tidyverse)
+library(grid)
+library(gridExtra)
+library(cowplot)
 library(ggpubr)
 library(ggrepel)
 library(ggtext)
@@ -26,9 +29,6 @@ if (snakemake@threads > 1) {
 
 # Import lfc table and mean levels table
 expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
-
-mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
-cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 
 #sig_bg <- read.csv(snakemake@input[["sig_bg"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 sig <- as.numeric(snakemake@params[["sig"]])
@@ -179,8 +179,6 @@ common <- gsub("_"," ",common_str)
 treat <-  gsub("_"," ",treat_str)
 control <- gsub("_"," ",control_str)
 
-names(mean_level) <- c(control,treat)
-
 spikein <- gsub("_"," ",as.character(snakemake@wildcards[["spikein"]]))
 spikein <- if (difference == "splicing ratio") ("internal") else (spikein)
 
@@ -231,6 +229,11 @@ sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protoc
 sample_table <- sample_table[sample_table$condition %in% c(control_cond, treatment),]
 sample_table <- sample_table[sample_table$protocol == as.character(snakemake@params[["protocol"]]),]
 rownames(sample_table) <- sample_table$sample_name
+
+mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+names(mean_level) <- c(control,treat)
+cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
+cts <- cts[names(cts) %in% sample_table$sample_name]
 
 condition_col <- as.character(sample_table$colour[match(c(control_cond,treatment),sample_table$condition)])
 names(condition_col) <-c(control,treat)
@@ -319,6 +322,7 @@ config_min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["mini
 
 #meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= snakemake@config[["metagene"]][["min_reads"]]])
 
+#heat_min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],snakemake@config[["heatmap"]][["min_rpkm_pc"]]/100,na.rm=T)
 heat_min_reads <- snakemake@config[["heatmap"]][["min_reads"]] 
 expr_heat <- expr_i[expr_i$baseMean >= heat_min_reads,]
 expr_heat$padj <- ifelse(is.na(expr_heat$padj),expr_heat$pvalue,expr_heat$padj)
@@ -334,9 +338,10 @@ total_i <- nrow(expr_heat)
 min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],min_rpkm_pc/100,na.rm=T)
 #meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= config_min_mean & expr_i$baseMean >= min_rpkm])
 
-insuf_i <- sum( (expr_heat$baseMean < min_mean) | (!is.na(expr_heat$RPKM) & (expr_heat$RPKM < min_rpkm)) | (is.na(expr_heat$pvalue)),na.rm=T )
+#insuf_i <- sum( (expr_heat$baseMean < min_mean) | (!is.na(expr_heat$RPKM) & (expr_heat$RPKM < min_rpkm)) | (is.na(expr_heat$pvalue)),na.rm=T )
 
 expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$RPKM >= min_rpkm),]
+
 
 expr_i$padj <- ifelse(is.na(expr_i$padj),expr_i$pvalue,expr_i$padj)
 expr_i <- expr_i[!is.na(expr_i$padj),]
@@ -426,7 +431,7 @@ summary_caption <- unlist(list(summary_caption,summary_captions))
 summary_caption
 summary_h <- 8
 
-plots <- c("summary","bias",paste(biases$bias,"_count_bias",sep=""),"ma_plot","volcano_plot")
+plots <- c("summary","bias","count_bias","ma_plot","volcano_plot")
 
 if (difference != "splicing ratio") {
 plots <- c(plots,"meta_plot","heatmap")
@@ -477,11 +482,11 @@ if ( (plot_n-1) == length(plots)) {
 #=====testEnd======
 
 
-GC_count_bias
+count_bias
 head(count_bias_data,5)
-GC_count_bias_title
-GC_count_bias_h
-GC_count_bias_caption
+count_bias_title
+count_bias_h
+count_bias_caption
 sum_bar_data
 
 head(sum_bar_data,5)

@@ -1,8 +1,10 @@
 sig_up <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] > 0,na.rm=T)
 sig_down <- sum(expr_i$log2FoldChange[expr_i$padj < sig_p] < 0,na.rm=T)
 insig <- sum(expr_i$padj[expr_i$padj < undetect_p] >= sig_p,na.rm=T)
-undetect <- total_i - insuf_i - insig - sig_up - sig_down 
+undetect <- sum(expr_i$padj >= undetect_p,na.rm=T) 
+insuf_i <- max(total_i - undetect - sig_up - sig_down - insig,0)
 total_i <- total_i - insuf_i
+
 
 sig_up
 sig_down
@@ -75,7 +77,7 @@ pie <- ggplot(data = pie_data, aes(x="", y=Numbers, fill=fct_inorder(Label))) +
   theme(
     panel.background=element_rect(fill="White",colour="white"),
     strip.text=element_text(face="bold"),
-    strip.background=element_rect(colour="white",fill="white",size=0.1),
+    strip.background=element_rect(colour="white",fill="white",linewidth=0.1),
     legend.position = "none",
     axis.ticks = element_blank(),
     axis.text = element_blank(),
