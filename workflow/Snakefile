@@ -49,8 +49,8 @@ include: "rules/metagene.smk"
 rule all:
     input:
         #"resources/annotations/combined_ensembl_homo_sapiens.GRCh38.104_and_ensembl_saccharomyces_cerevisiae.R64-1-1.107/genome.gtf.annotated_basic.gene.bed"
-        "resources/star/combined_ensembl_homo_sapiens.GRCh38.104_and_ensembl_saccharomyces_cerevisiae.R64-1-1.107",
-        "resources/star/ensembl_homo_sapiens.GRCh38.104"
+        #"resources/star/combined_ensembl_homo_sapiens.GRCh38.104_and_ensembl_saccharomyces_cerevisiae.R64-1-1.107",
+        #"resources/star/ensembl_homo_sapiens.GRCh38.104"
         #get_multiqc(),
         #get_bams(),
         #get_feature_counts()
@@ -61,7 +61,7 @@ rule all:
         #get_heat_data(),
         #get_diffexp_docx(),
         #get_diffsplice_docx(),
-        #get_differential_reports(),
+        get_differential_reports(),
         #get_group_reports(),
         #get_differential_splicing(),
         #get_meta_profiles(),
