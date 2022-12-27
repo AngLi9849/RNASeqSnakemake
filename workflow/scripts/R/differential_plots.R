@@ -233,7 +233,7 @@ rownames(sample_table) <- sample_table$sample_name
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 names(mean_level) <- c(control,treat)
 cts <- read.csv(snakemake@input[["counts"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
-cts <- cts[names(cts) %in% sample_table$sample_name]
+cts <- cts[names(cts) %in% c(sample_table$sample_name,"state","id")]
 
 condition_col <- as.character(sample_table$colour[match(c(control_cond,treatment),sample_table$condition)])
 names(condition_col) <-c(control,treat)
@@ -322,8 +322,10 @@ config_min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["mini
 
 #meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= snakemake@config[["metagene"]][["min_reads"]]])
 
-#heat_min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],snakemake@config[["heatmap"]][["min_rpkm_pc"]]/100,na.rm=T)
-heat_min_reads <- snakemake@config[["heatmap"]][["min_reads"]] 
+#heat_min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],snakemake@config[["differential_plots"]][["heatmap"]][["min_rpkm_pc"]]/100,na.rm=T)
+
+# Prepare per-bin log2foldchange heat data for meta plots and heatmaps
+heat_min_reads <- snakemake@config[["differential_plots"]][["heatmap"]][["min_reads"]] 
 expr_heat <- expr_i[expr_i$baseMean >= heat_min_reads,]
 expr_heat$padj <- ifelse(is.na(expr_heat$padj),expr_heat$pvalue,expr_heat$padj)
 expr_heat$padj <- ifelse(is.na(expr_heat$padj),1,expr_heat$padj)
@@ -336,8 +338,16 @@ expr_heat$colour <- ifelse(expr_heat$padj < sig_p, ifelse(expr_heat$log2FoldChan
 total_i <- nrow(expr_heat)
 
 min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],min_rpkm_pc/100,na.rm=T)
-#meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= config_min_mean & expr_i$baseMean >= min_rpkm])
 
+heat_data <- heat_df[heat_df$featureID %in% expr_heat$featureID,]
+heat_data$root_name <- expr_heat$root_name[match(heat_data$featureID,expr_heat$featureID)]
+heat_data$covered <- ifelse(heat_data$coverage==0,0,1)
+heat_data <- heat_data %>% arrange(Sense,covered,coverage) %>% group_by(Sense,covered,featureID) %>% mutate(feat_cov_rank = (1:n())/n() ) %>% ungroup
+heat_data <- heat_data %>% arrange(Sense,covered,coverage) %>% group_by(Sense,covered) %>% mutate(heat_cov_rank = (1:n())/n() ) %>% ungroup
+heat_data$feat_cov_rank <- heat_data$feat_cov_rank * heat_data$covered
+heat_data$heat_cov_rank <- heat_data$heat_cov_rank * heat_data$covered
+heat_data$heat <- ifelse(heat_data$coverage > 0 & heat_data$coverage >= min_heat_cov & heat_data$heat_cov_rank >= min_heat_cov_pc & heat_data$feat_cov_rank >= min_heat_cov_pc, heat_data$heat,0)
+heat_data$lfc <- heat_data$heat
 #insuf_i <- sum( (expr_heat$baseMean < min_mean) | (!is.na(expr_heat$RPKM) & (expr_heat$RPKM < min_rpkm)) | (is.na(expr_heat$pvalue)),na.rm=T )
 
 expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$RPKM >= min_rpkm),]
@@ -456,7 +466,9 @@ title_p <- fpar(fig_num,ftext(title_p,prop=title_prop))
 
 plot_n <- plot_n + 1
 doc <- body_add(doc,fpar(ftext(toTitleCase(gsub("_"," ",p)), prop=heading_3)),style = "heading 4")
-doc <- body_add(doc,value=plot_p,width = 6, height = get(paste(p,"_h",sep="")), res= plot_dpi,style = "centered")
+for (plot in plot_p) {
+  doc <- body_add(doc,value=plot,width = 6, height = get(paste(p,"_h",sep="")), res= plot_dpi,style = "centered")
+}
 if (p=="summary") {
 doc <- body_add(doc,run_pagebreak())
 }

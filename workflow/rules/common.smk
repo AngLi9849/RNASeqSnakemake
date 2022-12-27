@@ -281,7 +281,6 @@ samples["min_overlap"] = samples.apply( lambda row:\
     axis=1
 )
 
-
 # Helper functions for samples
 
 def is_paired_end(sample):

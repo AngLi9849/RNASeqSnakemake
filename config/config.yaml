@@ -82,8 +82,8 @@ differential_plots:
     initialise: "workflow/scripts/R/initialise_plots.R"
     ma: "workflow/scripts/R/ma_plot.R"
     volcano: "workflow/scripts/R/volcano_plot.R"
-    meta: "workflow/scripts/R/meta_plots.R"
-    heat: "workflow/scripts/R/heatmap.R"
+    meta: "workflow/scripts/R/meta_diff.R"
+    heat: "workflow/scripts/R/heat_diff.R"
     bar: "workflow/scripts/R/bar_plot.R"
     violin: "workflow/scripts/R/violin_plot.R"
     dot: "workflow/scripts/R/dot_plot.R"
@@ -102,6 +102,14 @@ differential_plots:
   up_colour: orange
   down_colour: blue
   insignificant_colour: grey40
+  heatmap:
+    min_reads: 10
+    min_rpkm_pc: 0 # A number as percentage, (e.g. 1 for 1%) Only analyse features with normalised rpkm above this percentile after trimming zeros, 0 will include all
+    bin_number: 100
+    heat_colours: royalblue,skyblue,white,goldenrod1,red #Colours for representing lowest to highest log2 foldchange from -4 to 4 , middle one will represent 0
+    min_cov: 0 # minimum mean read depth in a bin to calculate fold change, read depth of 0 or below this threshold, fold change is set to zero
+    min_cov_pc: 0.3 # Percentile of per-bin read depth in a heatmap to set heat to zero
+    heat_scale_pc : 99 # numerber between 0-100, Cap color depth to this percentile of fold change per bin and scale smaller changes up, lower number makes smaller changes mroe noticeable
   font_sizes:
     axis_title: 12
     axis_ticks: 9
@@ -121,21 +129,25 @@ differential_plots:
       font_name: Arial
       font_colour: black
 
-metagene:
-  min_reads: 10
-  norm_per_gene: FALSE # Plot meta profiles with genes normalised or not, if FALSE, more abundant genes will weight more in the metaplot
-  norm_to_median: TRUE # Else per-gene normalisation will be based on the mean
-  anomaly_trim: 0.05
-  plot_median: FALSE #Otherwise plot mean
-
-heatmap:
-  min_reads: 10
-  min_rpkm_pc: 0 # A number as percentage, (e.g. 1 for 1%) Only analyse features with normalised rpkm above this percentile after trimming zeros, 0 will include all
-  bin_number: 100
-  heat_colours: royalblue,skyblue,white,goldenrod1,red #Colours for representing lowest to highest log2 foldchange from -4 to 4 , middle one will represent 0
-  min_cov: 0 # minimum mean read depth in a bin to calculate fold change, read depth of 0 or below this threshold, fold change is set to zero 
-  min_cov_pc: 0.3 # Percentile of per-bin read depth in a heatmap to set heat to zero
-  heat_scale_pc : 99 # numerber between 0-100, Cap color depth to this percentile of fold change per bin and scale smaller changes up, lower number makes smaller changes mroe noticeable
+coverage_plots:
+  scripts:
+    initialise: "workflow/scripts/R/initialise_plots.R"
+    meta: "workflow/scripts/R/meta_plots.R"
+    heat: "workflow/scripts/R/cov_heat.R"
+  metagene:
+    min_reads: 10
+    norm_per_gene: TRUE # Plot meta profiles with genes normalised or not, if FALSE, more abundant genes will weight more in the metaplot
+    norm_to_median: TRUE # Else per-gene normalisation will be based on the mean
+    anomaly_trim: 0.05
+    plot_median: FALSE #Otherwise plot mean
+  heatmap:
+    min_reads: 10
+    min_rpkm_pc: 0 # A number as percentage, (e.g. 1 for 1%) Only analyse features with normalised rpkm above this percentile after trimming zeros, 0 will include all
+    bin_number: 100
+    heat_colours: royalblue,skyblue,white,goldenrod1,red #Colours for representing lowest to highest log2 foldchange from -4 to 4 , middle one will represent 0
+    min_cov: 0 # minimum mean read depth in a bin to calculate fold change, read depth of 0 or below this threshold, fold change is set to zero
+    min_cov_pc: 0.3 # Percentile of per-bin read depth in a heatmap to set heat to zero
+    heat_scale_pc : 99 # numerber between 0-100, Cap color depth to this percentile of fold change per bin and scale smaller changes up, lower number makes smaller changes mroe noticeable
 
 group_analysis:
   scripts:

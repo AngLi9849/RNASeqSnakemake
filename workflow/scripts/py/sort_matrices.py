@@ -29,7 +29,7 @@ else:
     main_x_sum=main.sum(axis=1)*main_length
 
 
-main_mean = main_x_sum[main_x_sum!=0].median() if snakemake.wildcards.mean=="median" else main_x_sum[main_x_sum!=0].mean()
+#main_mean = main_x_sum[main_x_sum!=0].median() if snakemake.wildcards.mean=="median" else main_x_sum[main_x_sum!=0].mean()
 
 
 aft_ls=[]
@@ -51,10 +51,11 @@ mx.columns = range(start,end)
 
 mx.index.name = snakemake.wildcards.sample
 
-mx.to_csv(snakemake.output.sum_mx, sep='\t', header=True, index=True, compression='gzip')
+mx.to_csv(snakemake.output.mx, sep='\t', header=True, index=True, compression='gzip')
+#mx.to_csv(snakemake.output.sum_mx, sep='\t', header=True, index=True, compression='gzip')
 
-norm_mx = mx.div(main_x_sum,axis=0)*(main_mean)
-norm_mx = norm_mx.fillna(0)
+#norm_mx = mx.div(main_x_sum,axis=0)*(main_mean)
+#norm_mx = norm_mx.fillna(0)
 
-norm_mx.to_csv(snakemake.output.norm_mx, sep='\t', header=True, index=True, compression='gzip')
+#norm_mx.to_csv(snakemake.output.norm_mx, sep='\t', header=True, index=True, compression='gzip')
 

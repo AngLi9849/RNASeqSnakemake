@@ -49,7 +49,7 @@ sense_dirs <- c("sense")
 }
 
 
-plot_median <- as.logical(snakemake@config[["metagene"]][["plot_median"]])
+plot_median <- as.logical(snakemake@config[["coverage_plots"]][["metagene"]][["plot_median"]])
 
 head(sig_bg,10)
 meta_features <- rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] 
@@ -135,7 +135,8 @@ for ( i in sense_dirs ) {
 mx_ls <- get(paste(i,"_ls",sep=""))
 mx <- lapply(mx_ls,function(x) {read.table(x,sep='\t',header=T,row.names=1,check.names=FALSE)})
 mx <- lapply(mx,function(x) {x[rownames(x) %in% meta_features,]})
-mx <- lapply(1:length(mx),function(x) {as.data.frame(mx[[x]])*size_table$scale_factor[size_table$sample_name==mx_samples[x]]})
+mx <- lapply(1:length(mx),function(x) {as.data.frame(mx[[x]])*size_table$scale_factor[size_table$sample_name==mx_samples[x]]
+})
 names(mx) <- sample_table$sample_abbr[match(mx_samples,sample_table$sample_name)]
 assign(paste(i,"_mx",sep=""),mx)
 }
@@ -163,7 +164,7 @@ i <- gsub("_"," ",i)
 
 head(expr_i, 5)
 
-min_mean <- as.numeric(snakemake@config[["metagene"]][["min_reads"]])
+min_mean <- as.numeric(snakemake@config[["coverage_plots"]][["metagene"]][["min_reads"]])
 
 min_rpkm <- if (min_rpkm_pc==0) (0) else (as.numeric(quantile(expr_i$RPKM[expr_i$baseMean > 0],min_rpkm_pc/100)))
 min_mean
@@ -177,7 +178,7 @@ expr_i <- expr_i[( (expr_i$baseMean >= min_mean) & (expr_i$RPKM >= min_rpkm) ),]
 
 head(expr_i,10)
 
-meta_trim <- as.numeric(snakemake@config[["metagene"]][["anomaly_trim"]])
+meta_trim <- as.numeric(snakemake@config[["coverage_plots"]][["metagene"]][["anomaly_trim"]])
 
 # Process matrices to trimmed mean and/or/maybe spline
 for ( s in sense_dirs ) {
@@ -197,20 +198,23 @@ ls[1:20]
 mx <- lapply(mx,function(x) {x[match(expr_i$featureID,rownames(x),]} )
 head(mx[[1]][,1:10],10)
 
-mean_rpkm <- mean(expr_i$RPKM, na.rm=T)
-rpkm_norm_factor <- expr_i$RPKM/mean_rpkm
+# Plot Coverage Heatmaps, against rankings defined in heat_config
 
+
+# Coverage Heatmaps
+mean_rpkm <- mean(expr_i$RPKM, na.rm=T)
+rpkm_norm_factor <- if (mean_rpkm > 0) mean_rpkm/expr_i$RPKM
 norm_mx <- lapply(1:length(mx),function(x) {as.data.frame(mx[[x]])*rpkm_norm_factor})
+names(norm_mx) <- sample_table$sample_abbr[match(mx_samples,sample_table$sample_name)]
 
 #mx_sum_median <- data.frame(lapply(mx, function(x) {apply(x,2,function(y) {median(y,na.rm=F)})}),check.names=F)
-mean_mx <- data.frame(lapply(mx, function(x) {apply(x,2,function(y) {mean(y,na.rm=F,trim=meta_trim)})}),check.names=F)
+#mean_mx <- data.frame(lapply(mx, function(x) {apply(x,2,function(y) {mean(y,na.rm=F,trim=meta_trim)})}),check.names=F)
+sum_mx <- data.frame(lapply(mx, function(x) {apply(x,2,function(y) {sum(y,na.rm=T)})}),check.names=F)
 
+head(sum_mx,10)
 
-
-head(mx_mean,10)
-
-pos <- as.numeric(rownames(mx_mean))
-rev_pos <- rev(as.numeric(rownames(mx_mean)))
+pos <- as.numeric(rownames(sum_mx))
+rev_pos <- rev(as.numeric(rownames(sum_mx)))
 
 if (s=="sense") {
 pos_s <- pos
@@ -220,20 +224,19 @@ pos_s <- rev_pos
 
 pos_s
 
-rep(pos_s,ncol(mx_mean))
 mx_data <- data.frame(
   unlist(
-    lapply(colnames(mx_mean), function (x) {
-      ifelse(s=="sense", mx_mean[paste(x)], 0-mx_mean[paste(x)])
+    lapply(colnames(sum_mx), function (x) {
+      ifelse(s=="sense", sum_mx[paste(x)], 0-sum_mx[paste(x)])
     })),
   unlist(
-    lapply(colnames(mx_mean), function (x) {
-      replicate(nrow(mx_mean),paste(x))
+    lapply(colnames(sum_mx), function (x) {
+      replicate(nrow(sum_mx),paste(x))
     })),
-  c(rep(pos_s,ncol(mx_mean))),
+  c(rep(pos_s,ncol(sum_mx))),
   unlist(
-    lapply(colnames(mx_mean), function (x) {
-      replicate(nrow(mx_mean),paste(x,s,sep="_"))
+    lapply(colnames(sum_mx), function (x) {
+      replicate(nrow(sum_mx),paste(x,s,sep="_"))
     }))
 )
 names(mx_data) <- c("value","Sample","Position","variable")

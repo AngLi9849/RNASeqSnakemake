@@ -17,6 +17,8 @@ void_col <- "black"
 sig_p <- as.numeric(snakemake@config[["differential_analysis"]][["significant_p"]])
 undetect_p <- as.numeric(snakemake@config[["differential_analysis"]][["undetect_p"]])
 
+biases <- read.csv(snakemake@config[["bias"]],header=T, sep='\t', check.names=FALSE)
+
 # Correlation settings
 r_threshold <- snakemake@config[["group_analysis"]][["r_threshold"]]
 cor_lab_n <- snakemake@config[["group_analysis"]][["label_number"]]
@@ -29,19 +31,16 @@ cor_bias_colours <- lapply(strsplit(as.character(snakemake@config[["group_analys
 
 # Heatmap setting
 heat_name <- "log2FC"
-heat_colours <- lapply(strsplit(as.character(snakemake@config[["heatmap"]][["heat_colours"]]),","),trimws)[[1]]
+heat_colours <- lapply(strsplit(as.character(snakemake@config[["differential_plots"]][["heatmap"]][["heat_colours"]]),","),trimws)[[1]]
 heat_lfcbrks_val <- c( -3 , -2 , -1 , -0.5 , 0 , 0.5 , 1 , 2 , 3 )
 heat_lfcbrks <- unlist(lapply(heat_lfcbrks_val, function(x) {((2^(x+1))/((2^x)+1))-1}))
 names(heat_lfcbrks) <- heat_lfcbrks_val
-heat_scale_pc <- as.numeric(snakemake@config[["heatmap"]][["heat_scale_pc"]])/100
+heat_scale_pc <- as.numeric(snakemake@config[["differential_plots"]][["heatmap"]][["heat_scale_pc"]])/100
 
-heat_ranks <- c("log2FoldChange","RPKM","Length","GC")
-heat_units <- c("","","bps","%")
+heat_bias <- biases
 
-heat_config <- data.frame(heat_ranks,heat_units)
-names(heat_config) <- c("Ranking","unit")
-min_heat_cov <- snakemake@config[["heatmap"]][["min_cov"]]
-min_heat_cov_pc <- snakemake@config[["heatmap"]][["min_cov_pc"]]
+min_heat_cov <- snakemake@config[["differential_plots"]][["heatmap"]][["min_cov"]]
+min_heat_cov_pc <- snakemake@config[["differential_plots"]][["heatmap"]][["min_cov_pc"]]
 
 # General plotting settings
 plot_dpi <- as.numeric(snakemake@config[["differential_plots"]][["dpi"]])

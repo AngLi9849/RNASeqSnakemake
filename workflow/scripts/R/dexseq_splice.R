@@ -59,7 +59,19 @@ unsplice_cts <- read.table(snakemake@input[["unspliced"]], header=TRUE, row.name
 
 splice_cts <- splice_cts[ , order(names(splice_cts))]
 unsplice_cts <- unsplice_cts[ , order(names(unsplice_cts))]
-samples=names(splice_cts)
+samples <- names(splice_cts)
+
+# Import sample table
+sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
+sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
+sample_table <- sample_table[sample_table$sample_name %in% samples,]
+rownames(sample_table) <- sample_table$sample_name
+sample_table <- sample_table[order(row.names(sample_table)), , drop=F]
+
+splice_cts <- splice_cts[,names(splice_cts) %in% sample_table$sample_name]
+unsplice_cts <- unsplice_cts[,names(unsplice_cts) %in% sample_table$sample_name]
+
+sample_table <- sample_table[match(names(splice_cts),sample_table$sample_name),]
 
 #Count table of unnormalised spliced and spliced counts
 cts <- rbind(splice_cts,unsplice_cts)
@@ -86,14 +98,6 @@ splice_cts <- round(ifelse((cts_mean<=1 | cts_sum <= 1),splice_cts,splice_cts*ct
 #splice_mean <- ifelse(is.na(splice_cts),splice_mean,splice_mean)
 #unsplice_cts <- round(ifelse((splice_mean<=1 | splice_cts <= 1),unsplice_cts,unsplice_cts*splice_mean/splice_cts))
 #splice_cts <- round(ifelse((splice_mean<=1 | splice_cts <= 1),splice_cts,splice_mean))
-
-
-# Import sample table
-sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
-sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
-sample_table <- sample_table[match(samples,sample_table$sample_name),]
-rownames(sample_table) <- sample_table$sample_name
-sample_table <- sample_table[order(row.names(sample_table)), , drop=F]
 
 feature_id <- row.names(splice_cts)
 group_id <- rep("input",length(feature_id))

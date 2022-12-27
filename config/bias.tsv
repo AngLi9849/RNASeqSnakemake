@@ -1,4 +1,4 @@
-bias	unit	log	percent
-GC	%	FALSE	TRUE
-Length	bps	TRUE	FALSE
-RPKM		TRUE	FALSE
+bias	unit	log	percent	lfc	count	heat
+GC	%	FALSE	TRUE	TRUE	TRUE	TRUE
+Length	bps	TRUE	FALSE	TRUE	TRUE	TRUE
+RPKM		TRUE	FALSE	TRUE	TRUE	TRUE

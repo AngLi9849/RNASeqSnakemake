@@ -66,7 +66,6 @@ names(total_sum)=c("internal","spikein")
 # Import Counts table and extract sample names involved
 cts <- read.table(snakemake@input[["counts"]], sep='\t', header=TRUE, row.names="gene", check.names=FALSE, stringsAsFactors=FALSE)
 cts <- cts[ , order(names(cts))]
-norm_counts <- cts
 samples <- names(cts)
 
 # Import size factors
@@ -74,6 +73,16 @@ size_table <- read.csv(snakemake@input[["size_table"]],header=T,sep="\t",check.n
 size_table <- size_table[match(samples,size_table$sample_name),]
 size_factors <- as.numeric(size_table$size_factor)
 names(size_factors) <- size_table$sample_name
+
+# Import sample table and define ColData dataframe for deseq2
+sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
+sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
+sample_table <- sample_table[sample_table$sample_name %in% samples,]
+rownames(sample_table) <- sample_table$sample_name
+
+cts <- cts[,names(cts) %in% samples_table$sample_name]
+sample_table <- sample_table[match(names(cts),sample_table$sample_name),]
+norm_counts <- cts
 
 # Calculate expression levels by rpkm
 #norm_sum <- total_sum[,c("internal")]*size_table$scale_factor[match(rownames(total_sum),size_table$sample_name)]
@@ -99,12 +108,6 @@ rpkm <- rpkm/count_length$Length[match(rownames(rpkm),count_length$gene)]*(10^9)
 cts_names <- row.names(cts)
 cts <- sapply(cts,as.numeric)
 row.names(cts) <- cts_names
-
-# Import sample table and define ColData dataframe for deseq2
-sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
-sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
-sample_table <- sample_table[match(samples,sample_table$sample_name),]
-rownames(sample_table) <- sample_table$sample_name
 
 dds_coldata <- sample_table[,c("condition","replicate")]
 coldata <- data.frame(lapply(dds_coldata,function(x) { gsub("[\\+|-|_]",".",x) } ))
