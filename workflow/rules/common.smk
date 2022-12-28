@@ -571,9 +571,9 @@ USAGE=[""]
 
 BIOTYPE=list(config["biotypes"])
 
-SCORE=["sum","per_gene"] if config["metagene"]["norm_per_gene"] else "per_gene"
-MX_NORM="norm" if config["metagene"]["norm_per_gene"] else "sum"
-MX_MEAN=["median","mean"] if config["metagene"]["norm_to_median"]=="BOTH" else ["median"] if config["metagene"]["norm_to_median"] else ["mean"]
+SCORE=["sum","per_gene"] if config["coverage_plots"]["metagene"]["norm_per_gene"] else "per_gene"
+MX_NORM="norm" if config["coverage_plots"]["metagene"]["norm_per_gene"] else "sum"
+MX_MEAN=["median","mean"] if config["coverage_plots"]["metagene"]["norm_to_median"]=="BOTH" else ["median"] if config["coverage_plots"]["metagene"]["norm_to_median"] else ["mean"]
 
 #Functions for generating results
 def get_multiqc():

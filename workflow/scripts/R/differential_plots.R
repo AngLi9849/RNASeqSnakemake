@@ -347,7 +347,9 @@ heat_data <- heat_data %>% arrange(Sense,covered,coverage) %>% group_by(Sense,co
 heat_data$feat_cov_rank <- heat_data$feat_cov_rank * heat_data$covered
 heat_data$heat_cov_rank <- heat_data$heat_cov_rank * heat_data$covered
 heat_data$heat <- ifelse(heat_data$coverage > 0 & heat_data$coverage >= min_heat_cov & heat_data$heat_cov_rank >= min_heat_cov_pc & heat_data$feat_cov_rank >= min_heat_cov_pc, heat_data$heat,0)
-heat_data$lfc <- heat_data$heat
+heat_data$foldChange <- ifelse(heat_data$heat==0,1,ifelse(heat_data$heat>=1,Inf,(heat_data$heat + 1)/(1-heat_data$heat))
+heat_data$log2FoldChange <- log2(heat_data$foldChange)
+
 #insuf_i <- sum( (expr_heat$baseMean < min_mean) | (!is.na(expr_heat$RPKM) & (expr_heat$RPKM < min_rpkm)) | (is.na(expr_heat$pvalue)),na.rm=T )
 
 expr_i <- expr_i[(expr_i$baseMean >= min_mean & expr_i$RPKM >= min_rpkm),]

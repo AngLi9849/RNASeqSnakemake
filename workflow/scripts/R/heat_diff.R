@@ -8,21 +8,6 @@ expr_heat <- expr_heat %>% arrange(!!sym(r)) %>% mutate(!!paste(r,"_Rank",sep=''
 
 
 heat_pc = c(0,25,50,75,100)
-heat_data <- heat_df[heat_df$featureID %in% expr_heat$featureID,]
-heat_data$root_name <- expr_heat$root_name[match(heat_data$featureID,expr_heat$featureID)]
-
-heat_data$covered <- ifelse(heat_data$coverage==0,0,1)
-
-heat_data <- heat_data %>% arrange(Sense,covered,coverage) %>% group_by(Sense,covered,featureID) %>% mutate(feat_cov_rank = (1:n())/n() ) %>% ungroup
-
-heat_data <- heat_data %>% arrange(Sense,covered,coverage) %>% group_by(Sense,covered) %>% mutate(heat_cov_rank = (1:n())/n() ) %>% ungroup
-
-heat_data$feat_cov_rank <- heat_data$feat_cov_rank * heat_data$covered
-
-heat_data$heat_cov_rank <- heat_data$heat_cov_rank * heat_data$covered
-
-heat_data$heat <- ifelse(heat_data$coverage > 0 & heat_data$coverage >= min_heat_cov & heat_data$heat_cov_rank >= min_heat_cov_pc & heat_data$feat_cov_rank >= min_heat_cov_pc, heat_data$heat,0)
-
 heat_ls <- paste(heat_ranks,"_heat",sep="")
 heat_gene_n <- length(unique(heat_data$featureID))
 

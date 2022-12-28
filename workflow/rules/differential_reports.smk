@@ -13,7 +13,7 @@ rule diff_heat_data:
             norm_group=experiments.loc[w.experiment,"group_name"],
         ),
     output:
-        heat_data="heat_data/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.heat_data.tab",
+        heat_data="heat_data/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.heat_data.tab.gz",
     resources:
         mem="48G",
         rmem="32G",
