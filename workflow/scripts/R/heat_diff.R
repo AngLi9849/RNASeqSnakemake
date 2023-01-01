@@ -1,7 +1,5 @@
 heat_config <- biases[as.logical(biases$heat),]
 
-heat_n <- 0
-
 for (r in heat_biases$bias) {
 expr_heat <- expr_heat %>% arrange(!!sym(r)) %>% mutate(!!paste(r,"_Rank",sep='') := 1:n()) %>% ungroup
 }
@@ -44,8 +42,18 @@ heat_data$Rank <- ceiling(heat_data$Rank / rank_scale)
 heat_ybrks <- ceiling(heat_ybrks/rank_scale)
 }
 
+heat_n <- 0
+
+for ( reps in c("All","Rep") ) {
+
+  if (reps=="All") {
+    heat_rep_data <- heat_data[heat_data$replicate == "All",]
+  } else {
+    heat_rep_data <- heat_data[heat_data$replicate != "All",]
+  }
+
 heatmap <- ggplot(
-  heat_data,
+  heat_rep_data,
   aes(x=Position,y=Rank,fill=heat)
   ) +
 geom_raster() +
@@ -69,7 +77,7 @@ scale_fill_gradientn(
     direction = 'vertical')
   ) +
 scale_y_continuous(
-  limits=c(0.5,max(heat_data$Rank)+0.5),
+  limits=c(0.5,max(heat_rep_data$Rank)+0.5),
   breaks=heat_ybrks,
   expand=c(0,0)
   ) +
@@ -79,7 +87,7 @@ scale_x_continuous(
   expand=c(0,0)
   ) +
 labs(
-  subtitle=paste("n=",heat_gene_n,sep="")
+  subtitle=paste(treat," vs ",control,"\n",protocol,"n=",heat_gene_n,sep="")
   ) +
 xlab(
   paste(feature, "(bps)")
@@ -111,54 +119,65 @@ theme(
   axis.title.y = element_text(size=9),
   axis.title.x = element_text(size=9),
   legend.title = element_text(size=9),
-  legend.position = ifelse(heat_n==0,"right","none")
+  legend.position = "right"
   strip.text=element_text(face="bold"),
   strip.background=element_rect(colour="white",fill="white",size=0.1),
   axis.text.y = element_text(colour="black",size=9),
   axis.text.x = if (length(heat_xbrks)>2) (element_text(angle = 45, vjust = 1, hjust=1,colour="black")) else (element_text(colour="black"))
   )
 
-if (length(unique(heat_data$Sense))==2) {
-
-heatmap <- heatmap + facet_wrap(vars(Sense),ncol=1,strip.position="top")
-
+if (length(unique(heat_data$Sense))>1) {
+  if (reps == "All") { 
+    all_heatmap <- heatmap + facet_wrap(vars(Sense),ncol=1,strip.position="right")
+  } else {
+    rep_heatmap <- heatmap + facet_grid(Sense~replicate)
+  }
+} else if ((reps != "All") {
+  rep_heatmap <- heatmap + facet_wrap(vars(replicate),nrow=1,strip.position="top")
+} else {
+  all_heatmap <- heatmap
 }
 
-if (heat_n == 1) {
-  heat_legend <- as_ggplot(get_legend(heatmap))
-  heatmap <- heatmap +
-    theme(
-      legend.position="none"
-    )
+}
+#if (heat_n == 1) {
+#  heat_legend <- as_ggplot(get_legend(heatmap))
+#  heatmap <- heatmap +
+#    theme(
+#      legend.position="none"
+#    )
 
+heatmap <- ggarrange(plotlist=list(all_heatmap,rep_heatmap),nrow=2,ncol=1,width=c(3,6),labels=c(paste("Mean of", rep_paired),paste("Per",rep_paired))
 
 assign(paste(r,"_heat",sep=""),heatmap) 
 
 }
 
-heat_chunks <- split(heat_ls,ceiling(seq_along(heat_ls)/2))
 
-heatmap <- list()
-for ( c in heat_chunks) {
+#heat_chunks <- split(heat_ls,ceiling(seq_along(heat_ls)/2))
 
-heatmap_ls <- lapply(c,get)
-heatmap_ls <- append(heatmap_ls,heat_legend)
+#heatmap <- list()
+#for ( c in heat_chunks) {
 
-heatmap_chunk <- ggarrange(plotlist=heatmap_ls, ncol=length(heatmap_ls), width=c(rep(2.5,length(heatmap_ls)-1),1), nrow=1)
+#heatmap_ls <- lapply(c,get)
+#heatmap_ls <- append(heatmap_ls,heat_legend)
 
-heatmap <- append(heatmap,heatmap_chunk)
-}
+#heatmap_chunk <- ggarrange(plotlist=heatmap_ls, ncol=length(heatmap_ls), width=c(rep(2.5,length(heatmap_ls)-1),1), nrow=1)
+
+#heatmap <- append(heatmap,heatmap_chunk)
+#}
 
 
 #heat_ls <- lapply(heat_ls,get)
 
 #heatmap <- ggarrange(plotlist=heat_ls,ncol=2,nrow=length(heat_ls)/2,labels="AUTO")
 
+heatmap <- lapply(heat_ls,get)
+
 heatmap_title <- paste(
   "Heatmaps of changes ", difference, " of ", feature_i, " in ", experiment, ".",
   sep="")
 
-heatmap_h <- 3.6
+heatmap_h <- 7.2
 
 heatmap_caption <- paste(
   "Heatmaps representing fold changes in ", difference, " of ", feature_i, " mapped with at least ", heat_min_reads, " reads on average in ", experiment, ".",

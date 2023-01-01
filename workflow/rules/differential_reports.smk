@@ -65,8 +65,8 @@ rule coverage_plots:
             plot_md5=features.loc[wildcards.feature,"plot_md5"],
         ),
     output:
-        docx="cov_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
-        rdata="cov_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.Rdata",
+        docx="cov_plots/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
+        rdata="cov_plots/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.Rdata",
 #        mx_data="meta_data/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc_meta.tab",
     params:
         genesets=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["gene_sets"]).split(","),
@@ -109,8 +109,8 @@ rule differential_plots:
         lfc="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.lfc.tab",
         levels="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
         counts="differential/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.counts.tab",
-        mx_data=lambda wildcards: [] if wildcards.difference=="splicing_ratio" else "meta_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.mx_data.tab",
-        heat_data = lambda wildcards: [] if wildcards.difference=="splicing_ratio" else "heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.heat_data.tab",
+#        mx_data=lambda wildcards: [] if wildcards.difference=="splicing_ratio" else "meta_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.mx_data.tab",
+        heat_data = lambda wildcards: [] if wildcards.difference=="splicing_ratio" else "heat_data/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.heat_data.tab.gz",
         size_table=lambda w: "deseq2/{norm_group}/{{reference}}/All{{prefix}}.{{lineage}}_{{valid}}.{norm_type}.{{normaliser}}.{{norm_read}}.Count.{{spikein}}.scale_factors.tsv".format(
             norm_type= ("custom-" + str(features.loc[w.normaliser,"prefix_md5"])) if (w.normaliser in features["feature_name"].tolist()) else "gtf",
             norm_group=experiments.loc[w.experiment,"group_name"],

@@ -606,21 +606,21 @@ def get_feature_counts():
 
 def get_diffexp_docx():
     counts = expand(
-        "diff_plots/{exp.experiment}/{exp.reference}/differential_{exp.read}.Count/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}.{exp.norm_read}.Count_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        "diff_plots/{exp.experiment}/{exp.reference}/differential_{exp.read}.Count/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}.{exp.norm_read}.Count_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples(), mean=MX_MEAN, norm=MX_NORM,
     ),
     return counts
 
 def get_diffsplice_docx():
     counts = expand(
-        "diff_plots/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}.{exp.norm_read.Count_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
+        "diff_plots/{exp.experiment}/{exp.reference}/differential_splicing_ratio/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}.{exp.norm_read.Count_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_spl.tolist()].itertuples(), mean=MX_MEAN, norm=MX_NORM,
     ),
     return counts
 
 def get_differential_reports():
     docx = list(dict.fromkeys(expand(
-        "diff_reports/experiment_reports/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}_{exp.norm_feat}.{exp.norm_read}.Count_normalised.{mean}_{norm}/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
+        "diff_reports/experiment_reports/{exp.experiment}.{exp.diff_lineage}.{tag}.{exp.pairRep}.{exp.spikein}_{exp.norm_feat}.{exp.norm_read}.Count_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.differential_report.docx",
         exp=results.itertuples(), valid=VALID, tag=TAG, splice=SPLICE, mean=MX_MEAN, norm=MX_NORM
     ))),
     return docx
@@ -635,7 +635,7 @@ def get_group_reports():
 
 def get_meta_data():
     counts = expand(
-        "meta_data/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.{mean}_{norm}.mx_data.tab",
+        "meta_data/{exp.experiment}/{exp.reference}/differential_expression/{exp.pairRep}.{exp.spikein}_{exp.norm_feat}ReadCount_normalised/{exp.experiment}.{exp.splice_prefix}_Aligned{exp.demulti}{exp.dedup}.{exp.diff_lineage}_{valid}.custom-{feature.prefix_md5}.{tag}.{feature.feature_name}.mx_data.tab",
         exp=results.itertuples(), valid=VALID, tag=TAG,strand=STRAND_BIGWIG, splice=SPLICE, feature=features[features.dif_exp.tolist()].itertuples(), mean=MX_MEAN, norm=MX_NORM
     ),
     return counts

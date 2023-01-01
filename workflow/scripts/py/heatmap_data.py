@@ -15,7 +15,7 @@ treat_samples = samples[samples.condition==treat].sample_name.tolist()
 control_ls = []
 treat_ls = []
 
-bin_n = snakemake.config['heatmap']['bin_number']
+bin_n = snakemake.config['differential_plots']['heatmap']['bin_number']
 
 main_bin = snakemake.params.main_bin
 bef_bin = snakemake.params.bef_bin
@@ -46,12 +46,12 @@ for s in ['sense','antisense'] :
         treat_s[str(mx.index.name)] = mx
       else:   
         continue
-    control_mx = sum(control_s)/len(control_s)
+    control_mx = sum(control_s.values())/len(control_s)
     control_s['All'] = control_mx
-    treat_mx = sum(treat_s)/len(treat_s)
+    treat_mx = sum(treat_s.values())/len(treat_s)
     treat_s['All'] = treat_mx
     for exp in treat_s : 
-      if ( (snakemake.wildcards.pair=="paired") and (exp=="All") )  :
+      if ( (snakemake.wildcards.pair=="paired") and (exp!="All") )  :
         control_mx = control_s[samples.sample_name[(samples.condition==control) & (samples.protocol==samples.loc[exp,"protocol"][0]) & (samples.replicate==samples.loc[exp,"replicate"][0])][0]]
       else :
         control_mx = control_s['All']
@@ -67,7 +67,7 @@ for s in ['sense','antisense'] :
       fc_long = pd.melt(fc_mx.reset_index(), id_vars=fc_mx.index.name, value_vars=fc_mx.columns.tolist())
       fc_long.columns=['featureID','Position','heat']
       fc_long['Sense']=s.capitalize()
-      fc_long['replicate']="All" if exp=="All Replicates" else ("Replicate " + samples.loc[exp,"replicate"][0])
+      fc_long['replicate']="All" if (exp=="All") else ("Replicate " + str(samples.loc[exp,"replicate"][0]))
       mean_mx.columns = range(0-start_pos,mx_bin - start_pos,1) if (s == "sense") else range(mx_bin-start_pos,0 - start_pos,-1)
       mean_mx.index.name="featureID"
       mean_long = pd.melt(mean_mx.reset_index(), id_vars=mean_mx.index.name, value_vars=mean_mx.columns.tolist())

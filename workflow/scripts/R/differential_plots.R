@@ -62,12 +62,12 @@ if (difference != "splicing_ratio") {
 
   measurement <- "Count"
 
-  mx_df <- read.csv(snakemake@input[["mx_data"]],header=T, sep='\t', check.names=FALSE)
+#  mx_df <- read.csv(snakemake@input[["mx_data"]],header=T, sep='\t', check.names=FALSE)
   bef_bin <- snakemake@params[["bef_bin"]]
   main_bin <- snakemake@params[["main_bin"]]
   section <- snakemake@params[["section"]]
   plot_median <- as.logical(snakemake@config[["metagene"]][["plot_median"]])
-  meta_y <- ifelse(plot_median,"Median","Mean")
+#  meta_y <- ifelse(plot_median,"Median","Mean")
   start_name <- snakemake@params[["start_name"]]
   start_name <- ifelse(start_name=="nan","Start",start_name)
   end_name <- snakemake@params[["end_name"]]
@@ -136,7 +136,7 @@ names(meta_xbrks) <- c(
 
 }
 
-heat_df <- read.csv(snakemake@input[["heat_data"]],header=T,sep='\t', check.names=FALSE)
+heat_df <- read_delim(snakemake@input[["heat_data"]],col_names=T,delim='\t')
 heat_x_max <- max(heat_df$Position)
 heat_x_min <- min(heat_df$Position)
 heat_bin <- heat_x_max - heat_x_min
@@ -222,6 +222,8 @@ analysis_title
 
 #  Import sample config, size factors and count table and conduct DESeq2 Differential Expression Analysis
 rep_pair <- as.logical(snakemake@params[["paired"]])
+rep_paired <- ifelse(rep_pair,"Paired Replicates","Unpaired Replicates")
+
 
 # Import sample table and define ColData dataframe for deseq2
 sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
@@ -342,8 +344,8 @@ min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],min_rpkm_pc/100,na.rm=T)
 heat_data <- heat_df[heat_df$featureID %in% expr_heat$featureID,]
 heat_data$root_name <- expr_heat$root_name[match(heat_data$featureID,expr_heat$featureID)]
 heat_data$covered <- ifelse(heat_data$coverage==0,0,1)
-heat_data <- heat_data %>% arrange(Sense,covered,coverage) %>% group_by(Sense,covered,featureID) %>% mutate(feat_cov_rank = (1:n())/n() ) %>% ungroup
-heat_data <- heat_data %>% arrange(Sense,covered,coverage) %>% group_by(Sense,covered) %>% mutate(heat_cov_rank = (1:n())/n() ) %>% ungroup
+heat_data <- heat_data %>% arrange(Sense,replicate,covered,coverage) %>% group_by(Sense,replicate,covered,featureID) %>% mutate(feat_cov_rank = (1:n())/n() ) %>% ungroup
+heat_data <- heat_data %>% arrange(Sense,replicate,covered,coverage) %>% group_by(Sense,replicate,covered) %>% mutate(heat_cov_rank = (1:n())/n() ) %>% ungroup
 heat_data$feat_cov_rank <- heat_data$feat_cov_rank * heat_data$covered
 heat_data$heat_cov_rank <- heat_data$heat_cov_rank * heat_data$covered
 heat_data$heat <- ifelse(heat_data$coverage > 0 & heat_data$coverage >= min_heat_cov & heat_data$heat_cov_rank >= min_heat_cov_pc & heat_data$feat_cov_rank >= min_heat_cov_pc, heat_data$heat,0)
