@@ -271,6 +271,14 @@ def get_sample_source(experiment):
 experiments["reference"] = experiments.apply( lambda row: get_source(row.experiment), axis = 1 )
 experiments["normaliser"] = experiments.apply( lambda row: "spikein" if row.spikein else "internal" , axis = 1 )
 
+# Read adapters
+adapters = (pd.read_csv(config["adapters"], sep="\t", dtype={"adapter_set": str, "5'adapters": str, "3'adapters": str },comment="#"))
+adapters.columns=adapters.columns.str.strip()
+adapters = adapters.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+adapters = adapters.mask(adapters=='')
+adapters = (adapters.set_index(["adapter_set"], drop=False).sort_index())
+
+
 # Read samples config table into pandas dataframe
 samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol": str, "replicate": str, "unit_name": str}, comment="#"))
 samples["sample_name"]=samples.apply(lambda row: str(row.condition) + "_" + str(row.protocol) + "_Replicate_" + str(row.replicate), axis=1)
@@ -280,6 +288,8 @@ samples["min_overlap"] = samples.apply( lambda row:\
     int(config["differential_analysis"]["min_read_overlap_portion"]*row.readlen),
     axis=1
 )
+
+
 
 # Helper functions for samples
 

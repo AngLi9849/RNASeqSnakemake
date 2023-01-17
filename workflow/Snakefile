@@ -62,7 +62,7 @@ rule all:
         #get_diffexp_docx(),
         #get_diffsplice_docx(),
         get_differential_reports(),
-        #get_group_reports(),
+        get_group_reports(),
         #get_differential_splicing(),
         #get_meta_profiles(),
         #"resources/annotations/ensembl_homo_sapiens_genome.gtf.basic_features.bed"

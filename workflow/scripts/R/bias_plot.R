@@ -158,11 +158,14 @@ rpkm_plot <- ggplot(data = expr_bias, aes(x=expr_bias$RPKM, y = expr_bias$abslog
 
 bias_title <- paste("Potential Biases in ", title_i, ".",sep="")
 
+bias_plot_list <- list(GC_plot,Length_plot,rpkm_plot)
+
 if (nrow(expr_bias)==0) {
 bias <- ""
 bias_caption <- paste("There is not any significant changes in ", difference, " of ", feature_i, ".",sep="")
 } else {
-bias <- ggarrange(plotlist=list(GC_plot,Length_plot,rpkm_plot),ncol=1,nrow=3,labels="AUTO")
+#bias <- ggarrange(plotlist=list(GC_plot,Length_plot,rpkm_plot),ncol=1,nrow=3,labels="AUTO")
+bias <- ggarrange(plotlist=bias_plot_list,ncol=1,nrow=3,labels=LETTERS[1:length(bias_plot_list)])
 bias_caption <- paste(
   "Log2 fold increases(", up_col, ") and decreases(", down_col, ") in ", difference, " of ", feature_i, " are plotted against their (A) GC content, (B) length and (C) mean expression levels in RPKM. A linear line of regression is shown with its range of dispersion (standard errors). R and p values of the regression analyses are indicated.", sep=""
 )

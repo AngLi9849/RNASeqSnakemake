@@ -50,7 +50,6 @@ rule deseq2_read_count:
         levels="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.levels.tab",
         rpkm="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.rpkm.tsv",
         toptable="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.toptable.tsv",
-        rdata="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.Rdata",
     params:
         control=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["control"],
         treat=lambda wildcards: experiments.loc[wildcards.experiment].squeeze(axis=0)["treatment"],
@@ -58,6 +57,7 @@ rule deseq2_read_count:
         section=lambda wildcards : features.loc[wildcards.feature,"section"],
         main_int = lambda wildcards : str(features.loc[wildcards.feature,"is_main_int"]),
         dir="results/{experiment}/{reference}/differential_{read}.Count/{spikein}_{normaliser}.{norm_read}.Count_normalised.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}",
+        rdata="differential/{experiment}/{reference}/differential_{read}.Count/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.Rdata",
     resources:
         mem="24G",
         rmem="16G",

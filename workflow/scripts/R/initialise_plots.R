@@ -36,6 +36,7 @@ heat_lfcbrks_val <- c( -3 , -2 , -1 , -0.5 , 0 , 0.5 , 1 , 2 , 3 )
 heat_lfcbrks <- unlist(lapply(heat_lfcbrks_val, function(x) {((2^(x+1))/((2^x)+1))-1}))
 names(heat_lfcbrks) <- heat_lfcbrks_val
 heat_scale_pc <- as.numeric(snakemake@config[["differential_plots"]][["heatmap"]][["heat_scale_pc"]])/100
+heat_median_pc <- as.numeric(snakemake@config[["differential_plots"]][["heatmap"]][["heat_median_pc"]])/100
 
 heat_bias <- biases
 

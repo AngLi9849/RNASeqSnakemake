@@ -4,7 +4,7 @@ max_ram_gb: 64 # Highest ram available in a single machine
 # path or URL to sample sheet (TSV format, columns: sample, unit, condition, fq1, fq2)
 # Units are biological or technical replicates of experiment or sequencing lanes.
 # Conditions are compared in differential expression analysis.
-samples: config/samples1.tsv
+samples: config/samples.tsv
 experiments: config/experiments.tsv
 groups: config/groups.tsv
 protocols: config/protocols.tsv
@@ -67,6 +67,7 @@ lineage_feature_validation:
 
 # Differential analysis statistical setting
 differential_analysis:
+  save_rdata: FALSE #save rdata files for debugging
   # feature expression/abundance thresholds
   minimum_mean_reads: 10
   use_p_adj_min_mean: TRUE # Use p-value cut-off mean read count calculated by differential analysis tools, only if it is higher than the min-reads set above
@@ -93,6 +94,7 @@ differential_plots:
     overview: "workflow/scripts/R/overview_plots.R"
   # Resolution of output files. Typically publications require at least 300 dpi.
   dpi: 300
+  save_rdata: FALSE #save rdata files for debugging
   # Number of most significantly changed and most changed gene names to show in ma and volcano plots
   ma_gene_name_numbers: 10
   volcano_gene_name_numbers: 10
@@ -109,7 +111,8 @@ differential_plots:
     heat_colours: royalblue,skyblue,white,goldenrod1,red #Colours for representing lowest to highest log2 foldchange from -4 to 4 , middle one will represent 0
     min_cov: 0 # minimum mean read depth in a bin to calculate fold change, read depth of 0 or below this threshold, fold change is set to zero
     min_cov_pc: 0.3 # Percentile of per-bin read depth in a heatmap to set heat to zero
-    heat_scale_pc : 99 # numerber between 0-100, Cap color depth to this percentile of fold change per bin and scale smaller changes up, lower number makes smaller changes mroe noticeable
+    heat_scale_pc : 99 # number between 0-100, Cap color depth to this percentile of fold change per bin and scale smaller changes up, lower number makes smaller changes mroe noticeable
+    heat_median_pc: 30 # Number between 0-100, how "hot"/"cold" compared to the extreme heat colours should the non-extreme median of the heatmap be, 100 means all values are fully saturated (extreme colours for up/down, only unchanged bins remain at the neutral colour), 0 means all values fall between scale_pc percentile will be shown as neutral 
   font_sizes:
     axis_title: 12
     axis_ticks: 9

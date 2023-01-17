@@ -141,7 +141,6 @@ rule differential_plots:
         ),
     output:
         docx="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.docx",
-        rdata="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.Rdata",
     params:
         genesets=lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["gene_sets"]).split(","),
         goi= lambda wildcards: str(experiments.loc[wildcards.experiment].squeeze(axis=0)["GOI"]).split(","),
@@ -173,9 +172,10 @@ rule differential_plots:
         bar_data="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.bar.tab",
         pie_data="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.pie.tab",
         violin_data="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.violin.tab",
+        rdata="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.Rdata",
     resources:
-        mem="48G",
-        rmem="32G",
+        mem="512G",
+        rmem="128G",
     conda:
         "../envs/differential.yaml"
     log:

@@ -18,7 +18,7 @@ library(officer)
 library(rvg)
 library(scales)
 
-
+save_rdata <- as.logical(snakemake@config[["differential_plots"]][["save_rdata"]])
 parallel <- FALSE
 if (snakemake@threads > 1) {
     library("BiocParallel")
@@ -157,6 +157,7 @@ feature <- gsub("_"," ",gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\
 title_feature <- gsub("(?<!\\w)(.)","\\U\\1", feature, perl = TRUE)
 title_base <- paste("Base",gsub("(?<!\\w)(.)","\\U\\1", base, perl = TRUE))
 protocol <- as.character(snakemake@params[["protocol"]])
+protocol_title <- gsub("_"," ",protocol)
 
 experiment <- gsub("_"," ",as.character(snakemake@wildcards[["experiment"]]))
 treatment <- as.character(snakemake@params[["treat"]])
@@ -173,11 +174,11 @@ cond_match <- min(nonmatch)-1
 
 treat_str <- substr(treatment,cond_match,length(treat_split[[1]]))
 control_str <- substr(control_cond,cond_match,length(control_split[[1]]))
-common_str <- ifelse(cond_match<=1,"",substr(treatment,1,cond_match))
+common_str <- ifelse(cond_match<=1,"",substr(treatment,1,cond_match-1))
 
-common <- gsub("_"," ",common_str)
-treat <-  gsub("_"," ",treat_str)
-control <- gsub("_"," ",control_str)
+common <- trimws(gsub("_"," ",common_str))
+treat <-  trimws(gsub("_"," ",treat_str))
+control <- trimws(gsub("_"," ",control_str))
 
 spikein <- gsub("_"," ",as.character(snakemake@wildcards[["spikein"]]))
 spikein <- if (difference == "splicing ratio") ("internal") else (spikein)
@@ -189,7 +190,7 @@ splice <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.c
 splice <- if (difference=="splicing ratio") ("All") else (splice)
 normaliser <- gsub("([^\\s_])([[:upper:]])([[:lower:]])",perl=TRUE,"\\1 \\2\\3",as.character(snakemake@wildcards[["normaliser"]]))
 counting <- ifelse(diff=="splicing_ratio","splice sites read count","read count")
-counted <- gsub("_"," ",paste(tolower(splice), tolower(prefix), feature, counting, sep=" "))
+counted <- gsub("_"," ",paste(tolower(splice), prefix, feature, counting, sep=" "))
 norm <- gsub("_"," ",paste(spikein, normaliser, "read count", sep=" "))
 
 biotypes <- c(snakemake@config[["biotypes"]])
@@ -222,8 +223,7 @@ analysis_title
 
 #  Import sample config, size factors and count table and conduct DESeq2 Differential Expression Analysis
 rep_pair <- as.logical(snakemake@params[["paired"]])
-rep_paired <- ifelse(rep_pair,"Paired Replicates","Unpaired Replicates")
-
+rep_paired <- ifelse(rep_pair,"Paired Replicate","Unpaired Replicate")
 
 # Import sample table and define ColData dataframe for deseq2
 sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
@@ -247,6 +247,7 @@ condition_col
 compare <- list(c(control,treat))
 
 title <- gsub("_"," ",paste(experiment, toTitleCase(analysis),sep=" "))
+rep_number <- length(unique(sample_table$replicate))
 
 # Initialise Plotting
 source(snakemake@config[["differential_plots"]][["scripts"]][["initialise"]])
@@ -277,6 +278,12 @@ sum_list <- c(sum_list,"ma","volcano")
 doc <- read_docx(snakemake@input[["docx"]])
 min_rpkm_pc <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_rpkm_percentile"]])
 
+# Save a debugging Rdata before main processing
+
+if (save_rdata) {
+  save.image(file = snakemake@params[["rdata"]])
+}
+
 # Plot figures for features in each mono/multiexonic-biotype groups
 i_group <- c(c(""),unique(expr$group[expr$biotype %in% biotypes]),sep_gene_sets)
 for (i in i_group) {
@@ -294,7 +301,8 @@ if (i =="") {
   expr_i <- expr[expr$group==i,]
 } 
 
-expr_full <- expr_i
+#expr_full <- expr_i
+
 
 i <- gsub("_"," ",i)
 
@@ -314,13 +322,13 @@ head(sum_i,5)
 
 cts_i <- cts[rownames(cts) %in% expr_i$featureID,unlist(lapply(cts,is.numeric))] 
 
-if (as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"]])) {
-  min_mean <- max(expr_i$baseMean[is.na(expr_i$padj)])
-} else {
-  min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
-}
-
 config_min_mean <- as.numeric(snakemake@config[["differential_analysis"]][["minimum_mean_reads"]])
+
+if ((as.logical(snakemake@config[["differential_analysis"]][["use_p_adj_min_mean"]])) && (sum(is.na(expr_i$padj))>=1)) {
+  min_mean <- max(c(expr_i$baseMean[is.na(expr_i$padj)],config_min_mean))
+} else {
+  min_mean <- config_min_mean
+}
 
 #meta_gene_n <- sum(rownames(sig_bg)[ (sig_bg$sig2bg >= sig & sig_bg$bg2sig >= bg) ] %in% expr_i$featureID[expr_i$baseMean >= snakemake@config[["metagene"]][["min_reads"]]])
 
@@ -340,17 +348,6 @@ expr_heat$colour <- ifelse(expr_heat$padj < sig_p, ifelse(expr_heat$log2FoldChan
 total_i <- nrow(expr_heat)
 
 min_rpkm <- quantile(expr_i$RPKM[expr_i$baseMean > 0],min_rpkm_pc/100,na.rm=T)
-
-heat_data <- heat_df[heat_df$featureID %in% expr_heat$featureID,]
-heat_data$root_name <- expr_heat$root_name[match(heat_data$featureID,expr_heat$featureID)]
-heat_data$covered <- ifelse(heat_data$coverage==0,0,1)
-heat_data <- heat_data %>% arrange(Sense,replicate,covered,coverage) %>% group_by(Sense,replicate,covered,featureID) %>% mutate(feat_cov_rank = (1:n())/n() ) %>% ungroup
-heat_data <- heat_data %>% arrange(Sense,replicate,covered,coverage) %>% group_by(Sense,replicate,covered) %>% mutate(heat_cov_rank = (1:n())/n() ) %>% ungroup
-heat_data$feat_cov_rank <- heat_data$feat_cov_rank * heat_data$covered
-heat_data$heat_cov_rank <- heat_data$heat_cov_rank * heat_data$covered
-heat_data$heat <- ifelse(heat_data$coverage > 0 & heat_data$coverage >= min_heat_cov & heat_data$heat_cov_rank >= min_heat_cov_pc & heat_data$feat_cov_rank >= min_heat_cov_pc, heat_data$heat,0)
-heat_data$foldChange <- ifelse(heat_data$heat==0,1,ifelse(heat_data$heat>=1,Inf,(heat_data$heat + 1)/(1-heat_data$heat))
-heat_data$log2FoldChange <- log2(heat_data$foldChange)
 
 #insuf_i <- sum( (expr_heat$baseMean < min_mean) | (!is.na(expr_heat$RPKM) & (expr_heat$RPKM < min_rpkm)) | (is.na(expr_heat$pvalue)),na.rm=T )
 
@@ -381,6 +378,39 @@ doc <- body_add(doc,run_pagebreak())
 next
 
 } else {
+
+if (diff!="splicing_ratio") {
+heat_data <- heat_df[heat_df$featureID %in% expr_heat$featureID,]
+heat_data$root_name <- expr_heat$root_name[match(heat_data$featureID,expr_heat$featureID)]
+heat_data$covered <- ifelse(heat_data$coverage==0,0,1)
+heat_data <- heat_data %>% arrange(Sense,replicate,covered,coverage) %>% group_by(Sense,replicate,covered,featureID) %>% mutate(feat_cov_rank = (1:n())/n() ) %>% ungroup
+heat_data <- heat_data %>% arrange(Sense,replicate,covered,coverage) %>% group_by(Sense,replicate,covered) %>% mutate(heat_cov_rank = (1:n())/n() ) %>% ungroup
+heat_data$feat_cov_rank <- heat_data$feat_cov_rank * heat_data$covered
+heat_data$heat_cov_rank <- heat_data$heat_cov_rank * heat_data$covered
+heat_data$heat <- ifelse(heat_data$coverage > 0 & heat_data$coverage >= min_heat_cov & heat_data$heat_cov_rank >= min_heat_cov_pc & heat_data$feat_cov_rank >= min_heat_cov_pc, heat_data$heat,0)
+heat_data$log2FoldChange <- log2(ifelse(heat_data$heat==0,1,ifelse(heat_data$heat>=1,Inf,(heat_data$heat + 1)/(1-heat_data$heat))))
+
+mx_data <- unique(heat_data[c("Position","replicate","Sense")])
+mx_data['log2FoldChange'] <- apply(mx_data,1,function(x){mean(heat_data$log2FoldChange[
+  heat_data$Position==as.numeric(x["Position"]) &
+  heat_data$Sense==x["Sense"] &
+  heat_data$replicate==x["replicate"]
+  ])
+})
+mx_data['lfcSE'] <- apply(mx_data,1,function(x){
+  sd(heat_data$log2FoldChange[
+  heat_data$Position==as.numeric(x["Position"]) &
+  heat_data$Sense==x["Sense"] &
+  heat_data$replicate==x["replicate"]
+  ])/
+  sqrt(length(heat_data$log2FoldChange[
+  heat_data$Position==as.numeric(x["Position"]) &
+  heat_data$Sense==x["Sense"] &
+  heat_data$replicate==x["replicate"]
+  ]))
+  })
+
+}
 
 expr_i$log10P <- -log10(expr_i$padj)
 
@@ -420,7 +450,7 @@ source(snakemake@config[["differential_plots"]][["scripts"]][[paste(s)]])
 # GC, Length and RPKM Bias ===================================
 source(snakemake@config[["differential_plots"]][["scripts"]][["bias"]])
 head(expr_bias,10)
-source(snakemake@config[["differential_plots"]][["scripts"]][["count_bias"]])
+#source(snakemake@config[["differential_plots"]][["scripts"]][["count_bias"]])
 
 
 # Heatmap
@@ -434,10 +464,15 @@ sum_plot_list <- lapply(sum_list,function(x) {get(x)})
 sum_ncol <- 2
 sum_nrow <- ceiling(length(sum_plot_list)/sum_ncol)
 
-summary <- ggarrange(plotlist=sum_plot_list,ncol=sum_ncol,nrow=sum_nrow,labels="AUTO")
+#summary <- ggarrange(plotlist=sum_plot_list,ncol=sum_ncol,nrow=sum_nrow,labels="AUTO")
+summary <- ggarrange(plotlist=sum_plot_list,ncol=sum_ncol,nrow=sum_nrow,labels=LETTERS[1:length(sum_plot_list)])
 
 summary_title <- paste(title_i, "Analysis Summary.")
-summary_caption <- paste("Overviews of changes in ", feature_i, " ", difference, ". ", str_to_sentence(difference), " are compared based on ", counted, " normalised to ", norm, ".", sep="")
+summary_caption <- paste(
+  "Overviews of changes in ", feature_i, " ", difference, ". ", str_to_sentence(difference)," in ",rep_number,
+  ifelse(rep_number > 1, ifelse(rep_pair, " paired replicates", " unpaired replicates"), " replicate")," of ", title, 
+  " are compared based on ", counted, " normalised to ", norm, ".",
+  sep="")
 summary_captions <- lapply(paste(sum_list,"_caption",sep=""),function(x) {get(x)})
 summary_captions <- paste( "(", LETTERS[1:length(summary_captions)], "). ", summary_captions, sep="")
 summary_caption <- unlist(list(summary_caption,summary_captions))
@@ -445,7 +480,8 @@ summary_caption <- unlist(list(summary_caption,summary_captions))
 summary_caption
 summary_h <- 8
 
-plots <- c("summary","bias","count_bias","ma_plot","volcano_plot")
+#plots <- c("summary","bias","count_bias","ma_plot","volcano_plot")
+plots <- c("summary","bias","ma_plot","volcano_plot")
 
 if (difference != "splicing ratio") {
 plots <- c(plots,"meta_plot","heatmap")
@@ -470,8 +506,12 @@ title_p <- fpar(fig_num,ftext(title_p,prop=title_prop))
 
 plot_n <- plot_n + 1
 doc <- body_add(doc,fpar(ftext(toTitleCase(gsub("_"," ",p)), prop=heading_3)),style = "heading 4")
-for (plot in plot_p) {
-  doc <- body_add(doc,value=plot,width = 6, height = get(paste(p,"_h",sep="")), res= plot_dpi,style = "centered")
+if (all(class(plot_p)=="list")) {
+for (plot_i in plot_p) {
+  doc <- body_add(doc,value=plot_i,width = 6, height = get(paste(p,"_h",sep="")), res= plot_dpi,style = "centered")
+}
+} else {
+doc <- body_add(doc,value=plot_p,width = 6, height = get(paste(p,"_h",sep="")), res= plot_dpi,style = "centered")
 }
 if (p=="summary") {
 doc <- body_add(doc,run_pagebreak())
@@ -498,11 +538,11 @@ if ( (plot_n-1) == length(plots)) {
 #=====testEnd======
 
 
-count_bias
-head(count_bias_data,5)
-count_bias_title
-count_bias_h
-count_bias_caption
+#count_bias
+#head(count_bias_data,5)
+#count_bias_title
+#count_bias_h
+#count_bias_caption
 sum_bar_data
 
 head(sum_bar_data,5)
@@ -543,4 +583,7 @@ doc <- body_add(doc,block_pour_docx(snakemake@output[["docx"]]))
 doc <- headers_replace_all_text(doc,"",analysis_title)
 
 print(doc, target = snakemake@output[["docx"]])
-save.image(file = snakemake@output[["rdata"]])
+
+if (save_rdata) {
+  save.image(file = snakemake@params[["rdata"]])
+}

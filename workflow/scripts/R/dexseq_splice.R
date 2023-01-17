@@ -9,6 +9,7 @@ library(ashr)
 library(dplyr)
 library(tools)
 
+save_rdata <- as.logical(snakemake@config[["differential_analysis"]][["save_rdata"]])
 parallel <- FALSE
 if (snakemake@threads > 1) {
     library("BiocParallel")
@@ -230,5 +231,6 @@ write.table(data.frame("id"=rownames(cts),cts, check.names=FALSE),file=snakemake
 
 
 #}
-save.image(file = snakemake@output[["rdata"]])
-
+if (save_rdata) {
+  save.image(file = snakemake@params[["rdata"]])
+}

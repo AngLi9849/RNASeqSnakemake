@@ -10,7 +10,7 @@ library(dplyr)
 library(tools)
 library(stringr)
 
-
+save_rdata <- as.logical(snakemake@config[["differential_analysis"]][["save_rdata"]])
 parallel <- FALSE
 if (snakemake@threads > 1) {
     library("BiocParallel")
@@ -218,6 +218,7 @@ write.table(data.frame(expr[c(1,2,5,6:9)], check.names=FALSE),file=snakemake@out
 
 write.table(data.frame("id"=rownames(mean_level),mean_level, check.names=FALSE),file=snakemake@output[["levels"]],sep='\t',row.names=F,quote=F)
 
-save.image(file = snakemake@output[["rdata"]])
-
+if (save_rdata) {
+  save.image(file = snakemake@params[["rdata"]])
+}
 

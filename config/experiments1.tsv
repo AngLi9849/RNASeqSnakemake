@@ -1,5 +1,45 @@
-experiment                    	sample_source                 	sample_lineage 	spliced_reads  	spiked_in      	spikein_source                	control_condition	paired_analysis     
-HCT_U-AID_Chromatin_RNA-Seq   	homo_sapiens                  	HCT116         	TRUE           	FALSE          	                              	HCT116_Chromatin	FALSE               
-HCT_U-AID_Nucleoplasm_RNA-Seq 	homo_sapiens                  	HCT116         	TRUE           	FALSE          	                              	HCT116_Nucleoplasm	FALSE               
-HCT_U-AID_Cytoplasm_RNA-Seq   	homo_sapiens                  	HCT116         	TRUE           	FALSE          	                              	HCT116_Cytoplasm	FALSE               
-#HCT_U_UL1-AID_TT-Seq         	homo_sapiens                  	HCT116         	TRUE           	TRUE           	saccharomyces_cerevisiae      	HCT116         		TRUE                
+# Define Control Conditions and Normalisation Methods for each Treatment Condition in each Protocol.
+protocol              	treatment       	control         	sample_species	sample_lineage 	trs_val	pairRep	spikein	spikein_species                	readtypes	norm_gene_set	gene_sets
+Chromatin_RNA-Seq   	HNRNPU-AID_KO      	HCT116          	homo_sapiens	HCT116         	TRUE	FALSE	FALSE	                        	Read    	            	U_Spl,U_lncRNA,UUL1FUS,IEG,RNA_PolII_snRNA,Histones
+Nucleoplasm_RNA-Seq   	HNRNPU-AID_KO        	HCT116              	homo_sapiens	HCT116       	TRUE	FALSE	FALSE	                         	Read    	         	U_Spl,U_lncRNA,UUL1FUS,IEG
+Cytoplasm_RNA-Seq   	HNRNPU-AID_KO        	HCT116             	homo_sapiens	HCT116         	TRUE	FALSE	FALSE	                         	Read    	           	U_Spl,U_lncRNA,UUL1FUS,IEG
+TT-Seq           	HNRNPU-AID_KO      	HCT116          	homo_sapiens	HCT116         	TRUE	TRUE	TRUE	saccharomyces_cerevisiae      	Read    	         	U_Spl,U_lncRNA,UUL1FUS,IEG,RNA_PolII_snRNA,Histones
+TT-Seq             	HNRNPUL1-AID_KO        	HCT116           	homo_sapiens	HCT116        	TRUE	TRUE	TRUE	saccharomyces_cerevisiae     	Read    	             	UL1_snRNA,Histone_example,UUL1FUS,RNA_PolII_snRNA,Histones,IEG,IEG_examples,U4_snRNA
+Chromatin_RNA-Seq   	HNRNPUL1-AID_KO      	HCT116_UL1          	homo_sapiens	HCT116         	FALSE	FALSE	FALSE	                        	Read    	            	UL1_snRNA,Histone_example,UUL1FUS,RNA_PolII_snRNA,Histones,IEG,IEG_examples,U4_snRNA
+TT-Seq            	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr  	homo_sapiens	HCT116        	TRUE	TRUE	TRUE	saccharomyces_cerevisiae      	Read    	          	FUS_Spl,Histone_example,Histones,RNA_PolII_snRNA,IEG,Ribosomal_genes
+#TT-Seq            	FUS-AID2_+5PhIAA_6hr  	FUS-AID2_+DMSO_6hr  	homo_sapiens	HCT116        	TRUE 	TRUE	TRUE	saccharomyces_cerevisiae      	Read    	          	FUS_Spl,Histone_example,Histones,RNA_PolII_snRNA,IEG,Ribosomal_genes
+Total_RNA-Seq   	FUS-mAID_+5PhIAA_6hr  	FUS-mAID_+DMSO_6hr	homo_sapiens	HCT116         	TRUE	FALSE	FALSE	                              	Read    	         	FUS_Spl,Ribosomal_genes,Histones
+Total_RNA-Seq   	FUS-mAID_+5PhIAA_48hr 	FUS-mAID_+DMSO_48hr	homo_sapiens	HCT116         	TRUE	FALSE	FALSE	                              	Read    	         	FUS_Spl,Histones,IEG,Ribosomal_genes
+Chromatin_RNA-Seq   	HB3261           	SC3504           	homo_sapiens	Lymphoblastoid	TRUE	FALSE	FALSE	                        	Read    	           	snRNAs,U_Spl,UUL1FUS,U_lncRNA,IEG
+Chromatin_RNA-Seq   	HB3280            	SC3504           	homo_sapiens	Lymphoblastoid	TRUE	FALSE	FALSE	                        	Read    	         	snRNAs,U_Spl,UUL1FUS,U_lncRNA,IEG
+Gene_Yeo_UCSD_eCLIP    	HepG2_FUS          	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_FUS          	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_HNRNPU	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_SRSF7	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_XRN2	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_TARDBP	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_HNRNPK	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_TAF15	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_SUB1	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_SRSF9	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_HNRNPL	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_HNRNPA1	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_GTF2F1	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_HNRNPC	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_SRSF1	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_SF3A3	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	HepG2_SF3B4	HepG2_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_HNRNPU	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_HNRNPA1	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_SRSF7	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_TARDBP	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_TAF15	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_SRSF9	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_SF3B1	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_HNRNPK	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_HNRNPL	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_SF3B4	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_GTF2F1	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_SRSF1	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_HNRNPC	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_eCLIP    	K562_XRN2	K562_Input        	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes

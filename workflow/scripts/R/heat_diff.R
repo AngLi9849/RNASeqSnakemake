@@ -1,25 +1,34 @@
 heat_config <- biases[as.logical(biases$heat),]
 
-for (r in heat_biases$bias) {
+
+for (r in heat_config$bias) {
 expr_heat <- expr_heat %>% arrange(!!sym(r)) %>% mutate(!!paste(r,"_Rank",sep='') := 1:n()) %>% ungroup
 }
 
 
 heat_pc = c(0,25,50,75,100)
-heat_ls <- paste(heat_ranks,"_heat",sep="")
+heat_ls <- paste(heat_config$bias,"_heat",sep="")
 heat_gene_n <- length(unique(heat_data$featureID))
+
+heat_name <- paste("log2FC")
 
 heat_data$Sense <- factor(heat_data$Sense, levels=c("Sense","Antisense"))
 
-heat_scale <- quantile(abs(heat_data$heat[heat_data$heat!=0]),heat_scale_pc,na.rm=T)
-heat_data$heat <- heat_data$heat/heat_scale
+heat_scale <- max(quantile(abs(heat_data$heat[heat_data$heat!=0]),heat_scale_pc,na.rm=T)/1,heat_median_pc/median(abs(heat_data$heat[heat_data$heat!=0 & abs(heat_data$heat)!=1]),na.rm=T))
+heat_data$heat <- heat_data$heat*heat_scale
 heat_data$heat <- ifelse(heat_data$heat >= 1, 1, ifelse(heat_data$heat <= -1, -1, heat_data$heat))
 
-heat_lfcbrks_i <- heat_lfcbrks/heat_scale
+heat_lfcbrks_i <- heat_lfcbrks*heat_scale
+#heat_data$mx_heat <- (((heat_data$heat+1)*heat_data$coverage) +1)/(heat_data$coverage +1 )-1
+if(length(heat_lfcbrks_i[abs(heat_lfcbrks_i)<=min(abs(heat_lfcbrks_val[heat_lfcbrks_val!=0]))]) < 3) {
+  heat_lfcbrks_temp <- signif((log2((1+0.9/heat_scale)/(1-(0.9/heat_scale)))*2),1)/2
+  heat_lfcbrks_temp <- c(0-heat_lfcbrks_temp,0,heat_lfcbrks_temp)
+  heat_lfcbrks_i <- unlist(lapply(heat_lfcbrks_temp, function(x) {((2^(x+1))/((2^x)+1))-1}))
+  heat_lfcbrks_i <- heat_lfcbrks_i * heat_scale
+  names(heat_lfcbrks_i) <- heat_lfcbrks_temp
+}
 
 for (r in heat_config$bias) {
-heat_n <- heat_n + 1
-
 heat_unit <- heat_config$unit[heat_config$bias==r]
 r_unit <- ifelse(heat_unit=="","",paste("(",heat_unit,")",sep=""))
 heat_data$Rank <- as.numeric(unlist(expr_heat[match(heat_data$featureID,expr_heat$featureID),paste(r,"_Rank",sep='')]))
@@ -87,7 +96,21 @@ scale_x_continuous(
   expand=c(0,0)
   ) +
 labs(
-  subtitle=paste(treat," vs ",control,"\n",protocol,"n=",heat_gene_n,sep="")
+#  subtitle=paste("\n","\n",treat," vs ",control,"\n",protocol_title,"\n","n=",heat_gene_n,sep="")
+#   subtitle=paste("n=",heat_gene_n,sep="")
+    subtitle=ifelse(reps=="All",
+      paste(
+        "Mean of ", rep_paired, "s","\n",
+        ifelse(common=="","",paste(common," ",sep="")),treat," vs ",control,"\n",
+        protocol_title," ",prefix,"\n",
+        "n=", heat_gene_n,
+        sep=""
+      ),
+      paste(
+        "Per ",rep_paired,
+        sep=""
+      )
+    )
   ) +
 xlab(
   paste(feature, "(bps)")
@@ -119,12 +142,19 @@ theme(
   axis.title.y = element_text(size=9),
   axis.title.x = element_text(size=9),
   legend.title = element_text(size=9),
-  legend.position = "right"
+  plot.subtitle = element_text(size=9),
+  legend.position = "right",
   strip.text=element_text(face="bold"),
-  strip.background=element_rect(colour="white",fill="white",size=0.1),
+  strip.background=element_rect(colour="transparent",fill="transparent",linewidth=0.1),
   axis.text.y = element_text(colour="black",size=9),
   axis.text.x = if (length(heat_xbrks)>2) (element_text(angle = 45, vjust = 1, hjust=1,colour="black")) else (element_text(colour="black"))
   )
+
+if (length(unique(heat_data$Sense))<=1) {
+  heatmap <- heatmap + theme(aspect.ratio=max(c((11/6),6/(8/length(unique(heat_rep_data$replicate))))))
+} else {
+  heatmap <- heatmap + theme(aspect.ratio=max(c((5/6),3/(8/length(unique(heat_rep_data$replicate)))))) 
+}
 
 if (length(unique(heat_data$Sense))>1) {
   if (reps == "All") { 
@@ -132,11 +162,12 @@ if (length(unique(heat_data$Sense))>1) {
   } else {
     rep_heatmap <- heatmap + facet_grid(Sense~replicate)
   }
-} else if ((reps != "All") {
+} else if (reps != "All") {
   rep_heatmap <- heatmap + facet_wrap(vars(replicate),nrow=1,strip.position="top")
 } else {
   all_heatmap <- heatmap
 }
+
 
 }
 #if (heat_n == 1) {
@@ -146,7 +177,17 @@ if (length(unique(heat_data$Sense))>1) {
 #      legend.position="none"
 #    )
 
-heatmap <- ggarrange(plotlist=list(all_heatmap,rep_heatmap),nrow=2,ncol=1,width=c(3,6),labels=c(paste("Mean of", rep_paired),paste("Per",rep_paired))
+heatmap <- ggarrange(
+  plotlist=list(all_heatmap,rep_heatmap),
+  nrow=2,
+  ncol=1,
+  heights=c(5,4),
+ # labels=c(
+ #   paste("Mean of ", rep_paired, "s",sep=""),
+ #   paste("Per",rep_paired),
+  vjust=1.5
+)
+
 
 assign(paste(r,"_heat",sep=""),heatmap) 
 
@@ -177,7 +218,7 @@ heatmap_title <- paste(
   "Heatmaps of changes ", difference, " of ", feature_i, " in ", experiment, ".",
   sep="")
 
-heatmap_h <- 7.2
+heatmap_h <- ifelse(length(heat_config$bias)<=1,7.2,7.8)
 
 heatmap_caption <- paste(
   "Heatmaps representing fold changes in ", difference, " of ", feature_i, " mapped with at least ", heat_min_reads, " reads on average in ", experiment, ".",
