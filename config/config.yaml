@@ -4,7 +4,9 @@ max_ram_gb: 64 # Highest ram available in a single machine
 # path or URL to sample sheet (TSV format, columns: sample, unit, condition, fq1, fq2)
 # Units are biological or technical replicates of experiment or sequencing lanes.
 # Conditions are compared in differential expression analysis.
+adapters: config/adapters.tsv
 samples: config/samples.tsv
+# Explanation for umi_bc in samples.tsv: barcode pattern for umi extraction, "N" for sample barcode, "X" for UMI, for example, "NNXXXXXNN" means in base 1-9, a 5-base UMI is flanked by barcode at bases 1-2 and 7-8
 experiments: config/experiments.tsv
 groups: config/groups.tsv
 protocols: config/protocols.tsv

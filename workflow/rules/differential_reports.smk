@@ -175,7 +175,7 @@ rule differential_plots:
         rdata="diff_plots/{experiment}/{reference}/differential_{difference}/{pair}.{spikein}_{normaliser}.{norm_read}.Count_normalised/{experiment}.{splice}_{prefix}.{lineage}_{valid}.{type}.{tag}.{feature}.Rdata",
     resources:
         mem="512G",
-        rmem="128G",
+        rmem="48G",
     conda:
         "../envs/differential.yaml"
     log:

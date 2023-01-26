@@ -280,7 +280,8 @@ adapters = (adapters.set_index(["adapter_set"], drop=False).sort_index())
 
 
 # Read samples config table into pandas dataframe
-samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol": str, "replicate": str, "unit_name": str}, comment="#"))
+#samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol": str, "replicate": str, "unit_name": str}, comment="#"))
+samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol": str, "replicate": str, "unit_name": str}))
 samples["sample_name"]=samples.apply(lambda row: str(row.condition) + "_" + str(row.protocol) + "_Replicate_" + str(row.replicate), axis=1)
 samples=samples.set_index(["sample_name","unit_name"], drop=False).sort_index()
 samples = samples.mask(samples == '')
@@ -288,7 +289,11 @@ samples["min_overlap"] = samples.apply( lambda row:\
     int(config["differential_analysis"]["min_read_overlap_portion"]*row.readlen),
     axis=1
 )
-
+samples.adapters = ["Illumina" if x == '' else x for x in samples.adapters.tolist()] 
+samples.adapters = samples.apply(lambda row:
+    "-a " + adapters.loc[row.adapters,"5'adapters"] + " -g " + adapters.loc[row.adapters,"3'adapters"] + " -A " + adapters.loc[row.adapters,"5'adapters"] + " -G " + adapters.loc[row.adapters,"3'adapters"],
+    axis=1
+)
 
 
 # Helper functions for samples
@@ -743,7 +748,7 @@ def get_cutadapt_input(wildcards):
     raw_dir = "umi_extracted" if sample["umi"] else "raw"
     if pd.isna(sample["fq2"]):
         # single end local sample
-        fq1_read = "fq1_" if sample["umi"] else "se_"
+        fq1_read = "fq1_" if not sample["umi"] else "se_"
         return "reads/{raw}/{S}_{U}_{read}raw.fastq{E}".format(
             S=sample.sample_name, U=sample.unit_name, E=ending, raw=raw_dir, read=fq1_read
         )
