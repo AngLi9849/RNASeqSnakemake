@@ -25,14 +25,14 @@ Gene_Yeo_UCSD_eCLIP	K562_WRN_eCLIP	1	lane1	reverse	#FF700C	45	TRUE		Illumina	htt
 Gene_Yeo_UCSD_eCLIP	K562_WRN_eCLIP	2	lane1	reverse	#FF700C	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF673VLP/@@download/ENCFF673VLP.fastq.gz	https://www.encodeproject.org/files/ENCFF548GPO/@@download/ENCFF548GPO.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_PABPC4_eCLIP	1	lane1	reverse	#FF8613	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF662IWF/@@download/ENCFF662IWF.fastq.gz	https://www.encodeproject.org/files/ENCFF440SQF/@@download/ENCFF440SQF.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_PABPC4_eCLIP	2	lane1	reverse	#FF8613	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF484RUL/@@download/ENCFF484RUL.fastq.gz	https://www.encodeproject.org/files/ENCFF478YTR/@@download/ENCFF478YTR.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_ELAC2_eCLIP 2 lane1 yes #CE6CFC 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF908GRB/@@download/ENCFF908GRB.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_ELAC2_eCLIP 1 lane1 yes #CE6CFC 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF893MRC/@@download/ENCFF893MRC.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_EXOSC10_eCLIP 1 lane1 yes #CC6DFC 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF219AFL/@@download/ENCFF219AFL.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_EXOSC10_eCLIP 2 lane1 yes #CC6DFC 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF538WWX/@@download/ENCFF538WWX.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_ELAC2_seCLIP	2	lane1	yes	#CE6CFC	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF908GRB/@@download/ENCFF908GRB.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_ELAC2_seCLIP	1	lane1	yes	#CE6CFC	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF893MRC/@@download/ENCFF893MRC.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_EXOSC10_seCLIP	1	lane1	yes	#CC6DFC	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF219AFL/@@download/ENCFF219AFL.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_EXOSC10_seCLIP	2	lane1	yes	#CC6DFC	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF538WWX/@@download/ENCFF538WWX.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_IGF2BP1_eCLIP	1	lane1	reverse	#FF8C15	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF399XVR/@@download/ENCFF399XVR.fastq.gz	https://www.encodeproject.org/files/ENCFF088JXR/@@download/ENCFF088JXR.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_IGF2BP1_eCLIP	2	lane1	reverse	#FF8C15	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF383VVS/@@download/ENCFF383VVS.fastq.gz	https://www.encodeproject.org/files/ENCFF271KYF/@@download/ENCFF271KYF.fastq.gz	
-Gene_Yeo_UCSD_eCLIP	K562_HNRNPK_eCLIP	1	lane1	reverse	#FF7F11	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF935EPG/@@download/ENCFF935EPG.fastq.gz	https://www.encodeproject.org/files/ENCFF900FEK/@@download/ENCFF900FEK.fastq.gz	
-Gene_Yeo_UCSD_eCLIP	K562_HNRNPK_eCLIP	2	lane1	reverse	#FF7F11	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF244ZIB/@@download/ENCFF244ZIB.fastq.gz	https://www.encodeproject.org/files/ENCFF169OLG/@@download/ENCFF169OLG.fastq.gz	
+Gene_Yeo_UCSD_seCLIP	K562_HNRNPK_seCLIP	1	lane1	yes	#FF7F11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF935EPG/@@download/ENCFF935EPG.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_HNRNPK_seCLIP	2	lane1	yes	#FF7F11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF244ZIB/@@download/ENCFF244ZIB.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_EXOSC5_eCLIP	2	lane1	reverse	#FF5B06	50	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF357QDX/@@download/ENCFF357QDX.fastq.gz	https://www.encodeproject.org/files/ENCFF193VEK/@@download/ENCFF193VEK.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_EXOSC5_eCLIP	1	lane1	reverse	#FF5B06	50	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF609MDJ/@@download/ENCFF609MDJ.fastq.gz	https://www.encodeproject.org/files/ENCFF293TAU/@@download/ENCFF293TAU.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_UPF1_eCLIP	1	lane1	reverse	#FF8613	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF170KCT/@@download/ENCFF170KCT.fastq.gz	https://www.encodeproject.org/files/ENCFF493EKO/@@download/ENCFF493EKO.fastq.gz	
@@ -167,8 +167,10 @@ Gene_Yeo_UCSD_eCLIP	HepG2_NKRF_eCLIP	2	lane1	reverse	#FFA51C	40	TRUE		Illumina	h
 Gene_Yeo_UCSD_eCLIP	HepG2_NKRF_eCLIP	1	lane1	reverse	#FFA51C	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF661HMQ/@@download/ENCFF661HMQ.fastq.gz	https://www.encodeproject.org/files/ENCFF430JKC/@@download/ENCFF430JKC.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_RPS3_eCLIP	2	lane1	reverse	#FF9A19	50	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF850KGS/@@download/ENCFF850KGS.fastq.gz	https://www.encodeproject.org/files/ENCFF368GUH/@@download/ENCFF368GUH.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_RPS3_eCLIP	1	lane1	reverse	#FF9A19	50	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF574FKW/@@download/ENCFF574FKW.fastq.gz	https://www.encodeproject.org/files/ENCFF048FYV/@@download/ENCFF048FYV.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_GARS_eCLIP 2 lane1 yes #FF8011 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF432GIZ/@@download/ENCFF432GIZ.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_GARS_eCLIP 1 lane1 yes #FF8011 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF530TJP/@@download/ENCFF530TJP.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_FXR2_seCLIP	1	lane1	yes	#FF5605	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF232ODO/@@download/ENCFF232ODO.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_FXR2_seCLIP	2	lane1	yes	#FF5605	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF581HLQ/@@download/ENCFF581HLQ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_GARS_seCLIP	2	lane1	yes	#FF8011	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF432GIZ/@@download/ENCFF432GIZ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_GARS_seCLIP	1	lane1	yes	#FF8011	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF530TJP/@@download/ENCFF530TJP.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_MATR3_eCLIP	1	lane1	reverse	#FF6A0B	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF991YSW/@@download/ENCFF991YSW.fastq.gz	https://www.encodeproject.org/files/ENCFF806OBL/@@download/ENCFF806OBL.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_MATR3_eCLIP	2	lane1	reverse	#FF6A0B	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF365CXY/@@download/ENCFF365CXY.fastq.gz	https://www.encodeproject.org/files/ENCFF358JCT/@@download/ENCFF358JCT.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_FTO_eCLIP	2	lane1	reverse	#FF5103	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF580QMH/@@download/ENCFF580QMH.fastq.gz	https://www.encodeproject.org/files/ENCFF820YSI/@@download/ENCFF820YSI.fastq.gz	
@@ -191,22 +193,24 @@ Gene_Yeo_UCSD_eCLIP	K562_UTP18_eCLIP	1	lane1	reverse	#FF760E	44	TRUE		Illumina	h
 Gene_Yeo_UCSD_eCLIP	K562_UTP18_eCLIP	2	lane1	reverse	#FF760E	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF386YUM/@@download/ENCFF386YUM.fastq.gz	https://www.encodeproject.org/files/ENCFF038OVY/@@download/ENCFF038OVY.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SF3B1_eCLIP	1	lane1	reverse	#FFAB1E	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF351MRH/@@download/ENCFF351MRH.fastq.gz	https://www.encodeproject.org/files/ENCFF763CZN/@@download/ENCFF763CZN.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SF3B1_eCLIP	2	lane1	reverse	#FFAB1E	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF585JKL/@@download/ENCFF585JKL.fastq.gz	https://www.encodeproject.org/files/ENCFF151JUN/@@download/ENCFF151JUN.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_RYBP_eCLIP 1 lane1 yes #6392EA 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF604OCB/@@download/ENCFF604OCB.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_RYBP_eCLIP 2 lane1 yes #6392EA 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF264WXA/@@download/ENCFF264WXA.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_RYBP_seCLIP	1	lane1	yes	#6392EA	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF604OCB/@@download/ENCFF604OCB.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_RYBP_seCLIP	2	lane1	yes	#6392EA	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF264WXA/@@download/ENCFF264WXA.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	HepG2_KHSRP_eCLIP	1	lane1	reverse	#FF4801	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF950SML/@@download/ENCFF950SML.fastq.gz	https://www.encodeproject.org/files/ENCFF840EOA/@@download/ENCFF840EOA.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_KHSRP_eCLIP	2	lane1	reverse	#FF4801	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF503GYR/@@download/ENCFF503GYR.fastq.gz	https://www.encodeproject.org/files/ENCFF844XLZ/@@download/ENCFF844XLZ.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_APEX1_eCLIP 1 lane1 yes #FF700D 101 TRUE  Illumina https://www.encodeproject.org/files/ENCFF785OLO/@@download/ENCFF785OLO.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_APEX1_eCLIP 2 lane1 yes #FF700D 101 TRUE  Illumina https://www.encodeproject.org/files/ENCFF495VVD/@@download/ENCFF495VVD.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_RPS6_eCLIP 2 lane1 yes #FF7E11 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF915ASX/@@download/ENCFF915ASX.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_RPS6_eCLIP 1 lane1 yes #FF7E11 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF182GNB/@@download/ENCFF182GNB.fastq.gz  
-Gene_Yeo_UCSD_eCLIP	K562_FMR1_eCLIP	1	lane1	reverse	#FF5805	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF348IRX/@@download/ENCFF348IRX.fastq.gz	https://www.encodeproject.org/files/ENCFF111LIY/@@download/ENCFF111LIY.fastq.gz	
-Gene_Yeo_UCSD_eCLIP	K562_FMR1_eCLIP	2	lane1	reverse	#FF5805	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF491YJX/@@download/ENCFF491YJX.fastq.gz	https://www.encodeproject.org/files/ENCFF217LJP/@@download/ENCFF217LJP.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_ELAVL1_eCLIP 1 lane1 yes #FF790F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF786UGT/@@download/ENCFF786UGT.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_ELAVL1_eCLIP 2 lane1 yes #FF790F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF452ZWM/@@download/ENCFF452ZWM.fastq.gz  
-Gene_Yeo_UCSD_eCLIP HepG2_TARDBP_eCLIP 2 lane1 yes #FF730D 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF868WQR/@@download/ENCFF868WQR.fastq.gz  
-Gene_Yeo_UCSD_eCLIP HepG2_TARDBP_eCLIP 1 lane1 yes #FF730D 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF137LSG/@@download/ENCFF137LSG.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_MBNL1_eCLIP 1 lane1 yes #FF770F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF508CMO/@@download/ENCFF508CMO.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_MBNL1_eCLIP 2 lane1 yes #FF770F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF287XKI/@@download/ENCFF287XKI.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_APEX1_seCLIP	1	lane1	yes	#FF700D	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF785OLO/@@download/ENCFF785OLO.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_APEX1_seCLIP	2	lane1	yes	#FF700D	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF495VVD/@@download/ENCFF495VVD.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_RPS6_seCLIP	2	lane1	yes	#FF7E11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF915ASX/@@download/ENCFF915ASX.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_RPS6_seCLIP	1	lane1	yes	#FF7E11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF182GNB/@@download/ENCFF182GNB.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_TARDBP_seCLIP	1	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF673VEJ/@@download/ENCFF673VEJ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_TARDBP_seCLIP	2	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF679SNJ/@@download/ENCFF679SNJ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_FMR1_seCLIP	1	lane1	yes	#FF5805	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF348IRX/@@download/ENCFF348IRX.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_FMR1_seCLIP	2	lane1	yes	#FF5805	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF491YJX/@@download/ENCFF491YJX.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_ELAVL1_seCLIP	1	lane1	yes	#FF790F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF786UGT/@@download/ENCFF786UGT.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_ELAVL1_seCLIP	2	lane1	yes	#FF790F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF452ZWM/@@download/ENCFF452ZWM.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	HepG2_TARDBP_seCLIP	2	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF868WQR/@@download/ENCFF868WQR.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	HepG2_TARDBP_seCLIP	1	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF137LSG/@@download/ENCFF137LSG.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_MBNL1_seCLIP	1	lane1	yes	#FF770F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF508CMO/@@download/ENCFF508CMO.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_MBNL1_seCLIP	2	lane1	yes	#FF770F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF287XKI/@@download/ENCFF287XKI.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_RBM15_eCLIP	2	lane1	reverse	#FF9618	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF688FME/@@download/ENCFF688FME.fastq.gz	https://www.encodeproject.org/files/ENCFF418DFE/@@download/ENCFF418DFE.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_RBM15_eCLIP	1	lane1	reverse	#FF9618	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF008EYG/@@download/ENCFF008EYG.fastq.gz	https://www.encodeproject.org/files/ENCFF452DMI/@@download/ENCFF452DMI.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SUPV3L1_eCLIP	1	lane1	reverse	#FF8112	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF171KZO/@@download/ENCFF171KZO.fastq.gz	https://www.encodeproject.org/files/ENCFF126HSF/@@download/ENCFF126HSF.fastq.gz	
@@ -239,16 +243,16 @@ Gene_Yeo_UCSD_eCLIP	HepG2_PCBP2_eCLIP	1	lane1	reverse	#FFAC1E	40	TRUE		Illumina	
 Gene_Yeo_UCSD_eCLIP	HepG2_PCBP2_eCLIP	2	lane1	reverse	#FFAC1E	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF359KSX/@@download/ENCFF359KSX.fastq.gz	https://www.encodeproject.org/files/ENCFF488GID/@@download/ENCFF488GID.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SERBP1_eCLIP	2	lane1	reverse	#FFBD23	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF628QLB/@@download/ENCFF628QLB.fastq.gz	https://www.encodeproject.org/files/ENCFF007VAP/@@download/ENCFF007VAP.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SERBP1_eCLIP	1	lane1	reverse	#FFBD23	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF690PXO/@@download/ENCFF690PXO.fastq.gz	https://www.encodeproject.org/files/ENCFF412TCD/@@download/ENCFF412TCD.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_EEF2_eCLIP 2 lane1 yes #FF780F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF928PQT/@@download/ENCFF928PQT.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_EEF2_eCLIP 1 lane1 yes #FF780F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF930FVO/@@download/ENCFF930FVO.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_DDX43_eCLIP 1 lane1 yes #5E82D8 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF884KLU/@@download/ENCFF884KLU.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_DDX43_eCLIP 2 lane1 yes #5E82D8 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF338ZLQ/@@download/ENCFF338ZLQ.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_ADAT1_eCLIP 1 lane1 yes #5D81D7 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF139SOX/@@download/ENCFF139SOX.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_ADAT1_eCLIP 2 lane1 yes #5D81D7 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF306CFO/@@download/ENCFF306CFO.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_RPS10_eCLIP 1 lane1 yes #FF7F11 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF136QXT/@@download/ENCFF136QXT.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_RPS10_eCLIP 2 lane1 yes #FF7F11 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF101IFB/@@download/ENCFF101IFB.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_MORC2_eCLIP 1 lane1 yes #5D7FD5 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF470SFI/@@download/ENCFF470SFI.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_MORC2_eCLIP 2 lane1 yes #5D7FD5 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF456NCY/@@download/ENCFF456NCY.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_EEF2_seCLIP	2	lane1	yes	#FF780F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF928PQT/@@download/ENCFF928PQT.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_EEF2_seCLIP	1	lane1	yes	#FF780F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF930FVO/@@download/ENCFF930FVO.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_DDX43_seCLIP	1	lane1	yes	#5E82D8	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF884KLU/@@download/ENCFF884KLU.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_DDX43_seCLIP	2	lane1	yes	#5E82D8	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF338ZLQ/@@download/ENCFF338ZLQ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_ADAT1_seCLIP	1	lane1	yes	#5D81D7	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF139SOX/@@download/ENCFF139SOX.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_ADAT1_seCLIP	2	lane1	yes	#5D81D7	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF306CFO/@@download/ENCFF306CFO.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_RPS10_seCLIP	1	lane1	yes	#FF7F11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF136QXT/@@download/ENCFF136QXT.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_RPS10_seCLIP	2	lane1	yes	#FF7F11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF101IFB/@@download/ENCFF101IFB.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_MORC2_seCLIP	1	lane1	yes	#5D7FD5	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF470SFI/@@download/ENCFF470SFI.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_MORC2_seCLIP	2	lane1	yes	#5D7FD5	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF456NCY/@@download/ENCFF456NCY.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_SND1_eCLIP	1	lane1	reverse	#FFAB1E	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF237HET/@@download/ENCFF237HET.fastq.gz	https://www.encodeproject.org/files/ENCFF128MAP/@@download/ENCFF128MAP.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SND1_eCLIP	2	lane1	reverse	#FFAB1E	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF871WGQ/@@download/ENCFF871WGQ.fastq.gz	https://www.encodeproject.org/files/ENCFF157LOT/@@download/ENCFF157LOT.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_EWSR1_eCLIP	1	lane1	reverse	#FF9217	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF797UGN/@@download/ENCFF797UGN.fastq.gz	https://www.encodeproject.org/files/ENCFF514NRD/@@download/ENCFF514NRD.fastq.gz	
@@ -263,10 +267,10 @@ Gene_Yeo_UCSD_eCLIP	K562_DDX42_eCLIP	1	lane1	reverse	#FFC125	43	TRUE		Illumina	h
 Gene_Yeo_UCSD_eCLIP	K562_DDX42_eCLIP	2	lane1	reverse	#FFC125	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF450GCJ/@@download/ENCFF450GCJ.fastq.gz	https://www.encodeproject.org/files/ENCFF032CWK/@@download/ENCFF032CWK.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_RBM22_eCLIP	2	lane1	reverse	#FFB020	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF827TLD/@@download/ENCFF827TLD.fastq.gz	https://www.encodeproject.org/files/ENCFF433TMO/@@download/ENCFF433TMO.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_RBM22_eCLIP	1	lane1	reverse	#FFB020	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF125EJB/@@download/ENCFF125EJB.fastq.gz	https://www.encodeproject.org/files/ENCFF210HLS/@@download/ENCFF210HLS.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_DDX47_eCLIP 2 lane1 yes #FF730D 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF375INH/@@download/ENCFF375INH.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_DDX47_eCLIP 1 lane1 yes #FF730D 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF418BKS/@@download/ENCFF418BKS.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_SRSF9_eCLIP 2 lane1 yes #FF5D07 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF460RIG/@@download/ENCFF460RIG.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_SRSF9_eCLIP 1 lane1 yes #FF5D07 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF826EHK/@@download/ENCFF826EHK.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_DDX47_seCLIP	2	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF375INH/@@download/ENCFF375INH.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_DDX47_seCLIP	1	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF418BKS/@@download/ENCFF418BKS.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_SRSF9_seCLIP	2	lane1	yes	#FF5D07	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF460RIG/@@download/ENCFF460RIG.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_SRSF9_seCLIP	1	lane1	yes	#FF5D07	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF826EHK/@@download/ENCFF826EHK.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	HepG2_FKBP4_eCLIP	1	lane1	reverse	#FF5E07	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF214SWU/@@download/ENCFF214SWU.fastq.gz	https://www.encodeproject.org/files/ENCFF437VVV/@@download/ENCFF437VVV.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_FKBP4_eCLIP	2	lane1	reverse	#FF5E07	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF975CKG/@@download/ENCFF975CKG.fastq.gz	https://www.encodeproject.org/files/ENCFF487PAA/@@download/ENCFF487PAA.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_SRSF7_eCLIP	2	lane1	reverse	#FF9E1A	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF729MSV/@@download/ENCFF729MSV.fastq.gz	https://www.encodeproject.org/files/ENCFF578OMQ/@@download/ENCFF578OMQ.fastq.gz	
@@ -281,8 +285,12 @@ Gene_Yeo_UCSD_eCLIP	HepG2_DDX52_eCLIP	1	lane1	reverse	#FF4500	45	TRUE		Illumina	
 Gene_Yeo_UCSD_eCLIP	HepG2_DDX52_eCLIP	2	lane1	reverse	#FF4500	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF560TLH/@@download/ENCFF560TLH.fastq.gz	https://www.encodeproject.org/files/ENCFF522NFJ/@@download/ENCFF522NFJ.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_AATF_eCLIP	2	lane1	reverse	#FF8A14	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF057BVQ/@@download/ENCFF057BVQ.fastq.gz	https://www.encodeproject.org/files/ENCFF990ZCZ/@@download/ENCFF990ZCZ.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_AATF_eCLIP	1	lane1	reverse	#FF8A14	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF268XIQ/@@download/ENCFF268XIQ.fastq.gz	https://www.encodeproject.org/files/ENCFF647ZMG/@@download/ENCFF647ZMG.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_RNF187_eCLIP 1 lane1 yes #5872C6 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF690HVR/@@download/ENCFF690HVR.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_RNF187_eCLIP 2 lane1 yes #5872C6 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF468HAG/@@download/ENCFF468HAG.fastq.gz  
+Gene_Yeo_UCSD_eCLIP	K562_HNRNPK_eCLIP	2	lane1	reverse	#FF7F11	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF228HUK/@@download/ENCFF228HUK.fastq.gz	https://www.encodeproject.org/files/ENCFF169OLG/@@download/ENCFF169OLG.fastq.gz	
+Gene_Yeo_UCSD_eCLIP	K562_HNRNPK_eCLIP	1	lane1	reverse	#FF7F11	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF335HRO/@@download/ENCFF335HRO.fastq.gz	https://www.encodeproject.org/files/ENCFF900FEK/@@download/ENCFF900FEK.fastq.gz	
+Gene_Yeo_UCSD_seCLIP	K562_RNF187_seCLIP	1	lane1	yes	#5872C6	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF690HVR/@@download/ENCFF690HVR.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_RNF187_seCLIP	2	lane1	yes	#5872C6	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF468HAG/@@download/ENCFF468HAG.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_FXR1_seCLIP	2	lane1	yes	#FF8713	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF104LHO/@@download/ENCFF104LHO.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_FXR1_seCLIP	1	lane1	yes	#FF8713	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF074ODK/@@download/ENCFF074ODK.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_RBFOX2_eCLIP	1	lane1	reverse	#FF9116	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF930TLO/@@download/ENCFF930TLO.fastq.gz	https://www.encodeproject.org/files/ENCFF462CMF/@@download/ENCFF462CMF.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_RBFOX2_eCLIP	2	lane1	reverse	#FF9116	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF163QEA/@@download/ENCFF163QEA.fastq.gz	https://www.encodeproject.org/files/ENCFF942TPA/@@download/ENCFF942TPA.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_CSTF2T_eCLIP	1	lane1	reverse	#FF670A	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF762UXF/@@download/ENCFF762UXF.fastq.gz	https://www.encodeproject.org/files/ENCFF093WJU/@@download/ENCFF093WJU.fastq.gz	
@@ -297,10 +305,12 @@ Gene_Yeo_UCSD_eCLIP	K562_FASTKD2_eCLIP	2	lane1	reverse	#FF6309	45	TRUE		Illumina
 Gene_Yeo_UCSD_eCLIP	K562_FASTKD2_eCLIP	1	lane1	reverse	#FF6309	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF724UQB/@@download/ENCFF724UQB.fastq.gz	https://www.encodeproject.org/files/ENCFF111XRA/@@download/ENCFF111XRA.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_NOLC1_eCLIP	1	lane1	reverse	#FFA51C	50	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF537BAJ/@@download/ENCFF537BAJ.fastq.gz	https://www.encodeproject.org/files/ENCFF161CIM/@@download/ENCFF161CIM.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_NOLC1_eCLIP	2	lane1	reverse	#FFA51C	50	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF656UJI/@@download/ENCFF656UJI.fastq.gz	https://www.encodeproject.org/files/ENCFF091OGJ/@@download/ENCFF091OGJ.fastq.gz	
+Gene_Yeo_UCSD_seCLIP	K562_SRSF1_seCLIP	1	lane1	yes	#FF680A	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF512IIH/@@download/ENCFF512IIH.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_SRSF1_seCLIP	2	lane1	yes	#FF680A	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF882KLC/@@download/ENCFF882KLC.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	HepG2_SRSF9_eCLIP	1	lane1	reverse	#FF5D07	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF912JVC/@@download/ENCFF912JVC.fastq.gz	https://www.encodeproject.org/files/ENCFF354DZK/@@download/ENCFF354DZK.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_SRSF9_eCLIP	2	lane1	reverse	#FF5D07	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF038QQM/@@download/ENCFF038QQM.fastq.gz	https://www.encodeproject.org/files/ENCFF589NCU/@@download/ENCFF589NCU.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_EIF4E_eCLIP 1 lane1 yes #FF790F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF230YKJ/@@download/ENCFF230YKJ.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_EIF4E_eCLIP 2 lane1 yes #FF790F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF497YEF/@@download/ENCFF497YEF.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_EIF4E_seCLIP	1	lane1	yes	#FF790F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF230YKJ/@@download/ENCFF230YKJ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_EIF4E_seCLIP	2	lane1	yes	#FF790F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF497YEF/@@download/ENCFF497YEF.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	HepG2_TBRG4_eCLIP	1	lane1	reverse	#FF5204	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF085PRU/@@download/ENCFF085PRU.fastq.gz	https://www.encodeproject.org/files/ENCFF447XXS/@@download/ENCFF447XXS.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_TBRG4_eCLIP	2	lane1	reverse	#FF5204	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF669MVS/@@download/ENCFF669MVS.fastq.gz	https://www.encodeproject.org/files/ENCFF718RWU/@@download/ENCFF718RWU.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_BCCIP_eCLIP	1	lane1	reverse	#FF5705	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF287LMI/@@download/ENCFF287LMI.fastq.gz	https://www.encodeproject.org/files/ENCFF292ANE/@@download/ENCFF292ANE.fastq.gz	
@@ -415,8 +425,8 @@ Gene_Yeo_UCSD_eCLIP	HepG2_RBM5_eCLIP	2	lane1	reverse	#FFB120	50	TRUE		Illumina	h
 Gene_Yeo_UCSD_eCLIP	HepG2_RBM5_eCLIP	1	lane1	reverse	#FFB120	50	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF391YUD/@@download/ENCFF391YUD.fastq.gz	https://www.encodeproject.org/files/ENCFF253SAE/@@download/ENCFF253SAE.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_LARP4_eCLIP	2	lane1	reverse	#FFBA23	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF109RNC/@@download/ENCFF109RNC.fastq.gz	https://www.encodeproject.org/files/ENCFF498JIR/@@download/ENCFF498JIR.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_LARP4_eCLIP	1	lane1	reverse	#FFBA23	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF984MPJ/@@download/ENCFF984MPJ.fastq.gz	https://www.encodeproject.org/files/ENCFF780ORI/@@download/ENCFF780ORI.fastq.gz	
-Gene_Yeo_UCSD_eCLIP HepG2_NSUN2_eCLIP 1 lane1 yes #FF9818 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF311FHF/@@download/ENCFF311FHF.fastq.gz  
-Gene_Yeo_UCSD_eCLIP HepG2_NSUN2_eCLIP 2 lane1 yes #FF9818 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF143ZYE/@@download/ENCFF143ZYE.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	HepG2_NSUN2_seCLIP	1	lane1	yes	#FF9818	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF311FHF/@@download/ENCFF311FHF.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	HepG2_NSUN2_seCLIP	2	lane1	yes	#FF9818	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF143ZYE/@@download/ENCFF143ZYE.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_DDX24_eCLIP	1	lane1	reverse	#FF9B19	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF692JAV/@@download/ENCFF692JAV.fastq.gz	https://www.encodeproject.org/files/ENCFF661UCF/@@download/ENCFF661UCF.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_DDX24_eCLIP	2	lane1	reverse	#FF9B19	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF795YLW/@@download/ENCFF795YLW.fastq.gz	https://www.encodeproject.org/files/ENCFF091DPF/@@download/ENCFF091DPF.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_ZNF622_eCLIP	2	lane1	reverse	#FF5C06	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF529AAI/@@download/ENCFF529AAI.fastq.gz	https://www.encodeproject.org/files/ENCFF005MIK/@@download/ENCFF005MIK.fastq.gz	
@@ -437,6 +447,8 @@ Gene_Yeo_UCSD_eCLIP	HepG2_IGF2BP3_eCLIP	1	lane1	reverse	#FF9016	44	TRUE		Illumin
 Gene_Yeo_UCSD_eCLIP	HepG2_IGF2BP3_eCLIP	2	lane1	reverse	#FF9016	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF768LZF/@@download/ENCFF768LZF.fastq.gz	https://www.encodeproject.org/files/ENCFF860PRT/@@download/ENCFF860PRT.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_XRN2_eCLIP	1	lane1	reverse	#FF5D07	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF032DOJ/@@download/ENCFF032DOJ.fastq.gz	https://www.encodeproject.org/files/ENCFF107DSH/@@download/ENCFF107DSH.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_XRN2_eCLIP	2	lane1	reverse	#FF5D07	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF963JOW/@@download/ENCFF963JOW.fastq.gz	https://www.encodeproject.org/files/ENCFF096SEZ/@@download/ENCFF096SEZ.fastq.gz	
+Gene_Yeo_UCSD_eCLIP	K562_FMR1_eCLIP	1	lane1	reverse	#FF5805	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF647ULQ/@@download/ENCFF647ULQ.fastq.gz	https://www.encodeproject.org/files/ENCFF111LIY/@@download/ENCFF111LIY.fastq.gz	
+Gene_Yeo_UCSD_eCLIP	K562_FMR1_eCLIP	2	lane1	reverse	#FF5805	39	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF319MIE/@@download/ENCFF319MIE.fastq.gz	https://www.encodeproject.org/files/ENCFF217LJP/@@download/ENCFF217LJP.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_GRWD1_eCLIP	2	lane1	reverse	#FF5A06	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF451BKG/@@download/ENCFF451BKG.fastq.gz	https://www.encodeproject.org/files/ENCFF933DLG/@@download/ENCFF933DLG.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_GRWD1_eCLIP	1	lane1	reverse	#FF5A06	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF500BLJ/@@download/ENCFF500BLJ.fastq.gz	https://www.encodeproject.org/files/ENCFF874PLO/@@download/ENCFF874PLO.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_RBFOX2_eCLIP	2	lane1	reverse	#FF9116	44	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF591SSP/@@download/ENCFF591SSP.fastq.gz	https://www.encodeproject.org/files/ENCFF289OFA/@@download/ENCFF289OFA.fastq.gz	
@@ -477,8 +489,8 @@ Gene_Yeo_UCSD_eCLIP	K562_FTO_eCLIP	2	lane1	reverse	#FF5103	45	TRUE		Illumina	htt
 Gene_Yeo_UCSD_eCLIP	K562_FTO_eCLIP	1	lane1	reverse	#FF5103	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF374PSI/@@download/ENCFF374PSI.fastq.gz	https://www.encodeproject.org/files/ENCFF877URW/@@download/ENCFF877URW.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_HNRNPM_eCLIP	1	lane1	reverse	#FF6008	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF503KDE/@@download/ENCFF503KDE.fastq.gz	https://www.encodeproject.org/files/ENCFF817WMP/@@download/ENCFF817WMP.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_HNRNPM_eCLIP	2	lane1	reverse	#FF6008	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF600EOC/@@download/ENCFF600EOC.fastq.gz	https://www.encodeproject.org/files/ENCFF136GAI/@@download/ENCFF136GAI.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_METTL1_eCLIP 1 lane1 yes #483E8C 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF924RUW/@@download/ENCFF924RUW.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_METTL1_eCLIP 2 lane1 yes #483E8C 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF459PMF/@@download/ENCFF459PMF.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_METTL1_seCLIP	1	lane1	yes	#483E8C	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF924RUW/@@download/ENCFF924RUW.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_METTL1_seCLIP	2	lane1	yes	#483E8C	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF459PMF/@@download/ENCFF459PMF.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_RBM22_eCLIP	1	lane1	reverse	#FFB020	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF981SGX/@@download/ENCFF981SGX.fastq.gz	https://www.encodeproject.org/files/ENCFF999SQE/@@download/ENCFF999SQE.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_RBM22_eCLIP	2	lane1	reverse	#FFB020	43	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF163RYF/@@download/ENCFF163RYF.fastq.gz	https://www.encodeproject.org/files/ENCFF080OLT/@@download/ENCFF080OLT.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_EFTUD2_eCLIP	1	lane1	reverse	#FFA21B	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF073SAE/@@download/ENCFF073SAE.fastq.gz	https://www.encodeproject.org/files/ENCFF273YUG/@@download/ENCFF273YUG.fastq.gz	
@@ -554,32 +566,34 @@ Gene_Yeo_UCSD_eCLIP	HepG2_G3BP1_Input	1	lane1	reverse	#FF6D0C	45	TRUE		Illumina	
 Gene_Yeo_UCSD_eCLIP	K562_WDR43_Input	1	lane1	reverse	#FF6E0C	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF855XKN/@@download/ENCFF855XKN.fastq.gz	https://www.encodeproject.org/files/ENCFF407AXQ/@@download/ENCFF407AXQ.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_AKAP1_Input	1	lane1	reverse	#FF6F0C	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF956TUZ/@@download/ENCFF956TUZ.fastq.gz	https://www.encodeproject.org/files/ENCFF378CCG/@@download/ENCFF378CCG.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_WRN_Input	1	lane1	reverse	#FF700C	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF467KQF/@@download/ENCFF467KQF.fastq.gz	https://www.encodeproject.org/files/ENCFF137BBS/@@download/ENCFF137BBS.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_FMR1_Input 2 lane1 yes #FF5805 101 TRUE  Illumina https://www.encodeproject.org/files/ENCFF075JTX/@@download/ENCFF075JTX.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_APEX1_Input 1 lane1 yes #FF700D 101 TRUE  Illumina https://www.encodeproject.org/files/ENCFF795YNY/@@download/ENCFF795YNY.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_APEX1_Input 2 lane1 yes #FF700D 101 TRUE  Illumina https://www.encodeproject.org/files/ENCFF904EOE/@@download/ENCFF904EOE.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_FMR1_Input	1	lane1	yes	#FF5805	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF588ZBP/@@download/ENCFF588ZBP.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_FMR1_Input	2	lane1	yes	#FF5805	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF075JTX/@@download/ENCFF075JTX.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_APEX1_Input	1	lane1	yes	#FF700D	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF795YNY/@@download/ENCFF795YNY.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_APEX1_Input	2	lane1	yes	#FF700D	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF904EOE/@@download/ENCFF904EOE.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	HepG2_YBX3_Input	1	lane1	reverse	#FF710D	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF706KON/@@download/ENCFF706KON.fastq.gz	https://www.encodeproject.org/files/ENCFF798TFX/@@download/ENCFF798TFX.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_SSB_Input	1	lane1	reverse	#FF720D	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF291AXK/@@download/ENCFF291AXK.fastq.gz	https://www.encodeproject.org/files/ENCFF634ZXH/@@download/ENCFF634ZXH.fastq.gz	
-Gene_Yeo_UCSD_eCLIP HepG2_TARDBP_Input 1 lane1 yes #FF730D 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF887XEU/@@download/ENCFF887XEU.fastq.gz  
-Gene_Yeo_UCSD_eCLIP HepG2_TARDBP_Input 2 lane1 yes #FF730D 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF037ICH/@@download/ENCFF037ICH.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_DDX47_Input 1 lane1 yes #FF730D 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF306KCA/@@download/ENCFF306KCA.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_DDX47_Input 2 lane1 yes #FF730D 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF313UGS/@@download/ENCFF313UGS.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_FXR2_Input 2 lane1 yes #FF5605 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF657IYT/@@download/ENCFF657IYT.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	HepG2_TARDBP_Input	1	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF887XEU/@@download/ENCFF887XEU.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	HepG2_TARDBP_Input	2	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF037ICH/@@download/ENCFF037ICH.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_DDX47_Input	1	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF306KCA/@@download/ENCFF306KCA.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_DDX47_Input	2	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF313UGS/@@download/ENCFF313UGS.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_FXR2_Input	1	lane1	yes	#FF5605	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF158KAT/@@download/ENCFF158KAT.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_FXR2_Input	2	lane1	yes	#FF5605	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF657IYT/@@download/ENCFF657IYT.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_DDX21_Input	1	lane1	reverse	#FF740E	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF790GSX/@@download/ENCFF790GSX.fastq.gz	https://www.encodeproject.org/files/ENCFF953OQX/@@download/ENCFF953OQX.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_PRPF4_Input	1	lane1	reverse	#FF750E	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF560IMA/@@download/ENCFF560IMA.fastq.gz	https://www.encodeproject.org/files/ENCFF343WLN/@@download/ENCFF343WLN.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_UTP18_Input	1	lane1	reverse	#FF760E	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF372JTR/@@download/ENCFF372JTR.fastq.gz	https://www.encodeproject.org/files/ENCFF315ECX/@@download/ENCFF315ECX.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SAFB_Input	1	lane1	reverse	#FF760E	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF085YZL/@@download/ENCFF085YZL.fastq.gz	https://www.encodeproject.org/files/ENCFF855ENR/@@download/ENCFF855ENR.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_MBNL1_Input 1 lane1 yes #FF770F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF020YXZ/@@download/ENCFF020YXZ.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_MBNL1_Input 2 lane1 yes #FF770F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF118MKD/@@download/ENCFF118MKD.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_EEF2_Input 1 lane1 yes #FF780F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF329GEK/@@download/ENCFF329GEK.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_EEF2_Input 2 lane1 yes #FF780F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF752CAA/@@download/ENCFF752CAA.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_EIF4E_Input 1 lane1 yes #FF790F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF740PDL/@@download/ENCFF740PDL.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_EIF4E_Input 2 lane1 yes #FF790F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF176ITD/@@download/ENCFF176ITD.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_MBNL1_Input	1	lane1	yes	#FF770F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF020YXZ/@@download/ENCFF020YXZ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_MBNL1_Input	2	lane1	yes	#FF770F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF118MKD/@@download/ENCFF118MKD.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_EEF2_Input	1	lane1	yes	#FF780F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF329GEK/@@download/ENCFF329GEK.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_EEF2_Input	2	lane1	yes	#FF780F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF752CAA/@@download/ENCFF752CAA.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_EIF4E_Input	1	lane1	yes	#FF790F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF740PDL/@@download/ENCFF740PDL.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_EIF4E_Input	2	lane1	yes	#FF790F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF176ITD/@@download/ENCFF176ITD.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	HepG2_DDX52_Input	1	lane1	reverse	#FF4500	46	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF258COW/@@download/ENCFF258COW.fastq.gz	https://www.encodeproject.org/files/ENCFF065PGK/@@download/ENCFF065PGK.fastq.gz	
-Gene_Yeo_UCSD_eCLIP	K562_TARDBP_Input	1	lane1	reverse	#FF730D	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF110DXI/@@download/ENCFF110DXI.fastq.gz	https://www.encodeproject.org/files/ENCFF333DTJ/@@download/ENCFF333DTJ.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_TARDBP_Input 2 lane1 yes #FF730D 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF706SRG/@@download/ENCFF706SRG.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_TARDBP_Input	1	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF110DXI/@@download/ENCFF110DXI.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_TARDBP_Input	2	lane1	yes	#FF730D	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF706SRG/@@download/ENCFF706SRG.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	HepG2_UTP18_Input	1	lane1	reverse	#FF760E	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF811ZGE/@@download/ENCFF811ZGE.fastq.gz	https://www.encodeproject.org/files/ENCFF812WIZ/@@download/ENCFF812WIZ.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_ELAVL1_Input 1 lane1 yes #FF790F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF752UQK/@@download/ENCFF752UQK.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_ELAVL1_Input 2 lane1 yes #FF790F 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF336EAH/@@download/ENCFF336EAH.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_ELAVL1_Input	1	lane1	yes	#FF790F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF752UQK/@@download/ENCFF752UQK.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_ELAVL1_Input	2	lane1	yes	#FF790F	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF336EAH/@@download/ENCFF336EAH.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_EIF3G_Input	1	lane1	reverse	#FF7A10	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF539DGJ/@@download/ENCFF539DGJ.fastq.gz	https://www.encodeproject.org/files/ENCFF743HXX/@@download/ENCFF743HXX.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_PCBP1_Input	1	lane1	reverse	#FF7B10	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF998SFM/@@download/ENCFF998SFM.fastq.gz	https://www.encodeproject.org/files/ENCFF747VRT/@@download/ENCFF747VRT.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_HLTF_Input	1	lane1	reverse	#FF7C10	46	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF272ZVR/@@download/ENCFF272ZVR.fastq.gz	https://www.encodeproject.org/files/ENCFF816KHR/@@download/ENCFF816KHR.fastq.gz	
@@ -592,19 +606,19 @@ Gene_Yeo_UCSD_eCLIP	K562_AKAP1_Input	1	lane1	reverse	#FF6F0C	45	TRUE		Illumina	h
 Gene_Yeo_UCSD_eCLIP	HepG2_AQR_Input	1	lane1	reverse	#FF7C10	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF862RKC/@@download/ENCFF862RKC.fastq.gz	https://www.encodeproject.org/files/ENCFF746PPV/@@download/ENCFF746PPV.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_WDR43_Input	1	lane1	reverse	#FF6E0C	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF274FAE/@@download/ENCFF274FAE.fastq.gz	https://www.encodeproject.org/files/ENCFF535EYW/@@download/ENCFF535EYW.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_STAU2_Input	1	lane1	reverse	#FF7D10	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF278UYQ/@@download/ENCFF278UYQ.fastq.gz	https://www.encodeproject.org/files/ENCFF053PON/@@download/ENCFF053PON.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_RPS6_Input 1 lane1 yes #FF7E11 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF263CCY/@@download/ENCFF263CCY.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_RPS6_Input 2 lane1 yes #FF7E11 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF977OER/@@download/ENCFF977OER.fastq.gz  
-Gene_Yeo_UCSD_eCLIP	K562_HNRNPK_Input	1	lane1	reverse	#FF7F11	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF560DED/@@download/ENCFF560DED.fastq.gz	https://www.encodeproject.org/files/ENCFF280QZL/@@download/ENCFF280QZL.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_HNRNPK_Input 2 lane1 yes #FF7F11 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF398TVO/@@download/ENCFF398TVO.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_RPS10_Input 1 lane1 yes #FF7F11 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF644ZWQ/@@download/ENCFF644ZWQ.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_RPS10_Input 2 lane1 yes #FF7F11 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF614IWF/@@download/ENCFF614IWF.fastq.gz  
-Gene_Yeo_UCSD_eCLIP	K562_SRSF1_Input	1	lane1	reverse	#FF680A	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF768ZBD/@@download/ENCFF768ZBD.fastq.gz	https://www.encodeproject.org/files/ENCFF376PZO/@@download/ENCFF376PZO.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_SRSF1_Input 2 lane1 yes #FF680A 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF354CYD/@@download/ENCFF354CYD.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_RPS6_Input	1	lane1	yes	#FF7E11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF263CCY/@@download/ENCFF263CCY.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_RPS6_Input	2	lane1	yes	#FF7E11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF977OER/@@download/ENCFF977OER.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_HNRNPK_Input	1	lane1	yes	#FF7F11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF560DED/@@download/ENCFF560DED.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_HNRNPK_Input	2	lane1	yes	#FF7F11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF398TVO/@@download/ENCFF398TVO.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_RPS10_Input	1	lane1	yes	#FF7F11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF644ZWQ/@@download/ENCFF644ZWQ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_RPS10_Input	2	lane1	yes	#FF7F11	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF614IWF/@@download/ENCFF614IWF.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_SRSF1_Input	1	lane1	yes	#FF680A	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF768ZBD/@@download/ENCFF768ZBD.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_SRSF1_Input	2	lane1	yes	#FF680A	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF354CYD/@@download/ENCFF354CYD.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	HepG2_HNRNPK_Input	1	lane1	reverse	#FF7F11	46	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF060FDD/@@download/ENCFF060FDD.fastq.gz	https://www.encodeproject.org/files/ENCFF555OUH/@@download/ENCFF555OUH.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_GARS_Input 2 lane1 yes #FF8011 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF226DPF/@@download/ENCFF226DPF.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_GARS_Input 1 lane1 yes #FF8011 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF079TBA/@@download/ENCFF079TBA.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_SRSF9_Input 1 lane1 yes #FF5D07 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF447ZUQ/@@download/ENCFF447ZUQ.fastq.gz  
-Gene_Yeo_UCSD_eCLIP K562_SRSF9_Input 2 lane1 yes #FF5D07 75 TRUE  Illumina https://www.encodeproject.org/files/ENCFF120HCK/@@download/ENCFF120HCK.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_GARS_Input	2	lane1	yes	#FF8011	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF226DPF/@@download/ENCFF226DPF.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_GARS_Input	1	lane1	yes	#FF8011	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF079TBA/@@download/ENCFF079TBA.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_SRSF9_Input	1	lane1	yes	#FF5D07	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF447ZUQ/@@download/ENCFF447ZUQ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_SRSF9_Input	2	lane1	yes	#FF5D07	75	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF120HCK/@@download/ENCFF120HCK.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_SUPV3L1_Input	1	lane1	reverse	#FF8112	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF808KHS/@@download/ENCFF808KHS.fastq.gz	https://www.encodeproject.org/files/ENCFF936WEJ/@@download/ENCFF936WEJ.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_ZNF800_Input	1	lane1	reverse	#FF8212	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF356RSL/@@download/ENCFF356RSL.fastq.gz	https://www.encodeproject.org/files/ENCFF362SXF/@@download/ENCFF362SXF.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_APOBEC3C_Input	1	lane1	reverse	#FF8312	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF718JPO/@@download/ENCFF718JPO.fastq.gz	https://www.encodeproject.org/files/ENCFF417GHU/@@download/ENCFF417GHU.fastq.gz	
@@ -614,8 +628,8 @@ Gene_Yeo_UCSD_eCLIP	HepG2_FUS_Input	1	lane1	reverse	slateblue1	45	TRUE		Illumina
 Gene_Yeo_UCSD_eCLIP	K562_PABPC4_Input	1	lane1	reverse	#FF8613	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF611LDZ/@@download/ENCFF611LDZ.fastq.gz	https://www.encodeproject.org/files/ENCFF371WFK/@@download/ENCFF371WFK.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_UPF1_Input	1	lane1	reverse	#FF8613	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF159XFE/@@download/ENCFF159XFE.fastq.gz	https://www.encodeproject.org/files/ENCFF257MNA/@@download/ENCFF257MNA.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_FUS_Input	1	lane1	reverse	slateblue1	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF128HQK/@@download/ENCFF128HQK.fastq.gz	https://www.encodeproject.org/files/ENCFF084ZXT/@@download/ENCFF084ZXT.fastq.gz	
-Gene_Yeo_UCSD_eCLIP	K562_FXR1_Input	1	lane1	reverse	#FF8713	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF991BGJ/@@download/ENCFF991BGJ.fastq.gz	https://www.encodeproject.org/files/ENCFF742KQJ/@@download/ENCFF742KQJ.fastq.gz	
-Gene_Yeo_UCSD_eCLIP K562_FXR1_Input 2 lane1 yes #FF8713 101 TRUE  Illumina https://www.encodeproject.org/files/ENCFF705HGN/@@download/ENCFF705HGN.fastq.gz  
+Gene_Yeo_UCSD_seCLIP	K562_FXR1_Input	1	lane1	yes	#FF8713	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF991BGJ/@@download/ENCFF991BGJ.fastq.gz		
+Gene_Yeo_UCSD_seCLIP	K562_FXR1_Input	2	lane1	yes	#FF8713	101	TRUE	NNNNNNNNNN	Illumina	https://www.encodeproject.org/files/ENCFF705HGN/@@download/ENCFF705HGN.fastq.gz		
 Gene_Yeo_UCSD_eCLIP	K562_UTP3_Input	1	lane1	reverse	#FF8814	46	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF352XFW/@@download/ENCFF352XFW.fastq.gz	https://www.encodeproject.org/files/ENCFF850GVH/@@download/ENCFF850GVH.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_NIPBL_Input	1	lane1	reverse	#FF8914	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF283GNU/@@download/ENCFF283GNU.fastq.gz	https://www.encodeproject.org/files/ENCFF835HJQ/@@download/ENCFF835HJQ.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_CPEB4_Input	1	lane1	reverse	#FF8914	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF732JDY/@@download/ENCFF732JDY.fastq.gz	https://www.encodeproject.org/files/ENCFF296WZS/@@download/ENCFF296WZS.fastq.gz	
@@ -627,6 +641,7 @@ Gene_Yeo_UCSD_eCLIP	K562_ZNF800_Input	1	lane1	reverse	#FF8212	45	TRUE		Illumina	
 Gene_Yeo_UCSD_eCLIP	HepG2_FTO_Input	1	lane1	reverse	#FF5103	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF104YFG/@@download/ENCFF104YFG.fastq.gz	https://www.encodeproject.org/files/ENCFF028JUM/@@download/ENCFF028JUM.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_ABCF1_Input	1	lane1	reverse	#FF8B14	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF022GWO/@@download/ENCFF022GWO.fastq.gz	https://www.encodeproject.org/files/ENCFF039OUK/@@download/ENCFF039OUK.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_IGF2BP1_Input	1	lane1	reverse	#FF8C15	46	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF592FNJ/@@download/ENCFF592FNJ.fastq.gz	https://www.encodeproject.org/files/ENCFF672RWL/@@download/ENCFF672RWL.fastq.gz	
+Gene_Yeo_UCSD_eCLIP	K562_SRSF1_Input	1	lane1	reverse	#FF680A	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF017BEN/@@download/ENCFF017BEN.fastq.gz	https://www.encodeproject.org/files/ENCFF376PZO/@@download/ENCFF376PZO.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_GNL3_Input	1	lane1	reverse	#FF8C15	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF720COV/@@download/ENCFF720COV.fastq.gz	https://www.encodeproject.org/files/ENCFF892UQR/@@download/ENCFF892UQR.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_TAF15_Input	1	lane1	reverse	#FF8D15	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF868SVO/@@download/ENCFF868SVO.fastq.gz	https://www.encodeproject.org/files/ENCFF895IJH/@@download/ENCFF895IJH.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_LIN28B_Input	1	lane1	reverse	#FF8E15	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF064SDM/@@download/ENCFF064SDM.fastq.gz	https://www.encodeproject.org/files/ENCFF870VFV/@@download/ENCFF870VFV.fastq.gz	
@@ -658,6 +673,7 @@ Gene_Yeo_UCSD_eCLIP	HepG2_NCBP2_Input	1	lane1	reverse	#FF9B19	45	TRUE		Illumina	
 Gene_Yeo_UCSD_eCLIP	HepG2_SFPQ_Input	1	lane1	reverse	#FF9C1A	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF526FTD/@@download/ENCFF526FTD.fastq.gz	https://www.encodeproject.org/files/ENCFF163HDX/@@download/ENCFF163HDX.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_LSM11_Input	1	lane1	reverse	#FF9D1A	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF122YZY/@@download/ENCFF122YZY.fastq.gz	https://www.encodeproject.org/files/ENCFF308SPS/@@download/ENCFF308SPS.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_TNRC6A_Input	1	lane1	reverse	#FF9E1A	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF655TIR/@@download/ENCFF655TIR.fastq.gz	https://www.encodeproject.org/files/ENCFF410LTZ/@@download/ENCFF410LTZ.fastq.gz	
+Gene_Yeo_UCSD_eCLIP	K562_TARDBP_Input	1	lane1	reverse	#FF730D	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF558NTZ/@@download/ENCFF558NTZ.fastq.gz	https://www.encodeproject.org/files/ENCFF333DTJ/@@download/ENCFF333DTJ.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SRSF7_Input	1	lane1	reverse	#FF9E1A	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF394FLG/@@download/ENCFF394FLG.fastq.gz	https://www.encodeproject.org/files/ENCFF770WMT/@@download/ENCFF770WMT.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_LSM11_Input	1	lane1	reverse	#FF9D1A	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF356BGH/@@download/ENCFF356BGH.fastq.gz	https://www.encodeproject.org/files/ENCFF369YVX/@@download/ENCFF369YVX.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_GRSF1_Input	1	lane1	reverse	#FF9F1B	46	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF015RNL/@@download/ENCFF015RNL.fastq.gz	https://www.encodeproject.org/files/ENCFF632IKX/@@download/ENCFF632IKX.fastq.gz	
@@ -682,8 +698,10 @@ Gene_Yeo_UCSD_eCLIP	K562_NPM1_Input	1	lane1	reverse	#FFA71D	40	TRUE		Illumina	ht
 Gene_Yeo_UCSD_eCLIP	HepG2_FAM120A_Input	1	lane1	reverse	#FF6008	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF869DFG/@@download/ENCFF869DFG.fastq.gz	https://www.encodeproject.org/files/ENCFF903ZBT/@@download/ENCFF903ZBT.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_SF3A3_Input	1	lane1	reverse	#FFA81D	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF337AFM/@@download/ENCFF337AFM.fastq.gz	https://www.encodeproject.org/files/ENCFF370RMU/@@download/ENCFF370RMU.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_YWHAG_Input	1	lane1	reverse	#FFA81D	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF661RIY/@@download/ENCFF661RIY.fastq.gz	https://www.encodeproject.org/files/ENCFF101JTN/@@download/ENCFF101JTN.fastq.gz	
+Gene_Yeo_UCSD_eCLIP	K562_HNRNPK_Input	1	lane1	reverse	#FF7F11	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF223QBU/@@download/ENCFF223QBU.fastq.gz	https://www.encodeproject.org/files/ENCFF280QZL/@@download/ENCFF280QZL.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_SLTM_Input	1	lane1	reverse	#FF6208	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF995SCZ/@@download/ENCFF995SCZ.fastq.gz	https://www.encodeproject.org/files/ENCFF489KGX/@@download/ENCFF489KGX.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	HepG2_SF3B4_Input	1	lane1	reverse	#FF9517	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF772NLB/@@download/ENCFF772NLB.fastq.gz	https://www.encodeproject.org/files/ENCFF673XBX/@@download/ENCFF673XBX.fastq.gz	
+Gene_Yeo_UCSD_eCLIP	K562_FXR1_Input	1	lane1	reverse	#FF8713	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF608BOA/@@download/ENCFF608BOA.fastq.gz	https://www.encodeproject.org/files/ENCFF742KQJ/@@download/ENCFF742KQJ.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SBDS_Input	1	lane1	reverse	#FFA91E	40	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF397TYS/@@download/ENCFF397TYS.fastq.gz	https://www.encodeproject.org/files/ENCFF270EUA/@@download/ENCFF270EUA.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_GPKOW_Input	1	lane1	reverse	#FFAA1E	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF821KVN/@@download/ENCFF821KVN.fastq.gz	https://www.encodeproject.org/files/ENCFF216XJZ/@@download/ENCFF216XJZ.fastq.gz	
 Gene_Yeo_UCSD_eCLIP	K562_SF3B1_Input	1	lane1	reverse	#FFAB1E	45	TRUE		Illumina	https://www.encodeproject.org/files/ENCFF231PYQ/@@download/ENCFF231PYQ.fastq.gz	https://www.encodeproject.org/files/ENCFF185ZHX/@@download/ENCFF185ZHX.fastq.gz	

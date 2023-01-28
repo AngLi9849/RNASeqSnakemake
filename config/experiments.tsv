@@ -17,7 +17,6 @@ Gene_Yeo_UCSD_eCLIP    	K562_FUS_eCLIP  	K562_FUS_Input  	homo_sapiens	HCT116   
 Gene_Yeo_UCSD_eCLIP    	HepG2_HNRNPU_eCLIP	HepG2_HNRNPU_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	HepG2_SRSF7_eCLIP	HepG2_SRSF7_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	HepG2_XRN2_eCLIP	HepG2_XRN2_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
-Gene_Yeo_UCSD_eCLIP    	HepG2_TARDBP_eCLIP	HepG2_TARDBP_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	HepG2_HNRNPK_eCLIP	HepG2_HNRNPK_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	HepG2_TAF15_eCLIP	HepG2_TAF15_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	HepG2_SUB1_eCLIP	HepG2_SUB1_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read  	             	snRNAs,Ribosomal_genes
@@ -34,7 +33,6 @@ Gene_Yeo_UCSD_eCLIP    	K562_HNRNPA1_eCLIP	K562_HNRNPA1_Input	homo_sapiens	HCT11
 Gene_Yeo_UCSD_eCLIP    	K562_SRSF7_eCLIP	K562_SRSF7_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	K562_TARDBP_eCLIP	K562_TARDBP_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	K562_TAF15_eCLIP	K562_TAF15_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
-Gene_Yeo_UCSD_eCLIP    	K562_SRSF9_eCLIP	K562_SRSF9_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	K562_SF3B1_eCLIP	K562_SF3B1_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	K562_HNRNPK_eCLIP	K562_HNRNPK_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	K562_HNRNPL_eCLIP	K562_HNRNPL_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
@@ -44,3 +42,7 @@ Gene_Yeo_UCSD_eCLIP    	K562_SRSF1_eCLIP	K562_SRSF1_Input	homo_sapiens	HCT116   
 Gene_Yeo_UCSD_eCLIP    	K562_HNRNPC_eCLIP	K562_HNRNPC_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	K562_XRN2_eCLIP 	K562_XRN2_Input 	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
 Gene_Yeo_UCSD_eCLIP    	K562_EWSR1_eCLIP 	K562_EWSR1_Input 	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_seCLIP   	K562_HNRNPK_seCLIP	K562_HNRNPK_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_seCLIP   	K562_SRSF1_seCLIP	K562_SRSF1_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_seCLIP   	K562_SRSF9_seCLIP	K562_SRSF9_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes
+Gene_Yeo_UCSD_seCLIP   	K562_TARDBP_seCLIP	K562_TARDBP_Input	homo_sapiens	HCT116   	FALSE	FALSE	FALSE	                           	eCLIP,Read	             	snRNAs,Ribosomal_genes

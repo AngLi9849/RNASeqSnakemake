@@ -14,7 +14,7 @@ cts <- sapply(cts,as.numeric)
 row.names(cts) <- cts_names
 spikein <- as.character(snakemake@wildcards[["spikein"]])
 
-sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
+sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE,comment.char="")
 sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
 
 samples

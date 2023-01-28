@@ -55,14 +55,14 @@ rule all:
         #get_bams(),
         #get_feature_counts()
         #"results/qc/multiqc_report.html",
-        #get_norm_bigwigs(),
+        get_norm_bigwigs(),
         #get_mx_data(),
         #get_meta_data(),
         #get_heat_data(),
         #get_diffexp_docx(),
         #get_diffsplice_docx(),
-        get_differential_reports(),
-        get_group_reports(),
+        #get_differential_reports(),
+        #get_group_reports(),
         #get_differential_splicing(),
         #get_meta_profiles(),
         #"resources/annotations/ensembl_homo_sapiens_genome.gtf.basic_features.bed"
