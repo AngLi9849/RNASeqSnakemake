@@ -31,8 +31,14 @@ rule star_align:
         "logs/star/{reference}-{sample}-{unit}.log",
     params:
         index=lambda wc, input: input.index,
-        extra=lambda wc, input: "--outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --outFilterType BySJout --outSAMattrRGline ID:{} PU:{} SM:{} LB:unknown PL:{} --sjdbGTFfile {} {}".format(
-           "{sample}_{unit}","{sample}_{unit}","{sample}_{unit}","illumina", input.gtf, config["params"]["star"],
+        extra=lambda wc, input: "--outSAMtype BAM SortedByCoordinate --outFilterMultimapNmax {max_multimap} --quantMode TranscriptomeSAM GeneCounts --outFilterType BySJout --outSAMattrRGline ID:{id} PU:{pu} SM:{sm} LB:unknown PL:{pl} --sjdbGTFfile {gtf} {config}".format(
+           max_multimap = samples.loc[wc.sample].loc[wc.unit,"max_multimap"],
+           id = wc.sample + "_" + wc.unit, 
+           pu = wc.sample , 
+           sm = wc.unit,
+           pl = "illumina", 
+           gtf = input.gtf, 
+           config = config["params"]["star"],
         ),
     threads: 12
     resources:

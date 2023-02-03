@@ -113,8 +113,8 @@ rule umi_dedup:
     params:
         paired=lambda w: "--paired" if pd.notna(samples.loc[w.sample].loc[w.unit,"fq2"]) else "",
     resources:
-        mem="96G",
-        rmem="48G",
+        mem="512G",
+        rmem="256G",
     log:
         "logs/samtools/{sample}/{unit}/{reference}/{prefix}UMI-deduplicate.log"
     conda:
@@ -122,6 +122,7 @@ rule umi_dedup:
     shell:
         """
         umi_tools dedup \
+        --method=unique \
         --random-seed 1 \
         -I {input.bam} \
         --spliced-is-unique \

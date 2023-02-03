@@ -53,7 +53,13 @@ group	treatment          	splice	feature 	difference	protocols
 14	FUS-mAID_+5PhIAA_6hr 	All	GeneBody	splicing_ratio	TT-Seq
 14	FUS-mAID_+5PhIAA_6hr	All	ExonicRegion  	Read.Count	Total_RNA-Seq
 14	FUS-mAID_+5PhIAA_48hr	All	ExonicRegion   	Read.Count	Total_RNA-Seq
-#14	K562_FUS_eCLIP         	FALSE	FirstIntron	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
+14	K562_FUS_eCLIP         	FALSE	FirstIntron	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
 #14	HepG2_FUS_ecLIP     	FALSE	FirstIntron	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
-#14	K562_FUS_eCLIP         	All	ExonicRegion 	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
+14	K562_FUS_eCLIP         	All	ExonicRegion 	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
 #14	HepG2_FUS_eCLIP       	All	ExonicRegion	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
+15	K562_SF3B1_eCLIP       	All	ExonicRegion	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
+15	K562_SF3B4_eCLIP       	All	ExonicRegion	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
+#15	K562_FUS_eCLIP       	All	ExonicRegion	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
+15	K562_HNRNPU_eCLIP      	All	ExonicRegion	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
+#15	K562_HNRNPUL1_eCLIP   	All	ExonicRegion	eCLIP.Count	Gene_Yeo_UCSD_eCLIP
+#15	K562_XRN2_eCLIP   	All	ExonicRegion	eCLIP.Count	Gene_Yeo_UCSD_eCLIP

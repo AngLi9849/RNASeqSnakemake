@@ -63,7 +63,7 @@ unsplice_cts <- unsplice_cts[ , order(names(unsplice_cts))]
 samples <- names(splice_cts)
 
 # Import sample table
-sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
+sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE,comment.char="")
 sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
 sample_table <- sample_table[sample_table$sample_name %in% samples,]
 rownames(sample_table) <- sample_table$sample_name

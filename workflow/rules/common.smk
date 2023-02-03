@@ -237,6 +237,8 @@ experiments["deduplicate"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"dedup"]=="TRUE", axis=1)
 experiments["sep_spl"]=experiments.apply(
     lambda row: protocols.loc[row.protocol,"sep_spl"], axis=1)
+experiments["max_multimap"]=experiments.apply(
+    lambda row: protocols.loc[row.protocol,"maxmult"], axis=1)
 
 experiments["GOI"]=experiments.apply(lambda row: \
      gene_sets.loc[list(set( [x.strip(' ') for x in str(row.gene_sets).split(",")] ).intersection(gene_sets.set_name.tolist())),"genes"].str.cat() if not pd.isna(row.gene_sets) else "" , axis=1)
@@ -292,6 +294,10 @@ samples["min_overlap"] = samples.apply( lambda row:\
 samples.adapters = ["Illumina" if x == '' else x for x in samples.adapters.tolist()] 
 samples.adapters = samples.apply(lambda row:
     "-a " + adapters.loc[row.adapters,"5'adapters"] + " -g " + adapters.loc[row.adapters,"3'adapters"] + " -A " + adapters.loc[row.adapters,"5'adapters"] + " -G " + adapters.loc[row.adapters,"3'adapters"],
+    axis=1
+)
+samples["max_multimap"]=samples.apply(
+    lambda row: protocols.loc[row.protocol,"maxmult"],
     axis=1
 )
 
@@ -403,6 +409,7 @@ for i in range(0,len(experiments)):
     samps["norm_feat"] = experiments.norm_feat[i]
     samps["norm_read"] = experiments.norm_read[i]
     samps["readtypes"] = experiments.readtypes[i]
+    samps["max_multimap"] = experiments.max_multimap[i]
     samps["read"] = samps.apply(lambda row: row.readtypes.split(","),axis=1)
     samps = samps.explode("read") 
     samps["pairRep"] = "paired" if experiments.pairRep[i] else "unpaired"
