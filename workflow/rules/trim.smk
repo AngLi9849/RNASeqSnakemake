@@ -146,8 +146,8 @@ rule cutadapt_se:
         adapters_r1=lambda w: str(samples.loc[w.sample].loc[w.unit].squeeze(axis=0)[ "adapters"]),
     threads: 4
     resources:
-        mem="8G",
-        rmem="6G",
+        mem="16G",
+        rmem="12G",
     wrapper:
         "0.80.2/bio/cutadapt/se"
 

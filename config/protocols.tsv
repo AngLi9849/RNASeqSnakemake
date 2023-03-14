@@ -1,8 +1,13 @@
+# feat = feature, set in features config (config/features.tsv by default)
 protocol         	dedup	demulti	maxmult	sep_spl	splice	trs_val	dif_exp	dif_spl	norm_read	norm_feat	feature_of_interest
-Chromatin_RNA-Seq   	TRUE	TRUE	20	TRUE	TRUE	TRUE	TRUE	TRUE	Read    	GeneBody	GeneBody,mRNA,PROMPT,TSS,PROMPT-TSS
-Nucleoplasm_RNA-Seq 	TRUE	TRUE	20	FALSE	TRUE	TRUE	TRUE	TRUE	Read     	mRNA     	GeneBody,mRNA
-Cytoplasm_RNA-Seq   	TRUE	TRUE	20	FALSE	TRUE	TRUE	TRUE	TRUE	Read    	mRNA     	mRNA
-Total_RNA-Seq     	TRUE	TRUE	20	FALSE	TRUE	TRUE	TRUE	TRUE	Read    	mRNA     	GeneBody,mRNA
+#Chromatin_RNA-Seq   	TRUE	TRUE	20	TRUE	TRUE	TRUE	TRUE	TRUE	Read    	GeneBody	GeneBody,mRNA,PROMPT,TSS,PROMPT-TSS
+#Nucleoplasm_RNA-Seq 	TRUE	TRUE	20	FALSE	TRUE	TRUE	TRUE	TRUE	Read     	mRNA     	GeneBody,mRNA
+#Cytoplasm_RNA-Seq   	TRUE	TRUE	20	FALSE	TRUE	TRUE	TRUE	TRUE	Read    	mRNA     	mRNA
+#Total_RNA-Seq     	TRUE	TRUE	20	FALSE	TRUE	TRUE	TRUE	TRUE	Read    	mRNA     	GeneBody,mRNA
+Chromatin_RNA-Seq   	TRUE	TRUE	200	TRUE	TRUE	TRUE	TRUE	TRUE	Read    	GeneBody	GeneBody,mRNA,PROMPT,TSS,PROMPT-TSS
+Nucleoplasm_RNA-Seq 	TRUE	TRUE	200	FALSE	TRUE	TRUE	TRUE	TRUE	Read     	mRNA     	GeneBody,mRNA
+Cytoplasm_RNA-Seq   	TRUE	TRUE	200	FALSE	TRUE	TRUE	TRUE	TRUE	Read    	mRNA     	mRNA
+Total_RNA-Seq     	TRUE	TRUE	200	FALSE	TRUE	TRUE	TRUE	TRUE	Read    	mRNA     	GeneBody,mRNA
 TT-Seq            	TRUE	TRUE	20	TRUE	TRUE	FALSE	TRUE	TRUE	Read     	Total     	GeneBody,mRNA,PROMPT,TSS,PROMPT-TSS
-Gene_Yeo_UCSD_eCLIP    	TRUE	FALSE	100	FALSE	FALSE	FALSE	TRUE	FALSE	eCLIP          	GeneBody      	GeneBody,Intron
-Gene_Yeo_UCSD_seCLIP   	TRUE	FALSE	100	FALSE	FALSE	FALSE	TRUE	FALSE	eCLIP          	GeneBody      	GeneBody,Intron
+#Gene_Yeo_UCSD_eCLIP    	TRUE	FALSE	100	FALSE	FALSE	FALSE	TRUE	FALSE	eCLIP          	GeneBody      	GeneBody,Intron
+#Gene_Yeo_UCSD_seCLIP   	TRUE	FALSE	100	FALSE	FALSE	FALSE	TRUE	FALSE	eCLIP          	GeneBody      	GeneBody,Intron

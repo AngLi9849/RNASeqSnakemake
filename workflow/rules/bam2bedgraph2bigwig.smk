@@ -7,8 +7,8 @@ rule samtools_index:
         "logs/samtools_index/{prefix}.log"
     threads: 4 
     resources:
-        mem="6G",
-        rmem="4G",
+        mem="8G",
+        rmem="6G",
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -18,24 +18,39 @@ rule samtools_index:
 
 rule stranded_bam:
     input:
-        "{prefix}.out.bam",
+        "star/{sample}/{unit}/{reference}/{prefix}.out.bam",
     output:
-        fwd="{prefix}.fwd.bam",
-        rev="{prefix}.rev.bam",
+        fwd="star/{sample}/{unit}/{reference}/{prefix}.fwd.bam",
+        rev="star/{sample}/{unit}/{reference}/{prefix}.rev.bam",
     resources:
         mem="12G",
         rmem="8G",
+    params:
+        prefix="star/{sample}/{unit}/{reference}/{prefix}",
+        paired_end = lambda w: 0 if pd.isna(samples.loc[w.sample].loc[w.unit,"fq2"]) else 1, 
+        sn_fwd_flag = lambda w: "-F 16" if samples.loc[w.sample].loc[w.unit,"strandedness"]=="reverse" else "",
+        sn_rev_flag = lambda w: "" if samples.loc[w.sample].loc[w.unit,"strandedness"]=="reverse" else "-F 16",
+        fwd_sense_flag = lambda w: 128 if samples.loc[w.sample].loc[w.unit,"strandedness"]=="reverse" else 64,
+        fwd_anti_flag = lambda w: 80 if samples.loc[w.sample].loc[w.unit,"strandedness"]=="reverse" else 144,
+        rev_sense_flag = lambda w: 64 if samples.loc[w.sample].loc[w.unit,"strandedness"]=="reverse" else 128,
+        rev_anti_flag = lambda w: 144 if samples.loc[w.sample].loc[w.unit,"strandedness"]=="reverse" else 80,
     conda:
         "../envs/samtools.yaml",
     shell:
         """
-        samtools view -h -b -f 128 -F 16 {input} > {wildcards.prefix}.a.bam && 
-        samtools view -h -b -f 80 {input} > {wildcards.prefix}.b.bam && 
-        samtools merge -f {output.fwd} {wildcards.prefix}.a.bam {wildcards.prefix}.b.bam &&
-        samtools view -h -b -f 144 {input} > {wildcards.prefix}.c.bam &&
-        samtools view -h -b -f 64 -F 16 {input} > {wildcards.prefix}.d.bam &&
-        samtools merge -f {output.rev} {wildcards.prefix}.c.bam {wildcards.prefix}.d.bam &&
-        rm -r {wildcards.prefix}.["a","b","c","d"].bam
+        if [ {params.paired_end} -eq 1 ] ;
+        then
+          samtools view -h -b -f {params.fwd_sense_flag} -F 16 {input} > {params.prefix}.a.bam && 
+          samtools view -h -b -f {params.fwd_anti_flag} {input} > {params.prefix}.b.bam && 
+          samtools merge -f {output.fwd} {params.prefix}.a.bam {params.prefix}.b.bam &&
+          samtools view -h -b -f {params.rev_anti_flag} {input} > {params.prefix}.c.bam &&
+          samtools view -h -b -f {params.rev_sense_flag} -F 16 {input} > {params.prefix}.d.bam &&
+          samtools merge -f {output.rev} {params.prefix}.c.bam {params.prefix}.d.bam &&
+          rm -r {params.prefix}.["a","b","c","d"].bam ;
+        else
+          samtools view -h -b {params.sn_fwd_flag} {input} > {output.fwd} &&
+          samtools view -h -b {params.sn_rev_flag} {input} > {output.rev} ;
+        fi    
         """
 
 

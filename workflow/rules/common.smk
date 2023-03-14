@@ -223,6 +223,9 @@ experiments["experiment"] = experiments.apply( lambda row: \
 )
 experiments = (experiments.set_index(["experiment"], drop=False).sort_index())
 
+
+experiments = experiments[experiments.protocol.isin(protocols.protocol).tolist()]
+
 experiments["trs_val"]=experiments.apply(
     lambda row: row.trs_val & protocols.loc[row.protocol,"trs_val"], axis=1)
 experiments["splice"]=experiments.apply(
@@ -286,6 +289,7 @@ adapters = (adapters.set_index(["adapter_set"], drop=False).sort_index())
 samples = (pd.read_csv(config["samples"], sep="\t", dtype={"protocol": str, "replicate": str, "unit_name": str}))
 samples["sample_name"]=samples.apply(lambda row: str(row.condition) + "_" + str(row.protocol) + "_Replicate_" + str(row.replicate), axis=1)
 samples=samples.set_index(["sample_name","unit_name"], drop=False).sort_index()
+samples = samples[samples.protocol.isin(protocols.protocol).tolist()]
 samples = samples.mask(samples == '')
 samples["min_overlap"] = samples.apply( lambda row:\
     int(config["differential_analysis"]["min_read_overlap_portion"]*row.readlen),
@@ -488,6 +492,8 @@ groups.columns=groups.columns.str.strip()
 groups = groups.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 groups = groups.mask(groups == '')
 
+
+
 groups["experiments"]=groups.apply(lambda row:
     ",".join(
         experiments.experiment[
@@ -529,6 +535,8 @@ groups=pd.DataFrame(
     ),
     columns=["group","experiment","splice","difference","feature"]
 )
+
+groups = groups[groups.experiment!=""]
 
 groups[["control","treatment","protocol","reference","norm_feat","norm_read","normaliser","paired","diff_lineage","demulti","dedup"]]=groups.apply(lambda row:
     experiments.loc[row.experiment,["control","treatment","protocol","reference","norm_feat","norm_read","normaliser","paired","diff_lineage","demulti","dedup"]],
