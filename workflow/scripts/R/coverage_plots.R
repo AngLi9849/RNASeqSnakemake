@@ -22,7 +22,7 @@ if (snakemake@threads > 1) {
     parallel <- TRUE
 }
 
-# Import lfc table and mean levels table
+# Initialise experiment and feature Settings
 expr <- read.csv(snakemake@input[["lfc"]],header=T,row.names = 1, sep='\t', check.names=FALSE)
 expr$featureID <- rownames(expr)
 mean_level <- read.csv(snakemake@input[["levels"]],header=T,row.names = 1, sep='\t', check.names=FALSE)

@@ -9,5 +9,5 @@ Nucleoplasm_RNA-Seq 	TRUE	TRUE	200	FALSE	TRUE	TRUE	TRUE	TRUE	Read     	mRNA     
 Cytoplasm_RNA-Seq   	TRUE	TRUE	200	FALSE	TRUE	TRUE	TRUE	TRUE	Read    	mRNA     	mRNA
 Total_RNA-Seq     	TRUE	TRUE	200	FALSE	TRUE	TRUE	TRUE	TRUE	Read    	mRNA     	GeneBody,mRNA
 TT-Seq            	TRUE	TRUE	20	TRUE	TRUE	FALSE	TRUE	TRUE	Read     	Total     	GeneBody,mRNA,PROMPT,TSS,PROMPT-TSS
-Gene_Yeo_UCSD_eCLIP    	TRUE	FALSE	100	FALSE	FALSE	FALSE	TRUE	FALSE	eCLIP          	GeneBody      	GeneBody,Intron
-Gene_Yeo_UCSD_seCLIP   	TRUE	FALSE	100	FALSE	FALSE	FALSE	TRUE	FALSE	eCLIP          	GeneBody      	GeneBody,Intron
+Gene_Yeo_UCSD_eCLIP    	TRUE	FALSE	100	FALSE	FALSE	FALSE	TRUE	FALSE	eCLIP          	Total      	GeneBody,Intron
+Gene_Yeo_UCSD_seCLIP   	TRUE	FALSE	100	FALSE	FALSE	FALSE	TRUE	FALSE	eCLIP          	Total      	GeneBody,Intron

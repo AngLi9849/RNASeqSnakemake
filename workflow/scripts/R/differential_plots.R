@@ -226,7 +226,7 @@ rep_pair <- as.logical(snakemake@params[["paired"]])
 rep_paired <- ifelse(rep_pair,"Paired Replicate","Unpaired Replicate")
 
 # Import sample table and define ColData dataframe for deseq2
-sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE)
+sample_table <- read.table(snakemake@config[["samples"]], sep='\t',header=TRUE, check.names=FALSE, comment.char="")
 sample_table$sample_name <- paste(sample_table$condition,"_",sample_table$protocol,"_Replicate_",sample_table$replicate,sep="")
 sample_table <- sample_table[sample_table$condition %in% c(control_cond, treatment),]
 sample_table <- sample_table[sample_table$protocol == as.character(snakemake@params[["protocol"]]),]

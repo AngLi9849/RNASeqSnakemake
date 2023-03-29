@@ -622,7 +622,7 @@ def get_bams():
 
 def get_norm_bigwigs():
     bigwigs = list(dict.fromkeys(expand(
-        "norm_bw/{sample.group}/{sample.reference}/bigwigs/{sample.pairRep}.{sample.spikein}_{sample.norm_feat}.{sample.norm_read}.Count_normalised/{sample.splice_prefix}Aligned{sample.demulti}{sample.dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{sample.splice_prefix}.{sample.read}.norm.bigwig",
+        "norm_bw/{sample.group}/{sample.reference}/bigwigs/{sample.spikein}_{sample.norm_feat}.{sample.norm_read}.Count_normalised/{sample.splice_prefix}Aligned{sample.demulti}{sample.dedup}/{sample.sample_name}_{sample.unit_name}.{sample.strand}_{sample.splice_prefix}.{sample.read}.norm.bigwig",
         sample=results.itertuples(), splice=SPLICE
     )))
     return bigwigs
