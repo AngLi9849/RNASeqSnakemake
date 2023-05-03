@@ -1,0 +1,4 @@
+# bed: Path to a bed file of the annotations. Only first 6 columns will be considered (if bed3 is provided, only forward strand of the genome is assigned) The annotations will be assigned as a feature with its provided name, at the same level as "gene"
+name	species      	build   	bed
+HCTEnhA	homo_sapiens	GRCh38      	annotations/HCT116_enhA
+HCTEnhG	homo_sapiens	GRCh38	     	
